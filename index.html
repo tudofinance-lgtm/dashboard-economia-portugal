@@ -2725,4 +2725,280 @@ function renderDashboard(data, fromCache) {
     chartError('wrap-divida-total', 'Não foi possível carregar os dados');
   }
 
-  /* �
+  /* ── REN: KPI CONSUMO ELÉTRICO ── */
+  try {
+    const renC = renConsumoR.status === 'fulfilled' ? renConsumoR.value : null;
+    if (renC) {
+      const el = document.getElementById('kpi-ren-consumo');
+      const sub = document.getElementById('kpi-ren-consumo-sub');
+      if (el) el.querySelector('.kpi-value').textContent =
+        renC.yearEvol != null ? (renC.yearEvol >= 0 ? '+' : '') + renC.yearEvol.toFixed(1) + '%' : '—';
+      if (sub) sub.textContent = 'Variação anual · ' + renC.month + ' · REN';
+    }
+  } catch(e) { console.warn('REN consumo KPI:', e); }
+
+  /* ── REN: KPI PREÇO MERCADO ELÉTRICO ── */
+  try {
+    const renP = renPrecoR.status === 'fulfilled' ? renPrecoR.value : null;
+    if (renP) {
+      const elP = document.getElementById('kpi-ren-preco');
+      const subP = document.getElementById('kpi-ren-preco-sub');
+      const badgeEl = document.getElementById('kpi-ren-preco-badge');
+      if (elP) elP.querySelector('.kpi-value').textContent =
+        renP.avgPrice != null ? renP.avgPrice.toFixed(1) + ' €/MWh' : '—';
+      if (subP) subP.textContent = 'Média mensal PT · ' + renP.month + ' · REN';
+      if (badgeEl && renPrecoHistR.status === 'fulfilled') {
+        const hist = renPrecoHistR.value;
+        if (Array.isArray(hist) && hist.length >= 13) {
+          const last = hist[hist.length - 1];
+          const prev12 = hist[hist.length - 13];
+          if (last && prev12 && prev12.value) {
+            const chg = ((last.value - prev12.value) / prev12.value) * 100;
+            badgeEl.className = 'kpi-badge ' + (chg >= 0 ? 'badge-down' : 'badge-up');
+            badgeEl.textContent = (chg >= 0 ? '▲ +' : '▼ ') + chg.toFixed(1) + '% vs ano ant.';
+          }
+        }
+      }
+    }
+  } catch(e) { console.warn('REN preço KPI:', e); }
+
+  /* ── REN: BALANÇO ELÉTRICO MENSAL (wrap-ren-balanco) ── */
+  if (renBalancoHistR.status === 'fulfilled') {
+    const hist = renBalancoHistR.value;
+    if (Array.isArray(hist) && hist.length) {
+      const wrap = document.getElementById('wrap-ren-balanco');
+      if (wrap) {
+        wrap.innerHTML = '<canvas></canvas>';
+        const ctx = wrap.querySelector('canvas');
+        const yearsNum = activeYears === 'max' ? 'max' : parseInt(activeYears);
+        const sliced = yearsNum === 'max' ? hist : hist.slice(-yearsNum * 12);
+        const labels = sliced.map(d => d.date);
+        const chart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [
+              {
+                type: 'line',
+                label: 'Geração Total (GWh)',
+                data: sliced.map(d => d.total_gen),
+                borderColor: '#2563eb',
+                backgroundColor: 'transparent',
+                borderWidth: 2,
+                pointRadius: 0,
+                yAxisID: 'yLeft',
+                order: 1,
+              },
+              {
+                type: 'line',
+                label: 'Renováveis (GWh)',
+                data: sliced.map(d => d.renewable),
+                borderColor: '#047857',
+                backgroundColor: 'transparent',
+                borderWidth: 1.5,
+                borderDash: [4, 3],
+                pointRadius: 0,
+                yAxisID: 'yLeft',
+                order: 2,
+              },
+              {
+                type: 'bar',
+                label: 'Saldo Import. (GWh)',
+                data: sliced.map(d => d.import_bal),
+                backgroundColor: sliced.map(d => d.import_bal >= 0 ? 'rgba(249,115,22,0.75)' : 'rgba(4,120,87,0.75)'),
+                borderColor: sliced.map(d => d.import_bal >= 0 ? '#f97316' : '#047857'),
+                borderWidth: 1,
+                yAxisID: 'yLeft',
+                order: 3,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            animation: { duration: 250 },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: '#111827', titleColor: '#9ca3af',
+                bodyColor: '#f9fafb', borderColor: '#374151', borderWidth: 1, padding: 10,
+              },
+            },
+            scales: {
+              x: { grid: { display: false }, ticks: { maxTicksLimit: 12, color: '#9ca3af', font: { size: 10 } } },
+              yLeft: { grid: { color: '#f3f4f6' }, ticks: { color: '#9ca3af', font: { size: 10 } } },
+            },
+          },
+        });
+        REGISTRY['wrap-ren-balanco'] = {
+          chart,
+          _renHist: hist,
+          periodicity: 'monthly',
+        };
+        const legendEl = document.getElementById('legend-ren-balanco');
+        if (legendEl) legendEl.innerHTML =
+          '<span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Geração</span>' +
+          '<span class="legend-item"><span class="legend-dot" style="background:#047857"></span>Renováveis</span>' +
+          '<span class="legend-item"><span class="legend-dot" style="background:#f97316"></span>Saldo (laranja=importador)</span>';
+        updateRangeLabel('wrap-ren-balanco', sliced);
+      }
+    }
+  } else {
+    chartError('wrap-ren-balanco', 'Sem dados REN balanço');
+  }
+
+  /* ── REN: RENOVÁVEIS DECOMPOSIÇÃO (wrap-ren-renovaveis) ── */
+  if (renRenovaveisR.status === 'fulfilled') {
+    const r = renRenovaveisR.value;
+    if (r) {
+      const wrap = document.getElementById('wrap-ren-renovaveis');
+      if (wrap) {
+        wrap.innerHTML = '<canvas></canvas>';
+        const ctx = wrap.querySelector('canvas');
+        new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Hídrica', 'Eólica', 'Solar', 'Biomassa'],
+            datasets: [{
+              data: [r.hydro || 0, r.wind || 0, r.solar || 0, r.biomass || 0],
+              backgroundColor: ['#2563eb', '#047857', '#f59e0b', '#6d28d9'],
+              borderWidth: 2,
+              borderColor: '#ffffff',
+            }],
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false, animation: { duration: 250 },
+            plugins: {
+              legend: { position: 'right', labels: { color: '#64748b', font: { size: 11 } } },
+              tooltip: {
+                callbacks: { label: ctx2 => ' ' + ctx2.label + ': ' + (ctx2.raw || 0).toFixed(0) + ' GWh' },
+              },
+            },
+          },
+        });
+      }
+    }
+  } else {
+    chartError('wrap-ren-renovaveis', 'Sem dados REN renováveis');
+  }
+
+  /* ── REN: HISTÓRICO PREÇO ELÉTRICO (wrap-ren-preco-hist) ── */
+  if (renPrecoHistR.status === 'fulfilled') {
+    const hist = renPrecoHistR.value;
+    if (Array.isArray(hist) && hist.length) {
+      initChart('wrap-ren-preco-hist', hist.map(d => ({ date: d.date, value: d.value })),
+        'orange', { pct: false }, 'monthly');
+    }
+  } else {
+    chartError('wrap-ren-preco-hist', 'Sem dados histórico preço');
+  }
+
+  /* ── POPULAÇÃO KPI ── */
+  {
+    const el = document.getElementById('kpi-populacao');
+    if (el) {
+      const valEl = el.querySelector('.kpi-value');
+      const subEl = el.querySelector('.kpi-sub');
+      if (valEl) valEl.textContent = (PT_POP / 1e6).toFixed(2) + ' M';
+      if (subEl) subEl.textContent = 'Residentes · INE · 2024';
+    }
+  }
+
+  /* ── RECEITAS DECOMPOSTAS (wrap-rec-decomp) ── */
+  if (recDecompR.status === 'fulfilled') {
+    const series = recDecompR.value.filter(s => s.pts && s.pts.length > 0);
+    if (series.length) {
+      initStackedBarChart('wrap-rec-decomp', series);
+    } else {
+      chartError('wrap-rec-decomp', 'Sem dados disponíveis');
+    }
+  } else {
+    chartError('wrap-rec-decomp', 'Não foi possível carregar os dados');
+  }
+
+  /* ── DESPESAS DECOMPOSTAS (wrap-desp-decomp) ── */
+  if (despDecompR.status === 'fulfilled') {
+    const series = despDecompR.value.filter(s => s.pts && s.pts.length > 0);
+    if (series.length) {
+      initStackedBarChart('wrap-desp-decomp', series);
+    } else {
+      chartError('wrap-desp-decomp', 'Sem dados disponíveis');
+    }
+  } else {
+    chartError('wrap-desp-decomp', 'Não foi possível carregar os dados');
+  }
+
+  /* ── CAPACIDADE DE FINANCIAMENTO / SALDOS SECTORIAIS (wrap-cap-fin) ── */
+  if (capFinR.status === 'fulfilled') {
+    const series = capFinR.value.filter(s => s.pts && s.pts.length > 0);
+    if (series.length) {
+      initChartMulti('wrap-cap-fin', series, { pct: true }, 'quarterly');
+      const legendEl = document.getElementById('legend-cap-fin');
+      if (legendEl) legendEl.innerHTML = series.map(s =>
+        '<span class="legend-item"><span class="legend-dot" style="background:' +
+        (COLORS[s.colour] ? COLORS[s.colour].line : '#64748b') + '"></span>' + s.label + '</span>'
+      ).join('');
+    } else {
+      chartError('wrap-cap-fin', 'Sem dados disponíveis');
+    }
+  } else {
+    chartError('wrap-cap-fin', 'Não foi possível carregar os dados');
+  }
+
+  /* ── INDICADORES DE CONFIANÇA (wrap-confianca) ── */
+  {
+    const { consumidores, empresas } = confiancaData;
+    if (consumidores && consumidores.length) {
+      initChartMulti('wrap-confianca', [
+        { pts: consumidores, colour: 'blue',   label: 'Consumidores', fill: false },
+        { pts: empresas,     colour: 'orange',  label: 'Empresas',     fill: false },
+      ], {}, 'annual');
+      const legendEl = document.getElementById('legend-confianca');
+      if (legendEl) legendEl.innerHTML =
+        '<span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Consumidores</span>' +
+        '<span class="legend-item"><span class="legend-dot" style="background:#c2410c"></span>Empresas</span>';
+    }
+  }
+
+  /* ── DÍVIDA CONSOLIDADA (wrap-divida-consolidada) ── */
+  (function() {
+    const wrap = document.getElementById('wrap-divida-consolidada');
+    if (!wrap) return;
+    if (dividaR.status !== 'fulfilled') { chartError('wrap-divida-consolidada', 'Sem dados'); return; }
+    const { pts: ptsDivida } = dividaR.value;
+    const { publica, empresas, familias } = loadDividaConsolidada(ptsDivida);
+    initChartMulti('wrap-divida-consolidada', [
+      { pts: publica,  colour: 'orange', label: 'Adm. Públicas', fill: false },
+      { pts: empresas, colour: 'blue',   label: 'Empresas NF',   fill: false },
+      { pts: familias, colour: 'teal',   label: 'Famílias',      fill: false },
+    ], { pct: true }, 'annual');
+    const legendEl = document.getElementById('legend-divida-consolidada');
+    if (legendEl) legendEl.innerHTML =
+      '<span class="legend-item"><span class="legend-dot" style="background:#c2410c"></span>Adm. Públicas</span>' +
+      '<span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Empresas NF</span>' +
+      '<span class="legend-item"><span class="legend-dot" style="background:#0e7490"></span>Famílias</span>';
+  })();
+
+} // end renderDashboard
+
+/* ══════════════════════════════════════════════════════════
+   INIT — carregar dados e renderizar
+══════════════════════════════════════════════════════════ */
+(async () => {
+  try {
+    const cached = cacheLoad();
+    if (cached) {
+      renderDashboard(cached, true);
+    } else {
+      const d = await fetchAllData();
+      cacheSave(d);
+      renderDashboard(d, false);
+    }
+  } catch(e) {
+    console.error('Dashboard init failed:', e);
+  }
+})();
+  </script>
+</body>
+</html>

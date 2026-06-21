@@ -1,0 +1,2728 @@
+﻿<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Económico — Portugal</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script>
+    /* REN_DATA_START */
+    const REN_CONSUMO_DATA = [{"yearEvolCTWD":5.5,"monthEvolCTWD":5.5,"twelveMonthEvolCTWD":2.6,"consumption":5405,"yearEvol":7.8,"twelveMonthEvol":3.7,"type":"January","monthEvol":7.8},{"yearEvolCTWD":5.1,"monthEvolCTWD":4.6,"twelveMonthEvolCTWD":2.8,"consumption":4585,"yearEvol":6,"twelveMonthEvol":3.8,"type":"February","monthEvol":3.9},{"yearEvolCTWD":3.9,"monthEvolCTWD":1.3,"twelveMonthEvolCTWD":2.7,"consumption":4630,"yearEvol":3.8,"twelveMonthEvol":3.4,"type":"March","monthEvol":-0.6},{"yearEvolCTWD":3.4,"monthEvolCTWD":1.8,"twelveMonthEvolCTWD":2.6,"consumption":4086,"yearEvol":3.5,"twelveMonthEvol":3.6,"type":"April","monthEvol":2.4},{"yearEvolCTWD":3.4,"monthEvolCTWD":3.6,"twelveMonthEvolCTWD":2.9,"consumption":4225,"yearEvol":3.6,"twelveMonthEvol":3.9,"type":"May","monthEvol":3.9},{"yearEvolCTWD":null,"monthEvolCTWD":null,"twelveMonthEvolCTWD":null,"consumption":4160,"yearEvol":3.4,"twelveMonthEvol":2.9,"type":"June","monthEvol":3.3},{"yearEvolCTWD":null,"monthEvolCTWD":null,"twelveMonthEvolCTWD":null,"consumption":4547,"yearEvol":3.4,"twelveMonthEvol":3,"type":"July","monthEvol":3.4},{"yearEvolCTWD":null,"monthEvolCTWD":null,"twelveMonthEvolCTWD":null,"consumption":4293,"yearEvol":3.5,"twelveMonthEvol":3.2,"type":"August","monthEvol":3.8},{"yearEvolCTWD":null,"monthEvolCTWD":null,"twelveMonthEvolCTWD":null,"consumption":4320,"yearEvol":3.5,"twelveMonthEvol":3.4,"type":"September","monthEvol":3.7},{"yearEvolCTWD":null,"monthEvolCTWD":null,"twelveMonthEvolCTWD":null,"consumption":4494,"yearEvol":3.5,"twelveMonthEvol":3.5,"type":"October","monthEvol":3.7},{"yearEvolCTWD":null,"monthEvolCTWD":null,"twelveMonthEvolCTWD":null,"consumption":4719,"yearEvol":3.5,"twelveMonthEvol":3.6,"type":"November","monthEvol":3.1},{"yearEvolCTWD":null,"monthEvolCTWD":null,"twelveMonthEvolCTWD":null,"consumption":5065,"yearEvol":3.3,"twelveMonthEvol":3.3,"type":"December","monthEvol":1.9}];
+    const REN_PRECO_DATA = {"June":{"Market Spliting [%]":13.7,"PT":{"On Peak":54.22,"Off-Peak":70.56,"Average Price":62.72},"Capacity [MW]":{"Import":3509,"Export":2755},"ES":{"On Peak":52.37,"Off-Peak":70.46,"Average Price":61.78}}};
+    const REN_BALANCO_HIST_DATA = [{"date":"2021-01","total_gen":4939,"renewable":3357,"import_bal":283,"consumption":4983},{"date":"2021-02","total_gen":5064,"renewable":4353,"import_bal":-857,"consumption":3996},{"date":"2021-03","total_gen":4249,"renewable":3195,"import_bal":-10,"consumption":4068},{"date":"2021-04","total_gen":3684,"renewable":2047,"import_bal":184,"consumption":3743},{"date":"2021-05","total_gen":3329,"renewable":2123,"import_bal":831,"consumption":3921},{"date":"2021-06","total_gen":3633,"renewable":1896,"import_bal":324,"consumption":3842},{"date":"2021-07","total_gen":3648,"renewable":2170,"import_bal":560,"consumption":4130},{"date":"2021-08","total_gen":3027,"renewable":1687,"import_bal":1024,"consumption":3961},{"date":"2021-09","total_gen":3431,"renewable":1691,"import_bal":691,"consumption":4011},{"date":"2021-10","total_gen":3373,"renewable":1826,"import_bal":883,"consumption":4026},{"date":"2021-11","total_gen":3979,"renewable":2328,"import_bal":468,"consumption":4286},{"date":"2021-12","total_gen":4349,"renewable":3019,"import_bal":372,"consumption":4501},{"date":"2022-01","total_gen":4074,"renewable":2455,"import_bal":772,"consumption":4642},{"date":"2022-02","total_gen":2999,"renewable":1534,"import_bal":1375,"consumption":4115},{"date":"2022-03","total_gen":4059,"renewable":2559,"import_bal":600,"consumption":4458},{"date":"2022-04","total_gen":3529,"renewable":2222,"import_bal":764,"consumption":4004},{"date":"2022-05","total_gen":3395,"renewable":1833,"import_bal":892,"consumption":4050},{"date":"2022-06","total_gen":3232,"renewable":1502,"import_bal":973,"consumption":3968},{"date":"2022-07","total_gen":3343,"renewable":1541,"import_bal":1286,"consumption":4414},{"date":"2022-08","total_gen":3167,"renewable":1450,"import_bal":1033,"consumption":4025},{"date":"2022-09","total_gen":3388,"renewable":1768,"import_bal":862,"consumption":3992},{"date":"2022-10","total_gen":3474,"renewable":1776,"import_bal":920,"consumption":4056},{"date":"2022-11","total_gen":4139,"renewable":2439,"import_bal":313,"consumption":4183},{"date":"2022-12","total_gen":5219,"renewable":4074,"import_bal":-536,"consumption":4424},{"date":"2023-01","total_gen":5334,"renewable":4502,"import_bal":-188,"consumption":4829},{"date":"2023-02","total_gen":4337,"renewable":2806,"import_bal":124,"consumption":4235},{"date":"2023-03","total_gen":3423,"renewable":2542,"import_bal":1286,"consumption":4406},{"date":"2023-04","total_gen":2712,"renewable":1880,"import_bal":1406,"consumption":3775},{"date":"2023-05","total_gen":2933,"renewable":1979,"import_bal":1398,"consumption":3978},{"date":"2023-06","total_gen":3113,"renewable":1832,"import_bal":1097,"consumption":3999},{"date":"2023-07","total_gen":3285,"renewable":1846,"import_bal":1193,"consumption":4177},{"date":"2023-08","total_gen":3177,"renewable":1925,"import_bal":1236,"consumption":4100},{"date":"2023-09","total_gen":3003,"renewable":1670,"import_bal":1298,"consumption":3979},{"date":"2023-10","total_gen":3824,"renewable":2820,"import_bal":688,"consumption":4183},{"date":"2023-11","total_gen":4667,"renewable":3895,"import_bal":-81,"consumption":4324},{"date":"2023-12","total_gen":4287,"renewable":3484,"import_bal":775,"consumption":4718},{"date":"2024-01","total_gen":4968,"renewable":3994,"import_bal":247,"consumption":4904},{"date":"2024-02","total_gen":4575,"renewable":3819,"import_bal":100,"consumption":4271},{"date":"2024-03","total_gen":5508,"renewable":4672,"import_bal":-507,"consumption":4524},{"date":"2024-04","total_gen":4343,"renewable":3804,"import_bal":27,"consumption":3946},{"date":"2024-05","total_gen":3382,"renewable":2889,"import_bal":1137,"consumption":4072},{"date":"2024-06","total_gen":2715,"renewable":2274,"import_bal":1570,"consumption":3939},{"date":"2024-07","total_gen":2995,"renewable":2311,"import_bal":1674,"consumption":4314},{"date":"2024-08","total_gen":2971,"renewable":2294,"import_bal":1495,"consumption":4117},{"date":"2024-09","total_gen":3032,"renewable":2284,"import_bal":1438,"consumption":4076},{"date":"2024-10","total_gen":3791,"renewable":2984,"import_bal":984,"consumption":4327},{"date":"2024-11","total_gen":3839,"renewable":2939,"import_bal":804,"consumption":4256},{"date":"2024-12","total_gen":3569,"renewable":2491,"import_bal":1498,"consumption":4659},{"date":"2025-01","total_gen":4846,"renewable":3872,"import_bal":531,"consumption":5015},{"date":"2025-02","total_gen":4311,"renewable":3503,"import_bal":383,"consumption":4411},{"date":"2025-03","total_gen":4975,"renewable":4190,"import_bal":156,"consumption":4660},{"date":"2025-04","total_gen":4367,"renewable":3636,"import_bal":82,"consumption":3989},{"date":"2025-05","total_gen":4199,"renewable":3184,"import_bal":269,"consumption":4068},{"date":"2025-06","total_gen":3387,"renewable":2302,"import_bal":1186,"consumption":4110},{"date":"2025-07","total_gen":3583,"renewable":2455,"import_bal":1342,"consumption":4482},{"date":"2025-08","total_gen":3485,"renewable":2360,"import_bal":1245,"consumption":4254},{"date":"2025-09","total_gen":3611,"renewable":2429,"import_bal":1109,"consumption":4164},{"date":"2025-10","total_gen":3404,"renewable":2240,"import_bal":1430,"consumption":4379},{"date":"2025-11","total_gen":4123,"renewable":3044,"import_bal":822,"consumption":4529},{"date":"2025-12","total_gen":4592,"renewable":3686,"import_bal":736,"consumption":4985},{"date":"2026-01","total_gen":5465,"renewable":4402,"import_bal":307,"consumption":5405},{"date":"2026-02","total_gen":5131,"renewable":3952,"import_bal":-250,"consumption":4585},{"date":"2026-03","total_gen":4662,"renewable":3609,"import_bal":436,"consumption":4630},{"date":"2026-04","total_gen":3550,"renewable":2513,"import_bal":1070,"consumption":4086},{"date":"2026-05","total_gen":3651,"renewable":2655,"import_bal":1223,"consumption":4225}];
+    const REN_RENOVAVEIS_LAST_DATA = {"date":"2026-05","hydro":877,"wind":831,"solar":726,"biomass":221};
+    const REN_PRECO_HIST_DATA = [{"date":"2021-01","value":60.69},{"date":"2021-02","value":28.19},{"date":"2021-03","value":45.39},{"date":"2021-04","value":64.93},{"date":"2021-05","value":67.12},{"date":"2021-06","value":83.29},{"date":"2021-07","value":92.6},{"date":"2021-08","value":105.99},{"date":"2021-09","value":156.53},{"date":"2021-10","value":199.92},{"date":"2021-11","value":193.5},{"date":"2021-12","value":239.27},{"date":"2022-01","value":201.89},{"date":"2022-02","value":200.72},{"date":"2022-03","value":283.29},{"date":"2022-04","value":192.01},{"date":"2022-05","value":187.15},{"date":"2022-06","value":169.82},{"date":"2022-07","value":143.8},{"date":"2022-08","value":157.27},{"date":"2022-09","value":141.25},{"date":"2022-10","value":127.22},{"date":"2022-11","value":115.38},{"date":"2022-12","value":96.55},{"date":"2023-01","value":69.35},{"date":"2023-02","value":134.23},{"date":"2023-03","value":90.05},{"date":"2023-04","value":76.96},{"date":"2023-05","value":76.09},{"date":"2023-06","value":95.59},{"date":"2023-07","value":93.8},{"date":"2023-08","value":97.86},{"date":"2023-09","value":104.15},{"date":"2023-10","value":89.74},{"date":"2023-11","value":63.26},{"date":"2023-12","value":72.2},{"date":"2024-01","value":74.08},{"date":"2024-02","value":39.86},{"date":"2024-03","value":19.28},{"date":"2024-04","value":13.23},{"date":"2024-05","value":30.74},{"date":"2024-06","value":58.11},{"date":"2024-07","value":74.12},{"date":"2024-08","value":91.11},{"date":"2024-09","value":73.63},{"date":"2024-10","value":69.42},{"date":"2024-11","value":104.6},{"date":"2024-12","value":111.54},{"date":"2025-01","value":96.73},{"date":"2025-02","value":108.22},{"date":"2025-03","value":52.6},{"date":"2025-04","value":25.91},{"date":"2025-05","value":25.79},{"date":"2025-06","value":74.17},{"date":"2025-07","value":70.1},{"date":"2025-08","value":68.68},{"date":"2025-09","value":61.19},{"date":"2025-10","value":76.47},{"date":"2025-11","value":59.09},{"date":"2025-12","value":77.91},{"date":"2026-01","value":71.19},{"date":"2026-02","value":10.64},{"date":"2026-03","value":40.86},{"date":"2026-04","value":42.42},{"date":"2026-05","value":54.08},{"date":"2026-06","value":62.72}];
+    /* REN_DATA_END */
+  </script>
+  <style>
+    :root {
+      --bg:#f0f2f5; --card:#fff; --border:#e4e7ec;
+      --text:#111827; --muted:#6b7280; --muted2:#9ca3af;
+      --accent:#111827; --green:#059669; --red:#dc2626;
+      --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+
+    /* HEADER */
+    header{background:var(--card);border-bottom:1px solid var(--border);padding:20px 32px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+    .header-left{}
+    .header-title{font-size:1.55rem;font-weight:900;letter-spacing:.03em;text-transform:uppercase;color:var(--text);line-height:1.1}
+    .header-subtitle{font-size:.72rem;color:var(--muted);margin-top:4px;letter-spacing:.01em}
+    .header-meta{text-align:right;font-size:.68rem;color:var(--muted);line-height:1.7}
+    .header-meta strong{color:var(--text);font-weight:600}
+    #last-update{color:var(--muted2)}
+
+    /* CONTENT */
+    main{max-width:1440px;margin:0 auto;padding:24px 28px}
+    section{margin-bottom:30px}
+
+    /* SECTION HEAD */
+    .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    h2{font-size:.95rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--text)}
+    h2 span{font-weight:400;color:var(--muted)}
+
+    /* FILTER BUTTONS */
+    .filter-group{display:flex;gap:3px;background:#e9ebee;border-radius:8px;padding:3px}
+    .filter-btn{font-size:.7rem;font-weight:700;padding:4px 13px;border-radius:5px;border:none;background:transparent;color:var(--muted);cursor:pointer;transition:all .15s;letter-spacing:.02em}
+    .filter-btn:hover{color:var(--text)}
+    .filter-btn.active{background:var(--accent);color:#fff;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+
+    /* KPI GRID */
+    .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:11px}
+    .kpi-card{background:var(--card);border-radius:10px;padding:15px 16px 14px;box-shadow:var(--shadow);border:1px solid var(--border);position:relative;overflow:hidden}
+    .kpi-icon{position:absolute;top:13px;right:13px;font-size:1rem;opacity:.35;line-height:1}
+    .kpi-label{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:7px;padding-right:22px}
+    .kpi-value{font-size:1.5rem;font-weight:800;color:var(--text);line-height:1;margin-bottom:4px}
+    .kpi-sub{font-size:.65rem;color:var(--muted2)}
+    .kpi-badge{display:inline-flex;align-items:center;gap:3px;font-size:.62rem;font-weight:700;margin-top:5px}
+    .badge-up{color:var(--green)}
+    .badge-down{color:var(--red)}
+    .badge-warn{color:#d97706}
+    .kpi-loading{color:var(--muted2);font-size:.85rem;animation:pulse 1.4s ease infinite}
+    .kpi-error{color:var(--red);font-size:.72rem}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+    /* CHARTS */
+    .charts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(500px,1fr));gap:14px}
+    @media(max-width:580px){.charts-grid{grid-template-columns:1fr}}
+    .chart-card{background:var(--card);border-radius:10px;padding:18px 20px 14px;box-shadow:var(--shadow);border:1px solid var(--border)}
+    .chart-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:8px}
+    .chart-title{font-size:.78rem;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.05em}
+    .chart-subtitle{font-size:.63rem;color:var(--muted);margin-top:3px}
+    .chart-source{font-size:.58rem;color:var(--muted2);margin-top:5px;text-align:right}
+    .chart-range{font-size:.6rem;color:var(--muted2);margin-top:2px;text-align:right}
+    .chart-wrap{position:relative;height:220px}
+    .chart-loading{display:flex;align-items:center;justify-content:center;height:220px;color:var(--muted2);font-size:.78rem;animation:pulse 1.4s ease infinite}
+    .chart-legend{display:flex;gap:12px;margin-bottom:7px;flex-wrap:wrap}
+    .legend-item{display:flex;align-items:center;gap:4px;font-size:.63rem;color:var(--muted)}
+    .legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+    /* STICKY FILTER BAR */
+    #sticky-filter-bar{position:sticky;top:0;z-index:200;background:var(--bg);padding:8px 0;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
+    #sticky-filter-bar h2{font-size:.95rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--text)}
+
+    /* LEADERBOARD AD */
+    .ad-leaderboard{display:flex;align-items:center;justify-content:center;margin:18px 0;min-height:90px}
+    .ad-leaderboard ins,.ad-leaderboard .ad-placeholder{display:block;width:728px;height:90px;max-width:100%}
+    .ad-placeholder{background:#f8f9fa;border:1px dashed #d1d5db;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:.65rem;letter-spacing:.05em;text-transform:uppercase;font-weight:600}
+    @media(max-width:768px){.ad-leaderboard ins,.ad-leaderboard .ad-placeholder{width:320px;height:50px}}
+
+    /* FOOTER */
+    footer{display:flex;justify-content:space-between;align-items:center;padding:14px 28px;font-size:.64rem;color:var(--muted2);border-top:1px solid var(--border);max-width:1440px;margin:8px auto 0}
+    .note{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 12px;font-size:.72rem;color:#92400e;margin-bottom:14px}
+    .note-static{background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:5px 10px;font-size:.62rem;color:#0369a1;margin-top:4px;margin-bottom:7px}
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="header-title">🇵🇹 Portugal: Painel de Dados Macroeconómicos</div>
+    <div class="header-subtitle">Indicadores macroeconómicos · fontes públicas · actualizado automaticamente</div>
+  </div>
+  <div class="header-meta">
+    <div><strong>BPstat · INE · BCE · Eurostat · DGEG</strong></div>
+    <div id="last-update">A carregar…</div>
+    <div style="margin-top:4px">
+      <button id="btn-refresh" onclick="forceRefresh()" style="font-size:.62rem;padding:2px 9px;border-radius:4px;border:1px solid #e4e7ec;background:#fff;color:#6b7280;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='#111827';this.style.color='#111827'" onmouseout="this.style.borderColor='#e4e7ec';this.style.color='#6b7280'">↺ Forçar actualização</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <div class="note" id="api-note" style="display:none">
+    ⚠️ Alguns dados foram obtidos via estimativa ou dados alternativos. A API pode ter restrições CORS no seu browser.
+  </div>
+
+  <!-- KPIs PRINCIPAIS -->
+  <section>
+    <div class="kpi-grid">
+      <div class="kpi-card" id="kpi-pib">
+        <div class="kpi-icon">📈</div>
+        <div class="kpi-label">PIB Total</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div class="kpi-sub">Preços correntes · soma anual</div>
+      </div>
+      <div class="kpi-card" id="kpi-pib-pc">
+        <div class="kpi-icon">👤</div>
+        <div class="kpi-label">PIB per Capita</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div class="kpi-sub">Estimativa anual</div>
+      </div>
+      <div class="kpi-card" id="kpi-divida-pct">
+        <div class="kpi-icon">📊</div>
+        <div class="kpi-label">Dívida Pública % PIB</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div class="kpi-sub">Critério Maastricht (EDP)</div>
+      </div>
+      <div class="kpi-card" id="kpi-divida-total">
+        <div class="kpi-icon">💳</div>
+        <div class="kpi-label">Dívida Pública Total</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div class="kpi-sub">Estimativa</div>
+      </div>
+      <div class="kpi-card" id="kpi-desemprego">
+        <div class="kpi-icon">👥</div>
+        <div class="kpi-label">Taxa de Desemprego</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div class="kpi-sub">Total HM · trimestral · INE</div>
+      </div>
+      <div class="kpi-card" id="kpi-balanca">
+        <div class="kpi-icon">🌐</div>
+        <div class="kpi-label">Balança Corrente</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div class="kpi-sub">Saldo trimestral (M€)</div>
+      </div>
+      <div class="kpi-card" id="kpi-endiv">
+        <div class="kpi-icon">⬇</div>
+        <div class="kpi-label">Endividamento Part.</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div class="kpi-sub">Famílias · stock mensal</div>
+      </div>
+      <div class="kpi-card" id="kpi-prestacao">
+        <div class="kpi-icon">🏠</div>
+        <div class="kpi-label">Prestação Habitação</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div class="kpi-sub">Mediana · stock empréstimos</div>
+      </div>
+      <div class="kpi-card" id="kpi-saldo">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-label">Saldo Orçamental</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div class="kpi-sub">% PIB · Adm. Públicas</div>
+      </div>
+      <div class="kpi-card" id="kpi-ot10">
+        <div class="kpi-icon">📋</div>
+        <div class="kpi-label">OT 10 Anos</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div class="kpi-sub">Taxa rendibilidade · Portugal</div>
+      </div>
+      <div class="kpi-card" id="kpi-spread">
+        <div class="kpi-icon">⚖️</div>
+        <div class="kpi-label">Spread OT/Bund</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div class="kpi-sub">Risco soberano · pp</div>
+      </div>
+      <div class="kpi-card" id="kpi-renovavel">
+        <div class="kpi-icon">⚡</div>
+        <div class="kpi-label">Energia Renovável</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div class="kpi-sub">% produção elétrica · DGEG</div>
+      </div>
+      <div class="kpi-card" id="kpi-populacao">
+        <div class="kpi-icon">👥</div>
+        <div class="kpi-label">População</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div class="kpi-sub">Residentes · INE</div>
+      </div>
+      <div class="kpi-card" id="kpi-inflacao">
+        <div class="kpi-icon">📉</div>
+        <div class="kpi-label">Inflação IPC</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div class="kpi-sub">Taxa variação anual · INE</div>
+      </div>
+      <div class="kpi-card" id="kpi-inflacao-sub">
+        <div class="kpi-icon">🔬</div>
+        <div class="kpi-label">Inflação Subjacente</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div class="kpi-sub">Excl. energia e alim. não transf.</div>
+      </div>
+      <div class="kpi-card" id="kpi-euribor12m">
+        <div class="kpi-icon">💱</div>
+        <div class="kpi-label">Euribor 12M</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div class="kpi-sub">Taxa mensal · BCE</div>
+      </div>
+      <div class="kpi-card" id="kpi-ren-consumo">
+        <div class="kpi-icon">⚡</div>
+        <div class="kpi-label">Consumo Elétrico</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div class="kpi-sub" id="kpi-ren-consumo-sub">Variação mensal · REN</div>
+      </div>
+      <div class="kpi-card" id="kpi-ren-preco">
+        <div class="kpi-icon">🔌</div>
+        <div class="kpi-label">Preço Mercado Elétrico</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div id="kpi-ren-preco-badge"></div>
+        <div class="kpi-sub" id="kpi-ren-preco-sub">Média mensal PT · REN</div>
+      </div>
+      <div class="kpi-card" id="kpi-pib-est">
+        <div class="kpi-icon">📈</div>
+        <div class="kpi-label">PIB Total — Estimativa</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div class="kpi-sub" id="kpi-pib-est-sub">Extrapolação trimestral · BPstat</div>
+      </div>
+      <div class="kpi-card" id="kpi-pib-pc-est">
+        <div class="kpi-icon">👤</div>
+        <div class="kpi-label">PIB per Capita — Estimativa</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div class="kpi-sub" id="kpi-pib-pc-est-sub">Extrapolação trimestral · BPstat</div>
+      </div>
+      <div class="kpi-card" id="kpi-divida-pct-est">
+        <div class="kpi-icon">📊</div>
+        <div class="kpi-label">Dívida % PIB — Estimativa</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div class="kpi-sub" id="kpi-divida-pct-est-sub">Dívida mensal ÷ PIB extrapolado</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AD: LEADERBOARD 1 — após KPIs -->
+  <div class="ad-leaderboard">
+    <!-- Google AdSense — substituir pelo bloco <ins> quando aprovado -->
+    <!-- <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins> -->
+    <div class="ad-placeholder">Publicidade · 728×90</div>
+  </div>
+
+  <!-- BARRA DE FILTRO STICKY -->
+  <div id="sticky-filter-bar">
+    <h2>Evolução Histórica <span style="font-weight:400;color:var(--muted)">do Desempenho Macroeconómico</span></h2>
+    <div class="filter-group" id="filter-group">
+      <button class="filter-btn" data-years="1">1A</button>
+      <button class="filter-btn" data-years="5">5A</button>
+      <button class="filter-btn" data-years="10">10A</button>
+      <button class="filter-btn" data-years="20">20A</button>
+      <button class="filter-btn active" data-years="max">Máx</button>
+    </div>
+  </div>
+
+  <!-- EVOLUÇÃO HISTÓRICA -->
+  <section>
+    <div class="charts-grid">
+    </div>
+  </section>
+
+  <!-- FINANÇAS PÚBLICAS -->
+  <section>
+    <div class="section-head">
+      <h2>Finanças Públicas <span>· Execução Orçamental</span></h2>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Saldo Orçamental das Adm. Públicas</div>
+            <div class="chart-subtitle">% do PIB · anual · positivo = excedente</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-source">BPstat · Série 12645509</div>
+            <div class="chart-range" id="range-saldo">–</div>
+          </div>
+        </div>
+        <div class="chart-wrap" id="wrap-saldo"><div class="chart-loading">A carregar…</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Saldo Orçamental da Segurança Social</div>
+            <div class="chart-subtitle">% do PIB · anual · positivo = excedente</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-source">BPstat · Série 88895</div>
+            <div class="chart-range" id="range-saldo-estado">–</div>
+          </div>
+        </div>
+        <div class="chart-wrap" id="wrap-saldo-estado"><div class="chart-loading">A carregar…</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Receita e Despesa — Estado e AP Consolidadas</div>
+            <div class="chart-subtitle">M€ · Estado central (linhas sólidas) vs AP consolidadas execução orçamental (linhas tracejadas)</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-source">BPstat · Séries 88873 / 88884</div>
+            <div class="chart-range" id="range-recdep">–</div>
+          </div>
+        </div>
+        <div class="chart-legend" id="legend-recdep">
+          <span class="legend-item"><span class="legend-dot" style="background:#059669"></span>Receita Estado</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#dc2626"></span>Despesa Estado</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#0e7490"></span>Receita AP ··· (exec.)</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#c2410c"></span>Despesa AP ··· (exec.)</span>
+        </div>
+        <div class="note-static">ℹ️ AP inclui Seg. Social + autarquias + admin. regional — por isso a receita/despesa AP é maior e o saldo AP mostra superávit em 2019 e 2023–2024.</div>
+        <div class="chart-wrap" style="height:196px" id="wrap-recdep"><div class="chart-loading">A carregar…</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Execução Orçamental AP — Saldo Mensal Acumulado</div>
+            <div class="chart-subtitle">YTD · M€ · comparação anual (últimos 3 anos)</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-source">BPstat · Série 12560943</div>
+            <div class="chart-range" id="range-execorc">–</div>
+          </div>
+        </div>
+        <div class="chart-legend" id="legend-execorc"></div>
+        <div class="chart-wrap" style="height:240px" id="wrap-execorc"><div class="chart-loading">A carregar…</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DÍVIDA CONSOLIDADA -->
+  <section>
+    <div class="section-head">
+      <h2>Dívida Consolidada <span>· Pública · Empresas · Particulares</span></h2>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card" style="grid-column:1/-1">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Dívida Pública vs PIB Nominal</div>
+            <div class="chart-subtitle">Valor absoluto · M€ · anual · BPstat / INE</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-source">BPstat · BdP</div>
+            <div class="chart-range" id="range-divida-total">–</div>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>PIB Nominal (M€)</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#be123c"></span>Dívida Pública (M€)</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span>Dívida % PIB (eixo direito)</span>
+        </div>
+        <div class="chart-wrap" style="height:240px" id="wrap-divida-total"><div class="chart-loading">A carregar…</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INFLAÇÃO E TAXAS DE JURO -->
+  <section>
+    <div class="section-head">
+      <h2>Inflação e Taxas de Juro <span>· IPC · Euribor</span></h2>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Taxa de Inflação — IPC e Componentes</div>
+            <div class="chart-subtitle">Variação anual · % · INE Portugal</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-source">INE</div>
+            <div class="chart-range" id="range-inflacao">–</div>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>IPC Total</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#be123c"></span>Inflação Subjacente</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#c2410c"></span>Inflação Alimentar</span>
+        </div>
+        <div class="chart-wrap" style="height:240px" id="wrap-inflacao"><div class="chart-loading">A carregar…</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Euribor — 3M, 6M e 12 Meses</div>
+            <div class="chart-subtitle">Taxa mensal · % · BCE</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-source" id="src-euribor">BCE (estimativa)</div>
+            <div class="chart-range" id="range-euribor">–</div>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Euribor 3M</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#c2410c"></span>Euribor 6M</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#6d28d9"></span>Euribor 12M</span>
+        </div>
+        <div class="chart-wrap" style="height:240px" id="wrap-euribor"><div class="chart-loading">A carregar…</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ENERGIA -->
+  <section>
+    <div class="section-head">
+      <h2>Energia <span>· Preços e Mix Renovável</span></h2>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Preço do Petróleo Brent</div>
+            <div class="chart-subtitle">Mercado spot · mensal · €/barril</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-source">BPstat · Série 12645918</div>
+            <div class="chart-range" id="range-brent">–</div>
+          </div>
+        </div>
+        <div class="chart-wrap" id="wrap-brent"><div class="chart-loading">A carregar…</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Mix Energético — % Renovável</div>
+            <div class="chart-subtitle">Produção elétrica · anual · %</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-source">DGEG / REN</div>
+            <div class="chart-range" id="range-renovavel">–</div>
+          </div>
+        </div>
+        <div class="note-static">ℹ️ Dados estáticos DGEG — Portugal tem uma das maiores quotas renováveis da UE.</div>
+        <div class="chart-wrap" style="height:185px" id="wrap-renovavel"><div class="chart-loading">A carregar…</div></div>
+      </div>
+      <div class="chart-card" style="grid-column:1/-1">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Balanço Elétrico Mensal</div>
+            <div class="chart-subtitle">Geração total · Renovável · Saldo importação · Consumo · GWh</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-source">REN DataHub</div>
+            <div class="chart-range" id="range-ren-balanco">–</div>
+          </div>
+        </div>
+        <div class="chart-legend" id="legend-ren-balanco"></div>
+        <div class="chart-wrap" id="wrap-ren-balanco"><div class="chart-loading">A carregar…</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Mix de Geração Renovável</div>
+            <div class="chart-subtitle">Último mês disponível · GWh</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-source">REN DataHub</div>
+            <div class="chart-range" id="range-ren-renovaveis">–</div>
+          </div>
+        </div>
+        <div class="chart-legend" id="legend-ren-renovaveis"></div>
+        <div class="chart-wrap" id="wrap-ren-renovaveis"><div class="chart-loading">A carregar…</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Preço Mensal da Eletricidade — Mercado Grossista</div>
+            <div class="chart-subtitle">Preço médio mensal PT · MIBEL · €/MWh</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-source">REN DataHub</div>
+            <div class="chart-range" id="range-ren-preco-hist">–</div>
+          </div>
+        </div>
+        <div class="chart-wrap" id="wrap-ren-preco-hist"><div class="chart-loading">A carregar…</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTEXTO EUROPEU -->
+  <section>
+    <div class="section-head">
+      <h2>Contexto Europeu <span>· Portugal vs UE</span></h2>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">PIB per Capita — Portugal vs UE</div>
+            <div class="chart-subtitle">Preços correntes · anual · €/habitante</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-source" id="src-pibpc-eu">BPstat / Eurostat</div>
+            <div class="chart-range" id="range-pibpc-eu">–</div>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-dot" style="background:#0056b3"></span>Portugal</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#d97706"></span>UE27 (média)</span>
+        </div>
+        <div class="chart-wrap" style="height:196px" id="wrap-pibpc-eu"><div class="chart-loading">A carregar…</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Spread OT 10 Anos Portugal vs Bund</div>
+            <div class="chart-subtitle">Taxa PT − Taxa DE · mensal · pp (pontos percentuais)</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-source" id="src-spread">BPstat · BCE</div>
+            <div class="chart-range" id="range-spread">–</div>
+          </div>
+        </div>
+        <div class="chart-legend" id="legend-spread">
+          <span class="legend-item"><span class="legend-dot" style="background:#dc2626"></span>OT PT 10A</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#0056b3"></span>Bund DE 10A</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#7c3aed"></span>Spread</span>
+        </div>
+        <div class="chart-wrap" style="height:196px" id="wrap-spread"><div class="chart-loading">A carregar…</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HABITAÇÃO E ENDIVIDAMENTO -->
+  <section>
+    <div class="section-head">
+      <h2>Habitação e Endividamento <span>· Particulares</span></h2>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Prestação Mediana · Habitação</div>
+            <div class="chart-subtitle">Stock de empréstimos · percentil 50 · mensal · €</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-source">BPstat · Série 12710744</div>
+            <div class="chart-range" id="range-prestacao">–</div>
+          </div>
+        </div>
+        <div class="chart-wrap" id="wrap-prestacao"><div class="chart-loading">A carregar…</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Endividamento dos Particulares</div>
+            <div class="chart-src" id="src-endiv">BPstat · Banco de Portugal</div>
+          </div>
+          <div class="chart-range" id="range-endiv" style="text-align:right">–</div>
+        </div>
+        <div class="chart-wrap" id="wrap-endiv"><div class="chart-loading">A carregar…</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AD: LEADERBOARD 2 — a meio da página -->
+  <div class="ad-leaderboard">
+    <!-- <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins> -->
+    <div class="ad-placeholder">Publicidade · 728×90</div>
+  </div>
+
+  <!-- DECOMPOSIÇÃO RECEITAS E DESPESAS AP -->
+  <section>
+    <div class="section-head">
+      <h2>Composição Orçamental AP <span>· Receitas e Despesas por Categoria</span></h2>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Receitas AP — Decomposição</div>
+            <div class="chart-subtitle">Ano mais recente · % do total · AP consolidadas</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-source">BPstat · 12560975 · 79 · 83 · 55 · 71</div>
+            <div class="chart-range" id="range-rec-decomp">–</div>
+          </div>
+        </div>
+        <div class="chart-legend" id="legend-rec-decomp"></div>
+        <div class="chart-wrap" style="height:240px" id="wrap-rec-decomp"><div class="chart-loading">A carregar…</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Despesas AP — Decomposição</div>
+            <div class="chart-subtitle">Ano mais recente · % do total · AP consolidadas</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-source">BPstat · 12560987–92 · 67</div>
+            <div class="chart-range" id="range-desp-decomp">–</div>
+          </div>
+        </div>
+        <div class="chart-legend" id="legend-desp-decomp"></div>
+        <div class="chart-wrap" style="height:240px" id="wrap-desp-decomp"><div class="chart-loading">A carregar…</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SALDOS SECTORIAIS + SENTIMENTO ECONÓMICO -->
+  <section>
+    <div class="section-head">
+      <h2>Saldos Sectoriais e Sentimento <span>· Financiamento · Confiança</span></h2>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Capacidade/Necessidade de Financiamento por Setor</div>
+            <div class="chart-subtitle">Transações acumuladas ano móvel · % do PIB · trimestral · BPstat</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-source">BPstat · 12414395 · 12427901 · 12439580 · 12445096 · 12456320</div>
+            <div class="chart-range" id="range-cap-fin">–</div>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Empresas NF</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#6d28d9"></span>Setor Financeiro</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#c2410c"></span>Admin. Públicas</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#0e7490"></span>Particulares</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#047857"></span>Total Economia</span>
+        </div>
+        <div class="chart-wrap" style="height:280px" id="wrap-cap-fin"><div class="chart-loading">A carregar…</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Índice de Confiança — Consumidores e Setor Empresarial</div>
+            <div class="chart-subtitle">Saldo de respostas · anual · INE Portugal</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-source">INE</div>
+            <div class="chart-range" id="range-confianca">–</div>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-dot" style="background:#0e7490"></span>Consumidores</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#047857"></span>Setor Empresarial</span>
+        </div>
+        <div class="chart-wrap" style="height:280px" id="wrap-confianca"><div class="chart-loading">A carregar…</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AD: LEADERBOARD 3 — antes do rodapé -->
+  <div class="ad-leaderboard" style="margin-top:10px;margin-bottom:0">
+    <!-- <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins> -->
+    <div class="ad-placeholder">Publicidade · 728×90</div>
+  </div>
+
+</main>
+
+<footer>
+  <span>Nota: Este painel é uma compilação de fontes públicas e não constitui uma representação oficial do governo.</span>
+  <span>BPstat · INE · BCE · Eurostat · DGEG/REN</span>
+</footer>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   BPSTAT API CLIENT
+══════════════════════════════════════════════════════════ */
+const API = 'https://bpstat.bportugal.pt/data/v1';
+const PT_POP = 10_749_635;
+
+async function fetchDatasetPage(domainId, datasetId, page = 1) {
+  const url = `${API}/domains/${domainId}/datasets/${datasetId}/?lang=PT&page=${page}`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+async function fetchDatasetPageFiltered(domainId, datasetId, seriesId) {
+  const url = `${API}/domains/${domainId}/datasets/${datasetId}/?lang=PT&series_ids=${seriesId}`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+async function fetchSeriesMeta(seriesId) {
+  const r = await fetch(`${API}/series/?series_ids=${seriesId}&lang=PT`);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return (await r.json())[0];
+}
+
+function extractFromDatasetPage(ds, targetSeriesId) {
+  const series = ds.extension?.series || [];
+  const thisSeries = series.find(s => s.id === targetSeriesId);
+  if (!thisSeries) return null;
+
+  const dimIds   = ds.id;
+  const dimSizes = ds.size;
+  const dims     = ds.dimension;
+  const values   = ds.value;
+  const timeRole = (ds.role?.time || ['reference_date'])[0];
+  const timeIdx  = dimIds.indexOf(timeRole);
+
+  const strides = new Array(dimIds.length);
+  strides[dimIds.length - 1] = 1;
+  for (let i = dimIds.length - 2; i >= 0; i--) {
+    strides[i] = strides[i + 1] * dimSizes[i + 1];
+  }
+
+  const dimCat = {};
+  thisSeries.dimension_category.forEach(dc => {
+    dimCat[String(dc.dimension_id)] = dc.category_id;
+  });
+
+  let base = 0;
+  for (let i = 0; i < dimIds.length; i++) {
+    const dimId = dimIds[i];
+    if (dimId === timeRole) continue;
+    const catId  = dimCat[dimId];
+    const catArr = dims[dimId]?.category?.index || [];
+    const catIdx = catArr.map(String).indexOf(String(catId));
+    if (catIdx >= 0) base += catIdx * strides[i];
+  }
+
+  const dates = dims[timeRole]?.category?.index || [];
+  const timeStride = strides[timeIdx];
+  const result = [];
+  for (let t = 0; t < dates.length; t++) {
+    const key = base + t * timeStride;
+    const v = Array.isArray(values) ? values[key] : values[String(key)];
+    if (v != null) result.push({ date: dates[t], value: v });
+  }
+  return result;
+}
+
+async function getSeriesData(seriesId) {
+  const meta = await fetchSeriesMeta(seriesId);
+  const { dataset_id, domain_ids } = meta;
+  const domainId = domain_ids[0];
+
+  // Fast path: filtered endpoint (single page with only this series)
+  try {
+    const ds = await fetchDatasetPageFiltered(domainId, dataset_id, seriesId);
+    const pts = extractFromDatasetPage(ds, seriesId);
+    if (pts !== null && pts.length > 0) return pts;
+  } catch (e) { /* ignore, fall through to full scan */ }
+
+  // Fallback: scan all pages
+  let page = 1;
+  while (page <= 100) {
+    const ds = await fetchDatasetPage(domainId, dataset_id, page);
+    const pts = extractFromDatasetPage(ds, seriesId);
+    if (pts !== null) return pts;
+    if (!ds.extension?.next_page) break;
+    page++;
+  }
+  throw new Error(`Series ${seriesId} not found`);
+}
+
+/* ══════════════════════════════════════════════════════════
+   INDICATOR LOADERS — EXISTING
+══════════════════════════════════════════════════════════ */
+
+async function loadPIB() {
+  // Série 12518356: PIB anual preços correntes M€
+  // Série 12518283: PIB trimestral preços correntes vcsc M€ (para extrapolar ano corrente)
+  // Estáticos INE: 2024 = 289 400 M€ (provisório), 2025 = 306 700 M€ (estimativa rápida)
+  const PIB_STATIC = { '2024': 289400, '2025': 306700 };
+
+  let pts = [], qpts = [];
+  try {
+    [pts, qpts] = await Promise.all([
+      getSeriesData(12518356),
+      getSeriesData(12518283),
+    ]);
+    pts = pts.map(p => ({ date: p.date.slice(0, 4), value: Math.round(p.value) }));
+  } catch(e) {
+    pts = [];
+    try { qpts = await getSeriesData(12518283); } catch(e2) {}
+  }
+
+  // Suplementa com estáticos para anos ainda não na série anual
+  Object.entries(PIB_STATIC).forEach(([yr, val]) => {
+    if (!pts.find(p => p.date === yr)) pts.push({ date: yr, value: val });
+  });
+  pts.sort((a, b) => a.date.localeCompare(b.date));
+
+  // Extrapolar ano corrente com trimestres vcsc (12518283)
+  if (qpts.length) {
+    const curYear  = String(new Date().getFullYear());
+    const prevYear = String(new Date().getFullYear() - 1);
+    if (!pts.find(p => p.date === curYear)) {
+      const curQ  = qpts.filter(p => p.date.startsWith(curYear));
+      const prevQ = qpts.filter(p => p.date.startsWith(prevYear));
+      // Usar apenas os mesmos trimestres disponíveis no ano corrente
+      const matchKeys = new Set(curQ.map(p => p.date.slice(5)));
+      const curSum     = curQ.reduce((s, p) => s + p.value, 0);
+      const prevMatchSum = prevQ
+        .filter(p => matchKeys.has(p.date.slice(5)))
+        .reduce((s, p) => s + p.value, 0);
+      if (curQ.length >= 1 && prevMatchSum > 0) {
+        const growthRate = curSum / prevMatchSum;
+        const prevAnnual = pts.find(p => p.date === prevYear);
+        if (prevAnnual) {
+          const extrapolated = Math.round(prevAnnual.value * growthRate);
+          pts.push({ date: curYear, value: extrapolated, isExtrapolated: true, nQuarters: curQ.length });
+        }
+      }
+    }
+  }
+
+  return pts.sort((a, b) => a.date.localeCompare(b.date));
+}
+
+function loadDesemprego() {
+  // INE · Inquérito ao Emprego · indOcorrCod=0012136 · Série 2021 (HM, Portugal)
+  // Q1 2011 → Q1 2026, valores trimestrais em %, ordem cronológica
+  const raw = [
+    ['2011-Q1',13.1],['2011-Q2',12.9],['2011-Q3',13.3],['2011-Q4',14.7],
+    ['2012-Q1',15.7],['2012-Q2',15.8],['2012-Q3',16.7],['2012-Q4',17.8],
+    ['2013-Q1',18.5],['2013-Q2',17.5],['2013-Q3',16.5],['2013-Q4',16.1],
+    ['2014-Q1',15.8],['2014-Q2',14.6],['2014-Q3',13.7],['2014-Q4',14.0],
+    ['2015-Q1',14.3],['2015-Q2',12.4],['2015-Q3',12.3],['2015-Q4',12.6],
+    ['2016-Q1',12.9],['2016-Q2',11.2],['2016-Q3',10.9],['2016-Q4',10.8],
+    ['2017-Q1',10.4],['2017-Q2',9.2],['2017-Q3',8.8],['2017-Q4',8.3],
+    ['2018-Q1',8.1],['2018-Q2',7.0],['2018-Q3',6.9],['2018-Q4',6.8],
+    ['2019-Q1',6.9],['2019-Q2',6.4],['2019-Q3',6.3],['2019-Q4',6.8],
+    ['2020-Q1',6.9],['2020-Q2',5.7],['2020-Q3',8.2],['2020-Q4',7.3],
+    ['2021-Q1',7.2],['2021-Q2',6.9],['2021-Q3',6.3],['2021-Q4',6.4],
+    ['2022-Q1',6.0],['2022-Q2',5.9],['2022-Q3',5.9],['2022-Q4',6.7],
+    ['2023-Q1',7.2],['2023-Q2',6.1],['2023-Q3',6.1],['2023-Q4',6.6],
+    ['2024-Q1',6.8],['2024-Q2',6.1],['2024-Q3',6.1],['2024-Q4',6.7],
+    ['2025-Q1',6.6],['2025-Q2',5.9],['2025-Q3',5.8],['2025-Q4',5.8],
+    ['2026-Q1',6.1],
+  ];
+  return raw.map(([date, value]) => ({ date, value }));
+}
+
+async function loadBalanca() {
+  const pts = await getSeriesData(12512877);
+  return pts.map(p => ({ date: p.date.slice(0, 7), value: p.value }));
+}
+
+async function loadPrestacao() {
+  const pts = await getSeriesData(12710744);
+  return pts.map(p => ({ date: p.date.slice(0, 7), value: p.value }));
+}
+
+async function loadEndividamento() {
+  const pts = await getSeriesData(12457924);
+  return pts.map(p => ({ date: p.date.slice(0, 7), value: p.value }));
+}
+
+async function loadDividaPublica() {
+  // Série 12561512: Dívida AP em % do PIB — anual (BPstat, domínio 28)
+  // Série 12561511: Dívida AP valor absoluto (M€) — anual
+  // Série 12561508: Dívida AP stocks mensais consolidados — M€ (para KPI mensal)
+  const [ptsPct, ptsAbs, ptsMensal] = await Promise.all([
+    getSeriesData(12561512),
+    getSeriesData(12561511),
+    getSeriesData(12561508),
+  ]);
+  return {
+    pts:      ptsPct.map(p => ({ date: p.date.slice(0, 4), value: p.value })),
+    ptsAbs:   ptsAbs.map(p => ({ date: p.date.slice(0, 4), value: p.value })),
+    ptsMensal: ptsMensal.map(p => ({ date: p.date.slice(0, 7), value: p.value })),
+    isFallback: false,
+  };
+}
+
+/* ══════════════════════════════════════════════════════════
+   INDICATOR LOADERS — NEW
+══════════════════════════════════════════════════════════ */
+
+async function loadSaldoOrcamental() {
+  // Series 12645509: Saldo AP anual (M€), domain 172
+  const pts = await getSeriesData(12645509);
+  // Dates come as YYYY-MM-DD or YYYY → normalise to YYYY
+  return pts.map(p => ({ date: p.date.slice(0, 4), value: p.value }))
+            .filter((p, i, arr) => arr.findIndex(x => x.date === p.date) === i)
+            .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+async function loadSaldoEstado() {
+  // Série 88895: Saldo da Segurança Social
+  // Pode ser mensal YTD (YYYY-MM) ou anual (YYYY) — tratar ambos
+  const pts = await getSeriesData(88895);
+  // Tenta filtro dezembro (mensal YTD)
+  const decPts = pts.filter(p => p.date.length >= 7 && p.date.slice(5, 7) === '12');
+  const usePts = decPts.length > 0 ? decPts : pts; // fallback: dados já anuais
+  return usePts
+    .map(p => ({ date: p.date.slice(0, 4), value: p.value }))
+    .filter((p, i, arr) => arr.findIndex(x => x.date === p.date) === i)
+    .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+async function loadReceitaDespesa() {
+  // Series 88873 (receita) and 88884 (despesa), monthly YTD cumulative
+  // Filter to December (month 12) = annual total
+  const [recPts, despPts] = await Promise.all([
+    getSeriesData(88873),
+    getSeriesData(88884),
+  ]);
+  const filterDec = pts => pts
+    .filter(p => p.date.slice(5, 7) === '12')
+    .map(p => ({ date: p.date.slice(0, 4), value: p.value }));
+  return { receita: filterDec(recPts), despesa: filterDec(despPts) };
+}
+
+async function loadPetroleoBrent() {
+  // Series 12645918: Brent crude EUR/barrel, monthly
+  const pts = await getSeriesData(12645918);
+  return pts.map(p => ({ date: p.date.slice(0, 7), value: p.value }));
+}
+
+function loadMixEnergetico() {
+  // Static DGEG/REN annual data — % renewable in electricity generation
+  return [
+    {date:'2000',value:41.7},{date:'2001',value:39.0},{date:'2002',value:28.3},
+    {date:'2003',value:33.1},{date:'2004',value:40.7},{date:'2005',value:30.6},
+    {date:'2006',value:38.7},{date:'2007',value:39.6},{date:'2008',value:46.0},
+    {date:'2009',value:45.3},{date:'2010',value:52.1},{date:'2011',value:65.4},
+    {date:'2012',value:63.2},{date:'2013',value:61.7},{date:'2014',value:62.4},
+    {date:'2015',value:47.6},{date:'2016',value:64.7},{date:'2017',value:41.8},
+    {date:'2018',value:52.3},{date:'2019',value:54.7},{date:'2020',value:59.4},
+    {date:'2021',value:58.4},{date:'2022',value:61.0},{date:'2023',value:65.9},
+    {date:'2024',value:74.3},
+  ];
+}
+
+async function loadExecOrcamental() {
+  // Série 12560943: Execução orçamental AP - saldo (mensal YTD acumulado)
+  const pts = await getSeriesData(12560943);
+  // Agrupar por ano → { '2024': { 1: v, 2: v, ..., 12: v }, ... }
+  const byYear = {};
+  pts.forEach(({ date, value }) => {
+    const yr  = date.slice(0, 4);
+    const mo  = parseInt(date.slice(5, 7), 10);
+    if (!byYear[yr]) byYear[yr] = {};
+    byYear[yr][mo] = value;
+  });
+  return byYear;
+}
+
+// EU27 GDP per capita fallback (EUR, current prices, Eurostat nama_10_pc)
+const EU_PIB_PC_FALLBACK = [
+  {date:'2000',value:18800},{date:'2001',value:19700},{date:'2002',value:20400},
+  {date:'2003',value:20700},{date:'2004',value:21900},{date:'2005',value:22900},
+  {date:'2006',value:24300},{date:'2007',value:25800},{date:'2008',value:26500},
+  {date:'2009',value:24600},{date:'2010',value:25500},{date:'2011',value:26800},
+  {date:'2012',value:26700},{date:'2013',value:26500},{date:'2014',value:27200},
+  {date:'2015',value:28600},{date:'2016',value:29200},{date:'2017',value:30600},
+  {date:'2018',value:31800},{date:'2019',value:33300},{date:'2020',value:31100},
+  {date:'2021',value:34000},{date:'2022',value:37300},{date:'2023',value:39200},
+  {date:'2024',value:40700},
+];
+
+async function loadPIBperCapitaEU(ptPibAnnual) {
+  const ptPts = ptPibAnnual.map(p => ({
+    date: p.date,
+    value: Math.round(p.value * 1e6 / PT_POP),
+  }));
+
+  // Try Eurostat live API
+  try {
+    const url = 'https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/nama_10_pc' +
+      '?geo=EU27_2020&unit=CP_EUR_HAB&na_item=B1GQ&format=JSON&startPeriod=2000&lang=pt';
+    const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const json = await r.json();
+
+    // Parse Eurostat SDMX-JSON
+    // dimension.time.category.index can be object {year: pos} or array
+    const rawIdx = json.dimension?.time?.category?.index;
+    let dates;
+    if (Array.isArray(rawIdx)) {
+      dates = rawIdx;
+    } else if (rawIdx && typeof rawIdx === 'object') {
+      dates = Object.entries(rawIdx).sort((a,b) => a[1]-b[1]).map(e => e[0]);
+    } else {
+      dates = [];
+    }
+    const values = json.value || {};
+    const euPts  = [];
+    dates.forEach((d, t) => {
+      const v = Array.isArray(values) ? values[t] : values[String(t)];
+      if (v != null) euPts.push({ date: d, value: Math.round(v) });
+    });
+    if (euPts.length) return { pt: ptPts, eu: euPts, isLive: true };
+  } catch (e) {
+    console.warn('Eurostat PIB per capita fallback:', e.message);
+  }
+  return { pt: ptPts, eu: EU_PIB_PC_FALLBACK, isLive: false };
+}
+
+// DE Bund 10Y fallback: valores mensais reais (BCE) até Jun 2026
+const BUND_MONTHLY_FALLBACK = [
+  // médias anuais expandidas 2000-2022
+  ...(() => {
+    const annual = {
+      '2000':5.27,'2001':4.83,'2002':4.80,'2003':4.07,'2004':4.04,
+      '2005':3.35,'2006':3.76,'2007':4.22,'2008':3.98,'2009':3.22,
+      '2010':2.74,'2011':2.65,'2012':1.50,'2013':1.57,'2014':1.16,
+      '2015':0.50,'2016':0.07,'2017':0.33,'2018':0.40,'2019':-0.25,
+      '2020':-0.53,'2021':-0.37,'2022':1.31,
+    };
+    const pts = [];
+    for (const [yr, v] of Object.entries(annual))
+      for (let m = 1; m <= 12; m++)
+        pts.push({ date: `${yr}-${String(m).padStart(2,'0')}`, value: v });
+    return pts;
+  })(),
+  // mensais reais 2023-2026
+  {date:'2023-01',value:2.27},{date:'2023-02',value:2.65},{date:'2023-03',value:2.47},
+  {date:'2023-04',value:2.40},{date:'2023-05',value:2.41},{date:'2023-06',value:2.50},
+  {date:'2023-07',value:2.56},{date:'2023-08',value:2.64},{date:'2023-09',value:2.87},
+  {date:'2023-10',value:2.97},{date:'2023-11',value:2.72},{date:'2023-12',value:2.27},
+  {date:'2024-01',value:2.25},{date:'2024-02',value:2.38},{date:'2024-03',value:2.31},
+  {date:'2024-04',value:2.50},{date:'2024-05',value:2.61},{date:'2024-06',value:2.50},
+  {date:'2024-07',value:2.45},{date:'2024-08',value:2.25},{date:'2024-09',value:2.15},
+  {date:'2024-10',value:2.27},{date:'2024-11',value:2.37},{date:'2024-12',value:2.25},
+  {date:'2025-01',value:2.56},{date:'2025-02',value:2.48},{date:'2025-03',value:2.81},
+  {date:'2025-04',value:2.60},{date:'2025-05',value:2.64},{date:'2025-06',value:2.59},
+  {date:'2025-07',value:2.68},{date:'2025-08',value:2.35},{date:'2025-09',value:2.18},
+  {date:'2025-10',value:2.37},{date:'2025-11',value:2.43},{date:'2025-12',value:2.39},
+  {date:'2026-01',value:2.51},{date:'2026-02',value:2.62},{date:'2026-03',value:2.84},
+  {date:'2026-04',value:2.55},{date:'2026-05',value:2.59},{date:'2026-06',value:2.63},
+];
+
+async function loadSpreadOT() {
+  // PT OT 10Y daily (series 12099459) → aggregate to monthly average
+  const rawPts = await getSeriesData(12099459);
+  const monthMap = {}, monthCnt = {};
+  rawPts.forEach(({ date, value }) => {
+    const ym = date.slice(0, 7);
+    monthMap[ym] = (monthMap[ym] || 0) + value;
+    monthCnt[ym] = (monthCnt[ym] || 0) + 1;
+  });
+  const ptMonthly = Object.keys(monthMap).sort()
+    .map(ym => ({ date: ym, value: +(monthMap[ym] / monthCnt[ym]).toFixed(3) }));
+
+  // Try ECB API for DE Bund 10Y monthly
+  let deMonthly = null;
+  try {
+    const url = 'https://data-api.ecb.europa.eu/service/data/IRS/M.DE.L.L40.CI.0.EUR.N.Z' +
+      '?format=jsondata&detail=dataonly&startPeriod=1990-01';
+    const r = await fetch(url, { signal: AbortSignal.timeout(10000) });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const json = await r.json();
+    const timeDim = json.structure.dimensions.observation.find(d => d.id === 'TIME_PERIOD');
+    const dates   = timeDim.values.map(v => v.id);
+    const obs     = Object.values(json.dataSets[0].series)[0].observations;
+    const parsed  = dates.map((d, i) => {
+      const v = obs[String(i)];
+      return v ? { date: d, value: v[0] } : null;
+    }).filter(Boolean);
+    if (parsed.length) deMonthly = parsed;
+  } catch (e) {
+    console.warn('ECB Bund API fallback:', e.message);
+  }
+
+  const de = deMonthly || BUND_MONTHLY_FALLBACK;
+
+  // Compute spread on common dates
+  const deMap = {};
+  de.forEach(p => { deMap[p.date] = p.value; });
+  const spreadPts = ptMonthly
+    .filter(p => deMap[p.date] != null)
+    .map(p => ({ date: p.date, value: +(p.value - deMap[p.date]).toFixed(3) }));
+
+  return {
+    pt: ptMonthly,
+    de,
+    spread: spreadPts,
+    isLive: deMonthly !== null,
+  };
+}
+
+/* ══════════════════════════════════════════════════════════
+   INDICATOR LOADERS — DECOMPOSIÇÃO RECEITAS E DESPESAS AP
+══════════════════════════════════════════════════════════ */
+
+async function loadReceitasDecompostas() {
+  // Execução orçamental AP — receitas por categoria (YTD mensal → filtro dezembro = anual)
+  const CFG = [
+    { id: 12560975, label: 'Impostos Diretos' },
+    { id: 12560979, label: 'Impostos Indiretos' },
+    { id: 12560983, label: 'Contribuições e Cotizações' },
+    { id: 12560955, label: 'Outras Receitas Correntes' },
+    { id: 12560971, label: 'Receitas de Capital' },
+  ];
+  const results = await Promise.allSettled(CFG.map(c => getSeriesData(c.id)));
+  return CFG.map((c, i) => ({
+    label: c.label,
+    pts: results[i].status === 'fulfilled'
+      ? results[i].value
+          .filter(p => p.date.slice(5, 7) === '12')
+          .map(p => ({ date: p.date.slice(0, 4), value: p.value }))
+      : [],
+  }));
+}
+
+async function loadDespesasDecompostas() {
+  // Execução orçamental AP — despesas por categoria (YTD mensal → filtro dezembro = anual)
+  const CFG = [
+    { id: 12560988, label: 'Pessoal' },
+    { id: 12560992, label: 'Transferências Correntes' },
+    { id: 12560989, label: 'Bens e Serviços' },
+    { id: 12560990, label: 'Juros e Encargos' },
+    { id: 12560987, label: 'Despesas de Capital' },
+    { id: 12560991, label: 'Subsídios' },
+    { id: 12560967, label: 'Outras' },
+  ];
+  const results = await Promise.allSettled(CFG.map(c => getSeriesData(c.id)));
+  return CFG.map((c, i) => ({
+    label: c.label,
+    pts: results[i].status === 'fulfilled'
+      ? results[i].value
+          .filter(p => p.date.slice(5, 7) === '12')
+          .map(p => ({ date: p.date.slice(0, 4), value: p.value }))
+      : [],
+  }));
+}
+
+/* ══════════════════════════════════════════════════════════
+   INDICATOR LOADERS — SALDOS SECTORIAIS
+══════════════════════════════════════════════════════════ */
+
+async function loadCapacidadeFinanciamento() {
+  // Séries BPstat: capacidade/necessidade de financiamento por setor (% PIB, trimestral)
+  const CFG = [
+    { id: 12414395, label: 'Empresas NF',      colour: 'blue'   },
+    { id: 12427901, label: 'Setor Financeiro',  colour: 'purple' },
+    { id: 12439580, label: 'Admin. Públicas',   colour: 'orange' },
+    { id: 12445096, label: 'Particulares',      colour: 'teal'   },
+    { id: 12456320, label: 'Total Economia',    colour: 'green'  },
+  ];
+  const results = await Promise.allSettled(CFG.map(c => getSeriesData(c.id)));
+  results.forEach((r, i) => {
+    if (r.status === 'rejected') console.error(`CapFin série ${CFG[i].id} falhou:`, r.reason);
+    else console.log(`CapFin série ${CFG[i].id} OK: ${r.value.length} pontos, ex:`, r.value.slice(-2));
+  });
+  return CFG.map((c, i) => ({
+    ...c,
+    pts: results[i].status === 'fulfilled'
+      ? results[i].value.map(p => ({ date: p.date.slice(0, 7), value: p.value }))
+      : [],
+    fill: false,
+  }));
+}
+
+/* ══════════════════════════════════════════════════════════
+   INDICATOR LOADERS — AP CONSOLIDADAS (SEC 2010)
+══════════════════════════════════════════════════════════ */
+
+function loadReceitaDespesaAP() {
+  // Administrações Públicas consolidadas — ótica SEC 2010
+  // Fonte: INE Contas Nacionais / DGO / AMECO · valores em M€
+  // Défice/Superávit: 2019 +0.2%, 2020 -5.8%, 2021 -2.9%, 2022 -0.3%, 2023 +1.2%, 2024 +0.4%
+  const receita = [
+    {date:'2000',value:43000},{date:'2001',value:46000},{date:'2002',value:48000},
+    {date:'2003',value:50000},{date:'2004',value:52000},{date:'2005',value:55000},
+    {date:'2006',value:59000},{date:'2007',value:66000},{date:'2008',value:70000},
+    {date:'2009',value:64000},{date:'2010',value:68000},{date:'2011',value:78000},
+    {date:'2012',value:73000},{date:'2013',value:75000},{date:'2014',value:77000},
+    {date:'2015',value:78000},{date:'2016',value:80000},{date:'2017',value:84000},
+    {date:'2018',value:89000},{date:'2019',value:92000},{date:'2020',value:89000},
+    {date:'2021',value:100000},{date:'2022',value:114000},{date:'2023',value:126000},
+    {date:'2024',value:132000},
+  ];
+  const despesa = [
+    {date:'2000',value:47000},{date:'2001',value:51000},{date:'2002',value:52000},
+    {date:'2003',value:54000},{date:'2004',value:57000},{date:'2005',value:64000},
+    {date:'2006',value:66000},{date:'2007',value:71000},{date:'2008',value:76000},
+    {date:'2009',value:80000},{date:'2010',value:87000},{date:'2011',value:91000},
+    {date:'2012',value:83000},{date:'2013',value:83000},{date:'2014',value:84000},
+    {date:'2015',value:86000},{date:'2016',value:84000},{date:'2017',value:90000},
+    {date:'2018',value:90000},{date:'2019',value:92000},{date:'2020',value:101000},
+    {date:'2021',value:106000},{date:'2022',value:115000},{date:'2023',value:123000},
+    {date:'2024',value:131000},
+  ];
+  return { receita, despesa };
+}
+
+/* ══════════════════════════════════════════════════════════
+   INDICATOR LOADERS — INFLAÇÃO, EURIBOR, CONFIANÇA, DÍVIDA
+══════════════════════════════════════════════════════════ */
+
+function loadInflacao() {
+  // INE Portugal — taxa variação homóloga (%)
+  // Anual (média) até 2021; mensal a partir de 2022 (INE comunicados de imprensa)
+  // 2026: dados até maio (estimativa preliminar INE)
+  const ipc = [
+    // Médias anuais
+    {date:'2006',value:3.1},{date:'2007',value:2.4},{date:'2008',value:2.7},
+    {date:'2009',value:-0.9},{date:'2010',value:1.4},{date:'2011',value:3.6},
+    {date:'2012',value:2.8},{date:'2013',value:0.3},{date:'2014',value:-0.3},
+    {date:'2015',value:0.5},{date:'2016',value:0.6},{date:'2017',value:1.6},
+    {date:'2018',value:1.0},{date:'2019',value:0.3},{date:'2020',value:-0.1},
+    {date:'2021',value:1.3},
+    // Mensal
+    {date:'2022-01',value:3.3},{date:'2022-02',value:4.4},{date:'2022-03',value:5.5},
+    {date:'2022-04',value:7.2},{date:'2022-05',value:8.1},{date:'2022-06',value:9.0},
+    {date:'2022-07',value:9.1},{date:'2022-08',value:9.0},{date:'2022-09',value:9.2},
+    {date:'2022-10',value:10.1},{date:'2022-11',value:9.9},{date:'2022-12',value:9.6},
+    {date:'2023-01',value:9.3},{date:'2023-02',value:9.0},{date:'2023-03',value:7.9},
+    {date:'2023-04',value:6.2},{date:'2023-05',value:4.5},{date:'2023-06',value:3.8},
+    {date:'2023-07',value:3.1},{date:'2023-08',value:3.7},{date:'2023-09',value:3.8},
+    {date:'2023-10',value:3.7},{date:'2023-11',value:2.4},{date:'2023-12',value:2.3},
+    {date:'2024-01',value:2.5},{date:'2024-02',value:2.3},{date:'2024-03',value:2.4},
+    {date:'2024-04',value:2.5},{date:'2024-05',value:2.9},{date:'2024-06',value:3.0},
+    {date:'2024-07',value:2.5},{date:'2024-08',value:1.9},{date:'2024-09',value:2.1},
+    {date:'2024-10',value:2.6},{date:'2024-11',value:2.7},{date:'2024-12',value:3.0},
+    {date:'2025-01',value:2.5},{date:'2025-02',value:2.9},{date:'2025-03',value:1.9},
+    {date:'2025-04',value:2.5},{date:'2025-05',value:2.3},{date:'2025-06',value:2.4},
+    {date:'2025-07',value:2.3},{date:'2025-08',value:2.5},{date:'2025-09',value:2.4},
+    {date:'2025-10',value:2.3},{date:'2025-11',value:2.2},{date:'2025-12',value:2.2},
+    {date:'2026-01',value:1.9},{date:'2026-02',value:2.1},{date:'2026-03',value:2.7},
+    {date:'2026-04',value:3.3},{date:'2026-05',value:3.3},
+  ];
+  const subjacente = [
+    // Médias anuais
+    {date:'2006',value:2.4},{date:'2007',value:2.2},{date:'2008',value:2.7},
+    {date:'2009',value:0.9},{date:'2010',value:0.8},{date:'2011',value:2.1},
+    {date:'2012',value:2.1},{date:'2013',value:0.8},{date:'2014',value:0.1},
+    {date:'2015',value:0.7},{date:'2016',value:0.8},{date:'2017',value:1.5},
+    {date:'2018',value:1.3},{date:'2019',value:0.6},{date:'2020',value:0.3},
+    {date:'2021',value:0.9},
+    // Mensal — excl. energia e alimentos não transformados
+    {date:'2022-01',value:2.0},{date:'2022-02',value:2.8},{date:'2022-03',value:3.5},
+    {date:'2022-04',value:4.5},{date:'2022-05',value:5.0},{date:'2022-06',value:5.5},
+    {date:'2022-07',value:5.5},{date:'2022-08',value:5.3},{date:'2022-09',value:5.5},
+    {date:'2022-10',value:5.9},{date:'2022-11',value:5.8},{date:'2022-12',value:5.5},
+    {date:'2023-01',value:7.8},{date:'2023-02',value:7.6},{date:'2023-03',value:7.5},
+    {date:'2023-04',value:6.5},{date:'2023-05',value:5.8},{date:'2023-06',value:5.5},
+    {date:'2023-07',value:4.7},{date:'2023-08',value:4.7},{date:'2023-09',value:4.4},
+    {date:'2023-10',value:4.0},{date:'2023-11',value:3.5},{date:'2023-12',value:3.0},
+    {date:'2024-01',value:3.2},{date:'2024-02',value:2.8},{date:'2024-03',value:2.7},
+    {date:'2024-04',value:2.6},{date:'2024-05',value:2.5},{date:'2024-06',value:2.4},
+    {date:'2024-07',value:2.3},{date:'2024-08',value:2.1},{date:'2024-09',value:2.2},
+    {date:'2024-10',value:2.4},{date:'2024-11',value:2.5},{date:'2024-12',value:2.6},
+    {date:'2025-01',value:2.4},{date:'2025-02',value:2.3},{date:'2025-03',value:1.9},
+    {date:'2025-04',value:2.3},{date:'2025-05',value:2.3},{date:'2025-06',value:2.4},
+    {date:'2025-07',value:2.3},{date:'2025-08',value:2.5},{date:'2025-09',value:2.0},
+    {date:'2025-10',value:2.1},{date:'2025-11',value:2.2},{date:'2025-12',value:2.1},
+    {date:'2026-01',value:2.1},{date:'2026-02',value:2.0},{date:'2026-03',value:2.0},
+    {date:'2026-04',value:2.2},{date:'2026-05',value:2.2},
+  ];
+  const alimentar = [
+    // Médias anuais
+    {date:'2006',value:2.8},{date:'2007',value:3.4},{date:'2008',value:5.3},
+    {date:'2009',value:-1.0},{date:'2010',value:0.4},{date:'2011',value:3.0},
+    {date:'2012',value:3.2},{date:'2013',value:1.7},{date:'2014',value:-1.3},
+    {date:'2015',value:1.4},{date:'2016',value:0.4},{date:'2017',value:1.9},
+    {date:'2018',value:1.5},{date:'2019',value:1.2},{date:'2020',value:1.0},
+    {date:'2021',value:1.3},
+    // Mensal — alimentos e bebidas não alcoólicas
+    {date:'2022-01',value:4.5},{date:'2022-02',value:6.0},{date:'2022-03',value:7.5},
+    {date:'2022-04',value:9.2},{date:'2022-05',value:10.5},{date:'2022-06',value:11.5},
+    {date:'2022-07',value:12.0},{date:'2022-08',value:13.0},{date:'2022-09',value:13.5},
+    {date:'2022-10',value:14.0},{date:'2022-11',value:13.5},{date:'2022-12',value:13.0},
+    {date:'2023-01',value:17.0},{date:'2023-02',value:16.0},{date:'2023-03',value:15.0},
+    {date:'2023-04',value:13.0},{date:'2023-05',value:10.0},{date:'2023-06',value:8.0},
+    {date:'2023-07',value:7.0},{date:'2023-08',value:9.0},{date:'2023-09',value:9.5},
+    {date:'2023-10',value:10.0},{date:'2023-11',value:9.0},{date:'2023-12',value:7.5},
+    {date:'2024-01',value:4.5},{date:'2024-02',value:4.0},{date:'2024-03',value:3.8},
+    {date:'2024-04',value:3.5},{date:'2024-05',value:3.5},{date:'2024-06',value:3.8},
+    {date:'2024-07',value:3.5},{date:'2024-08',value:2.8},{date:'2024-09',value:3.0},
+    {date:'2024-10',value:3.5},{date:'2024-11',value:4.0},{date:'2024-12',value:4.5},
+    {date:'2025-01',value:3.0},{date:'2025-02',value:3.2},{date:'2025-03',value:3.0},
+    {date:'2025-04',value:3.5},{date:'2025-05',value:4.0},{date:'2025-06',value:4.5},
+    {date:'2025-07',value:5.0},{date:'2025-08',value:5.5},{date:'2025-09',value:5.8},
+    {date:'2025-10',value:6.0},{date:'2025-11',value:5.8},{date:'2025-12',value:5.5},
+    {date:'2026-01',value:4.5},{date:'2026-02',value:4.0},{date:'2026-03',value:3.7},
+    {date:'2026-04',value:4.4},{date:'2026-05',value:4.0},
+  ];
+  return { ipc, subjacente, alimentar };
+}
+
+// Euribor static fallback (médias anuais, %)
+const EURIBOR_FALLBACK = (() => {
+  // Euribor 3M mensal (BCE) — médias mensais até Jun 2026
+  const e3m = [
+    {date:'2000-01',value:3.42},{date:'2000-06',value:4.55},{date:'2000-12',value:4.91},
+    {date:'2001-06',value:4.38},{date:'2001-12',value:3.29},{date:'2002-06',value:3.50},
+    {date:'2002-12',value:2.94},{date:'2003-06',value:2.11},{date:'2003-12',value:2.15},
+    {date:'2004-06',value:2.11},{date:'2004-12',value:2.17},{date:'2005-06',value:2.12},
+    {date:'2005-12',value:2.48},{date:'2006-06',value:3.09},{date:'2006-12',value:3.73},
+    {date:'2007-06',value:4.16},{date:'2007-12',value:4.68},{date:'2008-06',value:4.94},
+    {date:'2008-12',value:2.89},{date:'2009-06',value:1.09},{date:'2009-12',value:0.71},
+    {date:'2010-06',value:0.77},{date:'2010-12',value:1.02},{date:'2011-06',value:1.56},
+    {date:'2011-12',value:1.36},{date:'2012-06',value:0.65},{date:'2012-12',value:0.19},
+    {date:'2013-06',value:0.21},{date:'2013-12',value:0.28},{date:'2014-06',value:0.21},
+    {date:'2014-12',value:0.08},{date:'2015-06',value:-0.01},{date:'2015-12',value:-0.13},
+    {date:'2016-06',value:-0.27},{date:'2016-12',value:-0.32},{date:'2017-06',value:-0.33},
+    {date:'2017-12',value:-0.33},{date:'2018-06',value:-0.32},{date:'2018-12',value:-0.31},
+    {date:'2019-06',value:-0.35},{date:'2019-12',value:-0.40},{date:'2020-06',value:-0.43},
+    {date:'2020-12',value:-0.55},{date:'2021-06',value:-0.55},{date:'2021-12',value:-0.58},
+    {date:'2022-01',value:-0.56},{date:'2022-03',value:-0.52},{date:'2022-06',value:0.24},
+    {date:'2022-09',value:1.32},{date:'2022-12',value:2.11},{date:'2023-01',value:2.60},
+    {date:'2023-03',value:2.93},{date:'2023-06',value:3.55},{date:'2023-09',value:3.97},
+    {date:'2023-12',value:3.91},{date:'2024-01',value:3.87},{date:'2024-03',value:3.94},
+    {date:'2024-06',value:3.71},{date:'2024-09',value:3.50},{date:'2024-12',value:3.09},
+    {date:'2025-01',value:2.87},{date:'2025-02',value:2.71},{date:'2025-03',value:2.52},
+    {date:'2025-04',value:2.40},{date:'2025-05',value:2.26},{date:'2025-06',value:2.17},
+    {date:'2025-07',value:2.07},{date:'2025-08',value:2.07},{date:'2025-09',value:2.00},
+    {date:'2025-10',value:1.96},{date:'2025-11',value:2.15},{date:'2025-12',value:2.21},
+    {date:'2026-01',value:2.19},{date:'2026-02',value:2.17},{date:'2026-03',value:2.30},
+    {date:'2026-04',value:2.35},{date:'2026-05',value:2.32},{date:'2026-06',value:2.15},
+  ];
+  const e6m = [
+    {date:'2000-01',value:3.69},{date:'2000-06',value:4.78},{date:'2000-12',value:5.08},
+    {date:'2001-06',value:4.47},{date:'2001-12',value:3.36},{date:'2002-06',value:3.54},
+    {date:'2002-12',value:3.02},{date:'2003-06',value:2.13},{date:'2003-12',value:2.22},
+    {date:'2004-06',value:2.14},{date:'2004-12',value:2.27},{date:'2005-06',value:2.17},
+    {date:'2005-12',value:2.60},{date:'2006-06',value:3.25},{date:'2006-12',value:3.88},
+    {date:'2007-06',value:4.27},{date:'2007-12',value:4.79},{date:'2008-06',value:5.08},
+    {date:'2008-12',value:3.32},{date:'2009-06',value:1.38},{date:'2009-12',value:0.99},
+    {date:'2010-06',value:1.00},{date:'2010-12',value:1.53},{date:'2011-06',value:1.91},
+    {date:'2011-12',value:1.58},{date:'2012-06',value:0.93},{date:'2012-12',value:0.32},
+    {date:'2013-06',value:0.32},{date:'2013-12',value:0.39},{date:'2014-06',value:0.31},
+    {date:'2014-12',value:0.18},{date:'2015-06',value:0.04},{date:'2015-12',value:-0.04},
+    {date:'2016-06',value:-0.14},{date:'2016-12',value:-0.22},{date:'2017-06',value:-0.15},
+    {date:'2017-12',value:-0.19},{date:'2018-06',value:-0.17},{date:'2018-12',value:-0.24},
+    {date:'2019-06',value:-0.23},{date:'2019-12',value:-0.35},{date:'2020-06',value:-0.30},
+    {date:'2020-12',value:-0.53},{date:'2021-06',value:-0.52},{date:'2021-12',value:-0.55},
+    {date:'2022-01',value:-0.52},{date:'2022-03',value:-0.45},{date:'2022-06',value:0.60},
+    {date:'2022-09',value:1.72},{date:'2022-12',value:2.48},{date:'2023-01',value:2.97},
+    {date:'2023-03',value:3.18},{date:'2023-06',value:3.75},{date:'2023-09',value:4.10},
+    {date:'2023-12',value:3.90},{date:'2024-01',value:3.86},{date:'2024-03',value:3.93},
+    {date:'2024-06',value:3.65},{date:'2024-09',value:3.44},{date:'2024-12',value:3.05},
+    {date:'2025-01',value:2.84},{date:'2025-02',value:2.68},{date:'2025-03',value:2.51},
+    {date:'2025-04',value:2.37},{date:'2025-05',value:2.23},{date:'2025-06',value:2.13},
+    {date:'2025-07',value:2.04},{date:'2025-08',value:2.03},{date:'2025-09',value:1.97},
+    {date:'2025-10',value:1.99},{date:'2025-11',value:2.10},{date:'2025-12',value:2.15},
+    {date:'2026-01',value:2.14},{date:'2026-02',value:2.11},{date:'2026-03',value:2.21},
+    {date:'2026-04',value:2.29},{date:'2026-05',value:2.24},{date:'2026-06',value:2.08},
+  ];
+  const e12m = [
+    {date:'2000-01',value:4.00},{date:'2000-06',value:5.08},{date:'2000-12',value:5.21},
+    {date:'2001-06',value:4.63},{date:'2001-12',value:3.50},{date:'2002-06',value:3.62},
+    {date:'2002-12',value:3.16},{date:'2003-06',value:2.23},{date:'2003-12',value:2.34},
+    {date:'2004-06',value:2.24},{date:'2004-12',value:2.44},{date:'2005-06',value:2.29},
+    {date:'2005-12',value:2.79},{date:'2006-06',value:3.47},{date:'2006-12',value:4.03},
+    {date:'2007-06',value:4.37},{date:'2007-12',value:4.79},{date:'2008-06',value:5.18},
+    {date:'2008-12',value:3.63},{date:'2009-06',value:1.65},{date:'2009-12',value:1.23},
+    {date:'2010-06',value:1.26},{date:'2010-12',value:1.93},{date:'2011-06',value:2.11},
+    {date:'2011-12',value:1.95},{date:'2012-06',value:1.21},{date:'2012-12',value:0.55},
+    {date:'2013-06',value:0.52},{date:'2013-12',value:0.57},{date:'2014-06',value:0.50},
+    {date:'2014-12',value:0.33},{date:'2015-06',value:0.16},{date:'2015-12',value:0.06},
+    {date:'2016-06',value:0.00},{date:'2016-12',value:-0.08},{date:'2017-06',value:-0.11},
+    {date:'2017-12',value:-0.19},{date:'2018-06',value:-0.18},{date:'2018-12',value:-0.31},
+    {date:'2019-06',value:-0.19},{date:'2019-12',value:-0.45},{date:'2020-06',value:-0.28},
+    {date:'2020-12',value:-0.50},{date:'2021-06',value:-0.49},{date:'2021-12',value:-0.50},
+    {date:'2022-01',value:-0.47},{date:'2022-03',value:-0.32},{date:'2022-06',value:0.96},
+    {date:'2022-09',value:2.00},{date:'2022-12',value:2.83},{date:'2023-01',value:3.27},
+    {date:'2023-03',value:3.47},{date:'2023-06',value:4.00},{date:'2023-09',value:4.16},
+    {date:'2023-12',value:3.68},{date:'2024-01',value:3.61},{date:'2024-03',value:3.72},
+    {date:'2024-06',value:3.52},{date:'2024-09',value:3.28},{date:'2024-12',value:2.86},
+    {date:'2025-01',value:2.62},{date:'2025-02',value:2.47},{date:'2025-03',value:2.33},
+    {date:'2025-04',value:2.19},{date:'2025-05',value:2.07},{date:'2025-06',value:1.99},
+    {date:'2025-07',value:1.92},{date:'2025-08',value:1.89},{date:'2025-09',value:1.84},
+    {date:'2025-10',value:1.87},{date:'2025-11',value:1.97},{date:'2025-12',value:2.01},
+    {date:'2026-01',value:1.99},{date:'2026-02',value:1.96},{date:'2026-03',value:2.05},
+    {date:'2026-04',value:2.13},{date:'2026-05',value:2.09},{date:'2026-06',value:1.96},
+  ];
+  return { e3m, e6m, e12m };
+})();
+
+async function loadEuribor() {
+  // Try ECB API for Euribor monthly data
+  async function fetchEcbEuribor(key) {
+    const url = `https://data-api.ecb.europa.eu/service/data/FM/${key}?format=jsondata&detail=dataonly&startPeriod=1999-01`;
+    const r = await fetch(url, { signal: AbortSignal.timeout(10000) });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const json = await r.json();
+    const timeDim = json.structure.dimensions.observation.find(d => d.id === 'TIME_PERIOD');
+    const dates = timeDim.values.map(v => v.id);
+    const obs = Object.values(json.dataSets[0].series)[0].observations;
+    return dates.map((d, i) => {
+      const v = obs[String(i)];
+      return v ? { date: d, value: v[0] } : null;
+    }).filter(Boolean);
+  }
+
+  try {
+    const [e3m, e6m, e12m] = await Promise.all([
+      fetchEcbEuribor('M.U2.EUR.RT0.MM.EURIBOR3MD_.HSTA'),
+      fetchEcbEuribor('M.U2.EUR.RT0.MM.EURIBOR6MD_.HSTA'),
+      fetchEcbEuribor('M.U2.EUR.RT0.MM.EURIBOR1YD_.HSTA'),
+    ]);
+    if (e3m.length && e6m.length && e12m.length) {
+      console.log('Euribor BCE OK:', e3m.slice(-3));
+      return { e3m, e6m, e12m, isLive: true };
+    }
+  } catch (e) {
+    console.warn('ECB Euribor erro:', e.message, e);
+  }
+  console.warn('Euribor: usando dados estáticos de fallback');
+  return { ...EURIBOR_FALLBACK, isLive: false };
+}
+
+function loadConfianca() {
+  // INE — saldo de respostas, médias anuais
+  const consumidores = [
+    {date:'2006',value:-23},{date:'2007',value:-18},{date:'2008',value:-36},
+    {date:'2009',value:-48},{date:'2010',value:-30},{date:'2011',value:-45},
+    {date:'2012',value:-52},{date:'2013',value:-47},{date:'2014',value:-36},
+    {date:'2015',value:-25},{date:'2016',value:-20},{date:'2017',value:-14},
+    {date:'2018',value:-8},{date:'2019',value:-9},{date:'2020',value:-28},
+    {date:'2021',value:-23},{date:'2022',value:-36},{date:'2023',value:-27},
+    {date:'2024',value:-20},{date:'2025',value:-17},
+  ];
+  const empresas = [
+    {date:'2006',value:6},{date:'2007',value:8},{date:'2008',value:-16},
+    {date:'2009',value:-26},{date:'2010',value:-3},{date:'2011',value:-14},
+    {date:'2012',value:-22},{date:'2013',value:-20},{date:'2014',value:-12},
+    {date:'2015',value:-5},{date:'2016',value:-3},{date:'2017',value:5},
+    {date:'2018',value:8},{date:'2019',value:4},{date:'2020',value:-15},
+    {date:'2021',value:4},{date:'2022',value:2},{date:'2023',value:-5},
+    {date:'2024',value:-2},{date:'2025',value:1},
+  ];
+  return { consumidores, empresas };
+}
+
+function loadDividaConsolidada(dividaPublicaPts) {
+  // Dívida Empresas (SNF % PIB) e Dívida Famílias (% PIB) — BdP Relatório Estabilidade Financeira
+  const empresas = [
+    {date:'2010',value:130},{date:'2011',value:133},{date:'2012',value:132},
+    {date:'2013',value:128},{date:'2014',value:120},{date:'2015',value:116},
+    {date:'2016',value:111},{date:'2017',value:103},{date:'2018',value:98},
+    {date:'2019',value:95},{date:'2020',value:101},{date:'2021',value:93},
+    {date:'2022',value:85},{date:'2023',value:82},{date:'2024',value:80},
+  ];
+  const familias = [
+    {date:'2010',value:95},{date:'2011',value:91},{date:'2012',value:85},
+    {date:'2013',value:82},{date:'2014',value:79},{date:'2015',value:77},
+    {date:'2016',value:74},{date:'2017',value:70},{date:'2018',value:67},
+    {date:'2019',value:65},{date:'2020',value:68},{date:'2021',value:63},
+    {date:'2022',value:60},{date:'2023',value:58},{date:'2024',value:56},
+  ];
+  // Only keep public debt years that overlap with the others
+  const publica = (dividaPublicaPts || []).filter(p => parseInt(p.date) >= 2010);
+  return { publica, empresas, familias };
+}
+
+/* ══════════════════════════════════════════════════════════
+   CHART ENGINE
+══════════════════════════════════════════════════════════ */
+
+Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = '#64748b';
+
+const COLORS = {
+  blue:   { line: '#2563eb', fill: 'rgba(37,99,235,.08)' },
+  red:    { line: '#be123c', fill: 'rgba(190,18,60,.07)' },
+  orange: { line: '#c2410c', fill: 'rgba(194,65,12,.08)' },
+  purple: { line: '#6d28d9', fill: 'rgba(109,40,217,.07)' },
+  teal:   { line: '#0e7490', fill: 'rgba(14,116,144,.08)' },
+  green:  { line: '#047857', fill: 'rgba(4,120,87,.08)' },
+};
+
+// Registry: wrapId → { chart, allPts, periodicity, opts } for single-series
+//           wrapId → { chart, seriesList, periodicity, opts } for multi-series
+const REGISTRY = {};
+let activeYears = 'max';
+
+/* ══════════════════════════════════════════════════════════
+   CACHE — localStorage, TTL 24h
+══════════════════════════════════════════════════════════ */
+const CACHE_KEY = 'dashboard_pt_v16';
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 horas
+
+function cacheLoad() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const obj = JSON.parse(raw);
+    if (Date.now() - obj.ts > CACHE_TTL) return null; // expirado
+    return obj;
+  } catch { return null; }
+}
+
+function cacheSave(data) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), ...data }));
+  } catch (e) { console.warn('Cache write failed:', e); }
+}
+
+function cacheInvalidate() {
+  try { localStorage.removeItem(CACHE_KEY); } catch {}
+}
+
+function sliceByYears(pts, years, periodicity) {
+  if (years === 'max' || !pts.length) return pts;
+  const multiplier = { annual: 1, quarterly: 4, monthly: 12, daily: 260 }[periodicity] || 1;
+  return pts.slice(-(years * multiplier));
+}
+
+function tooltipCallbacks(opts) {
+  return {
+    label: ctx => {
+      const v = ctx.raw;
+      if (v == null) return '';
+      const lbl = ctx.dataset.label ? ` ${ctx.dataset.label}: ` : ' ';
+      if (opts.pct)    return `${lbl}${v.toFixed(2)}%`;
+      if (opts.eur)    return `${lbl}${v.toLocaleString('pt-PT')} €`;
+      if (opts.meur)   return `${lbl}${v.toLocaleString('pt-PT')} M€`;
+      if (opts.barrel) return `${lbl}${v.toFixed(1)} €/barril`;
+      return `${lbl}${v.toLocaleString('pt-PT')}`;
+    },
+  };
+}
+
+function yTickCallback(opts) {
+  return v => {
+    if (opts.pct)    return v + '%';
+    if (opts.eur)    return '€' + v.toLocaleString('pt-PT');
+    if (opts.meur)   return v >= 1000 ? (v/1000).toFixed(0)+'k' : v;
+    if (opts.barrel) return v.toFixed(0) + ' €';
+    return v;
+  };
+}
+
+function baseChartOptions(opts) {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    animation: { duration: 250 },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#111827',
+        titleColor: '#9ca3af',
+        bodyColor: '#f9fafb',
+        borderColor: '#374151',
+        borderWidth: 1,
+        padding: 10,
+        cornerRadius: 6,
+        callbacks: tooltipCallbacks(opts),
+      },
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        border: { display: false },
+        ticks: { maxTicksLimit: 10, maxRotation: 0, color: '#9ca3af', font: { size: 10 } },
+      },
+      y: {
+        grid: { color: '#f3f4f6', lineWidth: 1 },
+        border: { display: false, dash: [3, 3] },
+        suggestedMin: opts.suggestedMin,
+        ticks: { callback: yTickCallback(opts), color: '#9ca3af', font: { size: 10 } },
+      },
+    },
+  };
+}
+
+function makeDataset(pts, colour, label, fill = true) {
+  const c = COLORS[colour];
+  const n = pts.length;
+  return {
+    label,
+    data: pts.map(p => p.value),
+    borderColor: c.line,
+    backgroundColor: fill ? c.fill : 'transparent',
+    borderWidth: 2,
+    pointRadius: n > 100 ? 0 : n > 50 ? 1 : 3,
+    pointHoverRadius: 5,
+    tension: .35,
+    fill,
+  };
+}
+
+/* ── Single-series chart ── */
+function initChart(wrapId, allPts, colour, opts, periodicity) {
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  wrap.innerHTML = '<canvas></canvas>';
+  const ctx = wrap.querySelector('canvas');
+
+  const yearsNum = activeYears === 'max' ? 'max' : parseInt(activeYears);
+  const slice = sliceByYears(allPts, yearsNum, periodicity);
+  const ds = makeDataset(slice, colour, '');
+
+  const chart = new Chart(ctx, {
+    type: 'line',
+    data: { labels: slice.map(p => p.date), datasets: [ds] },
+    options: baseChartOptions(opts),
+  });
+  REGISTRY[wrapId] = { chart, allPts, colour, opts, periodicity };
+  updateRangeLabel(wrapId, slice);
+  return chart;
+}
+
+/* ── Multi-series chart ── */
+function initChartMulti(wrapId, seriesList, opts, periodicity) {
+  // seriesList: [{pts, colour, label, fill?}, ...]
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  wrap.innerHTML = '<canvas></canvas>';
+  const ctx = wrap.querySelector('canvas');
+
+  const yearsNum = activeYears === 'max' ? 'max' : parseInt(activeYears);
+  const slices = seriesList.map(s => sliceByYears(s.pts, yearsNum, periodicity));
+  const allDates = [...new Set(slices.flatMap(s => s.map(p => p.date)))].sort();
+
+  const datasets = seriesList.map((s, i) => {
+    const c = COLORS[s.colour];
+    const dateMap = {};
+    slices[i].forEach(p => { dateMap[p.date] = p.value; });
+    const n = slices[i].length;
+    return {
+      label: s.label,
+      data: allDates.map(d => dateMap[d] ?? null),
+      borderColor: s.color || c.line,
+      backgroundColor: s.fill !== false ? c.fill : 'transparent',
+      borderWidth: s.width || 2,
+      borderDash: s.dash ? [6, 3] : [],
+      pointRadius: n > 100 ? 0 : n > 50 ? 1 : 3,
+      pointHoverRadius: 5,
+      tension: .35,
+      fill: s.fill !== false,
+      spanGaps: true,
+    };
+  });
+
+  const options = {
+    ...baseChartOptions(opts),
+    plugins: {
+      ...baseChartOptions(opts).plugins,
+      legend: { display: false },
+    },
+  };
+
+  const chart = new Chart(ctx, {
+    type: 'line',
+    data: { labels: allDates, datasets },
+    options,
+  });
+  REGISTRY[wrapId] = { chart, seriesList, opts, periodicity };
+  updateRangeLabel(wrapId, slices[0]);
+  return chart;
+}
+
+function updateRangeLabel(wrapId, slice) {
+  const rangeId = 'range-' + wrapId.replace('wrap-', '');
+  const el = document.getElementById(rangeId);
+  if (el && slice?.length) {
+    el.textContent = slice[0].date + ' — ' + slice[slice.length - 1].date;
+  }
+}
+
+function applyFilter(years) {
+  activeYears = years;
+  const yearsNum = years === 'max' ? 'max' : parseInt(years);
+
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.years === years);
+  });
+
+  Object.entries(REGISTRY).forEach(([wrapId, reg]) => {
+    if (reg.allPts) {
+      // Single-series
+      const slice = sliceByYears(reg.allPts, yearsNum, reg.periodicity);
+      reg.chart.data.labels = slice.map(p => p.date);
+      reg.chart.data.datasets[0].data = slice.map(p => p.value);
+      const n = slice.length;
+      reg.chart.data.datasets[0].pointRadius = n > 100 ? 0 : n > 50 ? 1 : 3;
+      reg.chart.update();
+      updateRangeLabel(wrapId, slice);
+    } else if (reg.seriesList) {
+      // Multi-series
+      const slices = reg.seriesList.map(s => sliceByYears(s.pts, yearsNum, reg.periodicity));
+      const allDates = [...new Set(slices.flatMap(s => s.map(p => p.date)))].sort();
+      reg.chart.data.labels = allDates;
+      slices.forEach((slice, i) => {
+        const dateMap = {};
+        slice.forEach(p => { dateMap[p.date] = p.value; });
+        reg.chart.data.datasets[i].data = allDates.map(d => dateMap[d] ?? null);
+        const n = slice.length;
+        reg.chart.data.datasets[i].pointRadius = n > 100 ? 0 : n > 50 ? 1 : 3;
+      });
+      reg.chart.update();
+      updateRangeLabel(wrapId, slices[0]);
+    }
+  });
+}
+
+function chartError(wrapId, msg) {
+  const wrap = document.getElementById(wrapId);
+  if (wrap) wrap.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#dc2626;font-size:.8rem">⚠ ${msg}</div>`;
+}
+
+/* ══════════════════════════════════════════════════════════
+   KPI CARDS
+══════════════════════════════════════════════════════════ */
+
+function setKPI(id, value, sub, trendVal, trendUnit, sentiment) {
+  const card = document.getElementById(id);
+  if (!card) return;
+  const vEl = card.querySelector('.kpi-value');
+  vEl.classList.remove('kpi-loading');
+  vEl.textContent = value;
+  if (sub) card.querySelector('.kpi-sub').textContent = sub;
+  if (sentiment === 'good')  card.classList.add('kpi-green');
+  if (sentiment === 'bad')   card.classList.add('kpi-red');
+  if (trendVal != null) {
+    const b = document.createElement('span');
+    const abs = Math.abs(trendVal);
+    const isUp = trendVal > 0;
+    b.className = 'kpi-badge ' + (isUp ? 'badge-up' : trendVal < 0 ? 'badge-down' : 'badge-warn');
+    b.textContent = (isUp ? '▲ +' : '▼ ') + abs.toFixed(1) + (trendUnit || '');
+    card.appendChild(b);
+  }
+}
+
+function setKPIError(id, msg) {
+  const card = document.getElementById(id);
+  if (!card) return;
+  const vEl = card.querySelector('.kpi-value');
+  vEl.classList.remove('kpi-loading');
+  vEl.classList.add('kpi-error');
+  vEl.textContent = 'N/D';
+  card.querySelector('.kpi-sub').textContent = msg;
+}
+
+function fmtMeur(v) {
+  if (v >= 1e6) return (v/1e6).toFixed(2) + ' bi €';
+  if (v >= 1e3) return (v/1e3).toFixed(1) + ' mil M€';
+  return v.toLocaleString('pt-PT') + ' M€';
+}
+
+/* ══════════════════════════════════════════════════════════
+   SEASONAL / YEAR-COMPARISON chart
+══════════════════════════════════════════════════════════ */
+const MONTHS_PT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+// Palette for seasonal charts: oldest → newest
+const SEASONAL_PALETTE = [
+  { line:'#94a3b8', dot:'#94a3b8' },  // muted gray
+  { line:'#60a5fa', dot:'#60a5fa' },  // blue
+  { line:'#f59e0b', dot:'#f59e0b' },  // amber
+  { line:'#10b981', dot:'#10b981' },  // green
+  { line:'#f87171', dot:'#f87171' },  // red
+];
+
+function buildSeasonalDatasets(byYear, numYears) {
+  const allYears = Object.keys(byYear).sort();
+  const visible  = allYears.slice(-numYears);
+  const palStart = Math.max(0, SEASONAL_PALETTE.length - visible.length);
+  return visible.map((yr, i) => {
+    const c = SEASONAL_PALETTE[palStart + i] || SEASONAL_PALETTE[SEASONAL_PALETTE.length - 1];
+    return {
+      label: yr,
+      data:  Array.from({length: 12}, (_, m) => byYear[yr][m + 1] ?? null),
+      borderColor:     c.line,
+      backgroundColor: 'transparent',
+      borderWidth:     i === visible.length - 1 ? 2.5 : 1.5,
+      borderDash:      i === visible.length - 1 ? [] : [],
+      pointRadius:     3,
+      pointHoverRadius: 5,
+      tension:         0.3,
+      spanGaps:        true,
+      fill:            false,
+    };
+  });
+}
+
+function initSeasonalChart(wrapId, byYear, numYears = 3) {
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  wrap.innerHTML = '<canvas></canvas>';
+  const ctx = wrap.querySelector('canvas');
+
+  const datasets = buildSeasonalDatasets(byYear, numYears);
+
+  // Build legend
+  const legendEl = document.getElementById('legend-' + wrapId.replace('wrap-',''));
+  if (legendEl) {
+    legendEl.innerHTML = datasets.map(ds =>
+      `<span class="legend-item"><span class="legend-dot" style="background:${ds.borderColor}"></span>${ds.label}</span>`
+    ).join('');
+  }
+
+  const chart = new Chart(ctx, {
+    type: 'line',
+    data: { labels: MONTHS_PT, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      animation: { duration: 300 },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1e293b',
+          titleColor: '#94a3b8',
+          bodyColor: '#f8fafc',
+          borderColor: '#334155',
+          borderWidth: 1,
+          padding: 10,
+          callbacks: {
+            label: ctx => {
+              const v = ctx.raw;
+              if (v == null) return '';
+              return ` ${ctx.dataset.label}: ${v.toLocaleString('pt-PT')} M€`;
+            },
+          },
+        },
+      },
+      scales: {
+        x: { grid: { display: false } },
+        y: {
+          grid: { color: '#f1f5f9' },
+          ticks: { callback: v => v >= 1000 || v <= -1000 ? (v/1000).toFixed(0)+'k' : v },
+        },
+      },
+    },
+  });
+
+  REGISTRY[wrapId] = { chart, byYear, isSeasonal: true };
+
+  // Update range label with years shown
+  const allYears = Object.keys(byYear).sort();
+  const visible  = allYears.slice(-numYears);
+  const rangeEl  = document.getElementById('range-' + wrapId.replace('wrap-',''));
+  if (rangeEl) rangeEl.textContent = visible[0] + ' — ' + visible[visible.length - 1];
+}
+
+/* ══════════════════════════════════════════════════════════
+   SALDO ORÇAMENTAL chart — special: red below 0, green above
+══════════════════════════════════════════════════════════ */
+function initSaldoChart(wrapId, allPts, pibAnnual) {
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  wrap.innerHTML = '<canvas></canvas>';
+  const ctx = wrap.querySelector('canvas');
+
+  // Compute saldo % PIB — usa último PIB disponível como fallback para anos mais recentes
+  const pibMap = {};
+  pibAnnual.forEach(p => { pibMap[p.date] = p.value; });
+  const latestPib = pibAnnual.length ? pibAnnual[pibAnnual.length - 1].value : null;
+  const saldoPct = allPts
+    .map(p => {
+      const pib = pibMap[p.date] ?? latestPib;
+      if (!pib) return null;
+      const isFallback = !pibMap[p.date];
+      return { date: p.date, value: +(p.value / pib * 100).toFixed(2), isFallback };
+    })
+    .filter(Boolean);
+
+  const yearsNum = activeYears === 'max' ? 'max' : parseInt(activeYears);
+  const slice = sliceByYears(saldoPct, yearsNum, 'annual');
+  const labels = slice.map(p => p.date);
+  const values = slice.map(p => p.value);
+
+  const chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: values.map(v => v >= 0 ? 'rgba(5,150,105,.65)' : 'rgba(220,38,38,.65)'),
+        borderColor:     values.map(v => v >= 0 ? '#059669' : '#dc2626'),
+        borderWidth: 1,
+      }],
+    },
+    options: {
+      ...baseChartOptions({ pct: true }),
+      plugins: {
+        ...baseChartOptions({ pct: true }).plugins,
+        tooltip: {
+          ...baseChartOptions({ pct: true }).plugins.tooltip,
+          callbacks: {
+            label: ctx => {
+              const v = ctx.raw;
+              return v >= 0 ? ` Excedente: +${v.toFixed(2)}%` : ` Défice: ${v.toFixed(2)}%`;
+            },
+          },
+        },
+      },
+    },
+  });
+
+  // Store full computed series for filtering
+  REGISTRY[wrapId] = {
+    chart,
+    _saldoRaw: allPts,
+    _pibMap: pibMap,
+    _saldoPct: saldoPct,
+    allPts: saldoPct, // used by applyFilter for range label
+    isSaldo: true,
+    periodicity: 'annual',
+    opts: { pct: true },
+  };
+  updateRangeLabel(wrapId, slice);
+}
+
+/* ══════════════════════════════════════════════════════════
+   STACKED BAR CHART — decomposição receitas/despesas AP
+══════════════════════════════════════════════════════════ */
+const STACK_PALETTE = [
+  '#2563eb','#16a34a','#dc2626','#9333ea','#ea580c','#0891b2','#ca8a04',
+];
+
+function initPieChart(wrapId, seriesList) {
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  wrap.innerHTML = '<canvas></canvas>';
+  const ctx = wrap.querySelector('canvas');
+
+  // Latest value from each series
+  const labels = seriesList.map(s => s.label);
+  const values = seriesList.map(s => s.pts.length ? s.pts[s.pts.length - 1].value : 0);
+  const latestYear = seriesList.map(s => s.pts.length ? s.pts[s.pts.length - 1].date : '').filter(Boolean).sort().pop() || '–';
+  const total = values.reduce((a, b) => a + b, 0);
+  const colors = STACK_PALETTE.slice(0, seriesList.length);
+
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: colors.map(c => c + 'cc'),
+        borderColor: colors,
+        borderWidth: 2,
+        hoverOffset: 10,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '55%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const v = ctx.raw;
+              const pct = total > 0 ? (v / total * 100).toFixed(1) : 0;
+              return ` ${ctx.label}: €${(v/1000).toFixed(1)}B (${pct}%)`;
+            },
+          },
+        },
+      },
+    },
+  });
+
+  // Legend
+  const legendId = 'legend-' + wrapId.replace('wrap-', '');
+  const legendEl = document.getElementById(legendId);
+  if (legendEl) {
+    legendEl.innerHTML = seriesList.map((s, i) => {
+      const v = values[i];
+      const pct = total > 0 ? (v / total * 100).toFixed(1) : 0;
+      return `<span class="legend-item"><span class="legend-dot" style="background:${colors[i]}"></span>${s.label} <small style="color:#9ca3af">${pct}%</small></span>`;
+    }).join('');
+  }
+
+  // Range label = latest year
+  const rangeEl = document.getElementById('range-' + wrapId.replace('wrap-', ''));
+  if (rangeEl) rangeEl.textContent = latestYear;
+}
+
+function initStackedBarChart(wrapId, seriesList) {
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  wrap.innerHTML = '<canvas></canvas>';
+  const ctx = wrap.querySelector('canvas');
+
+  const yearsNum = activeYears === 'max' ? 'max' : parseInt(activeYears);
+
+  // Build common date axis from all series
+  const slices = seriesList.map(s => sliceByYears(s.pts, yearsNum, 'annual'));
+  const allDates = [...new Set(slices.flatMap(s => s.map(p => p.date)))].sort();
+
+  const datasets = seriesList.map((s, i) => {
+    const dateMap = {};
+    slices[i].forEach(p => { dateMap[p.date] = p.value; });
+    return {
+      label: s.label,
+      data: allDates.map(d => dateMap[d] ?? null),
+      backgroundColor: STACK_PALETTE[i % STACK_PALETTE.length] + 'cc',
+      borderColor:     STACK_PALETTE[i % STACK_PALETTE.length],
+      borderWidth: 1,
+      stack: 'stack0',
+    };
+  });
+
+  const chart = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: allDates, datasets },
+    options: {
+      ...baseChartOptions({ meur: true }),
+      scales: {
+        x: { stacked: true, grid: { color: 'rgba(255,255,255,.06)' }, ticks: { color: '#9ca3af', maxTicksLimit: 12 } },
+        y: { stacked: true, grid: { color: 'rgba(255,255,255,.06)' }, ticks: { color: '#9ca3af', callback: v => '€' + (v/1000).toFixed(0) + 'B' } },
+      },
+      plugins: {
+        ...baseChartOptions({ meur: true }).plugins,
+        tooltip: {
+          mode: 'index',
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: €${(ctx.raw/1000).toFixed(1)}B`,
+          },
+        },
+        legend: { display: false },
+      },
+    },
+  });
+
+  // Dynamic legend
+  const legendId = 'legend-' + wrapId.replace('wrap-', '');
+  const legendEl = document.getElementById(legendId);
+  if (legendEl) {
+    legendEl.innerHTML = datasets.map(ds =>
+      `<span class="legend-item"><span class="legend-dot" style="background:${ds.borderColor}"></span>${ds.label}</span>`
+    ).join('');
+  }
+
+  REGISTRY[wrapId] = {
+    chart,
+    seriesList: seriesList.map((s, i) => ({ ...s, pts: s.pts })),
+    isStacked: true,
+    periodicity: 'annual',
+    opts: { meur: true },
+  };
+  updateRangeLabel(wrapId, slices[0]);
+}
+
+/* Override applyFilter for the saldo bar chart */
+const _origApplyFilter = applyFilter;
+function applyFilterExtended(years) {
+  activeYears = years;
+  const yearsNum = years === 'max' ? 'max' : parseInt(years);
+
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.years === years);
+  });
+
+  Object.entries(REGISTRY).forEach(([wrapId, reg]) => {
+    if (reg.isSaldo) {
+      const slice = sliceByYears(reg._saldoPct, yearsNum, 'annual');
+      const values = slice.map(p => p.value);
+      reg.chart.data.labels = slice.map(p => p.date);
+      reg.chart.data.datasets[0].data = values;
+      reg.chart.data.datasets[0].backgroundColor = values.map(v => v >= 0 ? 'rgba(5,150,105,.65)' : 'rgba(220,38,38,.65)');
+      reg.chart.data.datasets[0].borderColor = values.map(v => v >= 0 ? '#059669' : '#dc2626');
+      reg.chart.update();
+      updateRangeLabel(wrapId, slice);
+    } else if (reg.allPts && !reg.seriesList) {
+      const slice = sliceByYears(reg.allPts, yearsNum, reg.periodicity);
+      reg.chart.data.labels = slice.map(p => p.date);
+      reg.chart.data.datasets[0].data = slice.map(p => p.value);
+      const n = slice.length;
+      reg.chart.data.datasets[0].pointRadius = n > 100 ? 0 : n > 50 ? 1 : 3;
+      reg.chart.update();
+      updateRangeLabel(wrapId, slice);
+    } else if (reg.isSeasonal) {
+      const numYrs = years === 'max' ? 5 : Math.min(parseInt(years), 5);
+      const datasets = buildSeasonalDatasets(reg.byYear, numYrs);
+      reg.chart.data.datasets = datasets;
+      reg.chart.update();
+      const legendEl = document.getElementById('legend-' + wrapId.replace('wrap-',''));
+      if (legendEl) {
+        legendEl.innerHTML = datasets.map(ds =>
+          `<span class="legend-item"><span class="legend-dot" style="background:${ds.borderColor}"></span>${ds.label}</span>`
+        ).join('');
+      }
+      const allYears = Object.keys(reg.byYear).sort();
+      const visible  = allYears.slice(-numYrs);
+      const rangeEl  = document.getElementById('range-' + wrapId.replace('wrap-',''));
+      if (rangeEl) rangeEl.textContent = visible[0] + ' — ' + visible[visible.length - 1];
+    } else if (reg.isStacked) {
+      const slices = reg.seriesList.map(s => sliceByYears(s.pts, yearsNum, reg.periodicity));
+      const allDates = [...new Set(slices.flatMap(s => s.map(p => p.date)))].sort();
+      reg.chart.data.labels = allDates;
+      slices.forEach((slice, i) => {
+        const dateMap = {};
+        slice.forEach(p => { dateMap[p.date] = p.value; });
+        reg.chart.data.datasets[i].data = allDates.map(d => dateMap[d] ?? null);
+      });
+      reg.chart.update();
+      updateRangeLabel(wrapId, slices[0]);
+    } else if (reg.seriesList) {
+      const slices = reg.seriesList.map(s => sliceByYears(s.pts, yearsNum, reg.periodicity));
+      const allDates = [...new Set(slices.flatMap(s => s.map(p => p.date)))].sort();
+      reg.chart.data.labels = allDates;
+      slices.forEach((slice, i) => {
+        const dateMap = {};
+        slice.forEach(p => { dateMap[p.date] = p.value; });
+        reg.chart.data.datasets[i].data = allDates.map(d => dateMap[d] ?? null);
+        const n = slice.length;
+        reg.chart.data.datasets[i].pointRadius = n > 100 ? 0 : n > 50 ? 1 : 3;
+      });
+      reg.chart.update();
+      updateRangeLabel(wrapId, slices[0]);
+    }
+  });
+}
+
+// Wire up filter buttons using the extended version
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => applyFilterExtended(btn.dataset.years));
+});
+
+/* ══════════════════════════════════════════════════════════
+   MAIN
+══════════════════════════════════════════════════════════ */
+
+/* ── REN: BALANÇO ELÉTRICO MENSAL HISTÓRICO ── */
+async function loadRenBalancoHist() {
+  if (REN_BALANCO_HIST_DATA) return REN_BALANCO_HIST_DATA;
+  const res = await fetch('/ren-balanco-historico.json');
+  if (!res.ok) throw new Error('ren-balanco-historico.json não encontrado');
+  return await res.json();
+}
+
+/* ── REN: MIX RENOVÁVEL ÚLTIMO MÊS ── */
+async function loadRenRenovaveisLast() {
+  if (REN_RENOVAVEIS_LAST_DATA) return REN_RENOVAVEIS_LAST_DATA;
+  const res = await fetch('/ren-renovaveis-last.json');
+  if (!res.ok) throw new Error('ren-renovaveis-last.json não encontrado');
+  return await res.json();
+}
+
+/* ── REN: HISTÓRICO PREÇO ELÉTRICO MENSAL ── */
+async function loadRenPrecoHistorico() {
+  if (REN_PRECO_HIST_DATA) return REN_PRECO_HIST_DATA;
+  const res = await fetch('/ren-preco-historico.json');
+  if (!res.ok) throw new Error('Sem dados históricos REN');
+  return await res.json();
+}
+
+/* ── REN: VARIAÇÃO CONSUMO ELÉTRICO ANUAL ── */
+async function loadRenConsumo() {
+  let data = REN_CONSUMO_DATA;
+  if (!data) {
+    const res = await fetch('/ren-consumo.json');
+    if (!res.ok) throw new Error('Sem dados REN consumo');
+    data = await res.json();
+  }
+  if (!Array.isArray(data) || !data.length) throw new Error('REN consumo vazio');
+  const valid = data.filter(d => d.consumption > 0);
+  const last = valid[valid.length - 1];
+  return { month: last.type, monthEvol: last.monthEvol, yearEvol: last.yearEvol, consumption: last.consumption };
+}
+
+/* ── REN: PREÇO MERCADO ELÉTRICO MENSAL ── */
+async function loadRenPreco() {
+  let data = REN_PRECO_DATA;
+  if (!data) {
+    const res = await fetch('/ren-preco.json');
+    if (!res.ok) throw new Error('Sem dados REN preço');
+    data = await res.json();
+  }
+  const key = Object.keys(data)[0];
+  if (!key) throw new Error('REN preço sem chave');
+  const pt = data[key]?.PT;
+  if (!pt) throw new Error('REN preço sem dados PT');
+  return { month: key, year: new Date().getFullYear(), avgPrice: pt['Average Price'], onPeak: pt['On Peak'], offPeak: pt['Off-Peak'] };
+}
+
+async function fetchAllData() {
+  // Phase 1: PIB (needed by saldo % PIB e PIB per capita UE)
+  let pibAnnual = [];
+  let pibOk = false;
+  try { pibAnnual = await loadPIB(); pibOk = true; }
+  catch (e) { console.error('PIB load failed:', e); }
+
+  // Phase 2: tudo em paralelo
+  const [
+    desempR, balancaR, prestacaoR, endivR, dividaR,
+    saldoR, saldoEstadoR, recDepR, brentR, pibEuR, spreadR, execOrcR,
+    euriborR, capFinR, recDecompR, despDecompR,
+    renConsumoR, renPrecoR, renPrecoHistR, renBalancoHistR, renRenovaveisR,
+  ] = await Promise.allSettled([
+    loadDesemprego(), loadBalanca(), loadPrestacao(),
+    loadEndividamento(), loadDividaPublica(),
+    loadSaldoOrcamental(), loadSaldoEstado(), loadReceitaDespesa(), loadPetroleoBrent(),
+    loadPIBperCapitaEU(pibAnnual), loadSpreadOT(), loadExecOrcamental(),
+    loadEuribor(), loadCapacidadeFinanciamento(),
+    loadReceitasDecompostas(), loadDespesasDecompostas(),
+    loadRenConsumo(), loadRenPreco(), loadRenPrecoHistorico(),
+    loadRenBalancoHist(), loadRenRenovaveisLast(),
+  ]);
+
+  // Static / synchronous loaders
+  const inflacaoData   = loadInflacao();
+  const confiancaData  = loadConfianca();
+
+  return {
+    pibAnnual, pibOk,
+    desempR, balancaR, prestacaoR, endivR, dividaR,
+    saldoR, saldoEstadoR, recDepR, brentR, pibEuR, spreadR, execOrcR,
+    euriborR, capFinR, recDecompR, despDecompR,
+    renConsumoR, renPrecoR, renPrecoHistR, renBalancoHistR, renRenovaveisR,
+    inflacaoData, confiancaData,
+  };
+}
+
+function renderDashboard(data, fromCache) {
+  const {
+    pibAnnual, pibOk,
+    desempR, balancaR, prestacaoR, endivR, dividaR,
+    saldoR, recDepR, brentR, pibEuR, spreadR, execOrcR,
+    euriborR, capFinR, recDecompR, despDecompR,
+    saldoEstadoR, inflacaoData, confiancaData,
+    renConsumoR, renPrecoR, renPrecoHistR, renBalancoHistR, renRenovaveisR,
+  } = data;
+
+  // Mix energético é sempre síncrono/estático
+  const mixEnergetico = loadMixEnergetico();
+
+  const cacheObj = fromCache ? cacheLoad() : null;
+  const fetchTime = cacheObj ? new Date(cacheObj.ts) : new Date();
+  const timeStr = fetchTime.toLocaleString('pt-PT', { dateStyle: 'short', timeStyle: 'short' });
+  document.getElementById('last-update').textContent =
+    fromCache ? `Cache: ${timeStr} (dados de hoje)` : `API: ${timeStr}`;
+
+  let hasError = false;
+
+  /* ── PIB ── */
+  if (pibOk && pibAnnual.length) {
+    // KPI: usar último ano oficial (não extrapolado)
+    const officialPts = pibAnnual.filter(p => !p.isExtrapolated);
+    const lat  = officialPts.length ? officialPts[officialPts.length - 1] : pibAnnual[pibAnnual.length - 1];
+    const prev = officialPts.length >= 2 ? officialPts[officialPts.length - 2] : null;
+    const pcEur = Math.round(lat.value * 1e6 / PT_POP);
+    setKPI('kpi-pib', fmtMeur(lat.value),
+      `Ano ${lat.date} · ${lat.value.toLocaleString('pt-PT')} M€`,
+      prev ? (lat.value - prev.value)/prev.value*100 : null, '%');
+    setKPI('kpi-pib-pc', pcEur.toLocaleString('pt-PT') + ' €',
+      `Ano ${lat.date} · pop. ${(PT_POP/1e6).toFixed(2)}M`, null);
+    initChart('wrap-pib', pibAnnual, 'blue', { meur: true }, 'annual');
+
+    // Cards estimativa ano corrente (ponto extrapolado)
+    const estPt = pibAnnual.find(p => p.isExtrapolated);
+    if (estPt) {
+      const nQ = estPt.nQuarters ?? 1;
+      const subEst = `Estimativa ${estPt.date} · ${nQ}T extrapolados · BPstat`;
+      setKPI('kpi-pib-est', fmtMeur(estPt.value), subEst,
+        (estPt.value - lat.value) / lat.value * 100, '%');
+      const pcEst = Math.round(estPt.value * 1e6 / PT_POP);
+      setKPI('kpi-pib-pc-est', pcEst.toLocaleString('pt-PT') + ' €', subEst, null);
+      // Dívida % PIB estimativa: último valor mensal dívida ÷ PIB extrapolado
+      if (dividaR.status === 'fulfilled') {
+        const { ptsMensal } = dividaR.value;
+        if (ptsMensal?.length) {
+          const latDM = ptsMensal[ptsMensal.length - 1];
+          const dividaPctEst = (latDM.value / estPt.value) * 100;
+          setKPI('kpi-divida-pct-est',
+            dividaPctEst.toFixed(1) + '%',
+            `${latDM.date} dívida ÷ PIB ${estPt.date} est.`, null);
+        }
+      }
+    } else {
+      ['kpi-pib-est','kpi-pib-pc-est','kpi-divida-pct-est'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.querySelector('.kpi-value').textContent = 'N/D';
+      });
+    }
+  } else {
+    setKPIError('kpi-pib', 'Erro ao carregar');
+    setKPIError('kpi-pib-pc', 'Dependente do PIB');
+    chartError('wrap-pib', 'Não foi possível carregar os dados');
+    hasError = true;
+  }
+
+  /* ── DESEMPREGO ── */
+  if (desempR.status === 'fulfilled') {
+    const d = desempR.value;
+    if (d.length) {
+      const lat  = d[d.length - 1];
+      const prev = d[d.length - 5];
+      setKPI('kpi-desemprego', lat.value.toFixed(1) + '%', `${lat.date} · trimestral`,
+        prev ? (lat.value - prev.value) : null, 'pp');
+      initChart('wrap-desemprego', d, 'red', { pct: true, suggestedMin: 0 }, 'quarterly');
+    }
+  } else {
+    setKPIError('kpi-desemprego', 'Erro ao carregar');
+    chartError('wrap-desemprego', 'Não foi possível carregar os dados');
+    hasError = true;
+  }
+
+  /* ── BALANÇA CORRENTE ── */
+  if (balancaR.status === 'fulfilled') {
+    const b = balancaR.value;
+    if (b.length) {
+      const lat = b[b.length - 1];
+      setKPI('kpi-balanca', lat.value.toLocaleString('pt-PT') + ' M€', `Saldo ${lat.date} · trimestral`, null);
+      const card = document.getElementById('kpi-balanca');
+      const badge = document.createElement('span');
+      badge.className = 'kpi-badge ' + (lat.value >= 0 ? 'badge-up' : 'badge-down');
+      badge.textContent = lat.value >= 0 ? '▲ Excedente' : '▼ Défice';
+      card.appendChild(badge);
+      initChart('wrap-balanca', b, 'teal', { meur: true }, 'quarterly');
+    }
+  } else {
+    setKPIError('kpi-balanca', 'Erro ao carregar');
+    chartError('wrap-balanca', 'Não foi possível carregar os dados');
+    hasError = true;
+  }
+
+  /* ── PRESTAÇÃO HABITAÇÃO ── */
+  if (prestacaoR.status === 'fulfilled') {
+    const p = prestacaoR.value;
+    if (p.length) {
+      const lat = p[p.length - 1], prev12 = p[p.length - 13];
+      setKPI('kpi-prestacao', lat.value.toLocaleString('pt-PT') + ' €', `Mediana stock · ${lat.date}`,
+        prev12 ? (lat.value - prev12.value) : null, ' €');
+      initChart('wrap-prestacao', p, 'orange', { eur: true }, 'monthly');
+    }
+  } else {
+    setKPIError('kpi-prestacao', 'Erro ao carregar');
+    chartError('wrap-prestacao', 'Não foi possível carregar os dados');
+    hasError = true;
+  }
+
+
+  /* ── ENDIVIDAMENTO ── */
+  if (endivR.status === 'fulfilled') {
+    const e = endivR.value;
+    if (e.length) {
+      const lat = e[e.length - 1];
+      setKPI('kpi-endiv', fmtMeur(lat.value), `Stock ${lat.date} · famílias`,
+        e.length > 1 ? lat.value - e[e.length - 2].value : null, 'M€', 'neutral');
+      initChart('wrap-endiv', e, 'purple', { meur: true }, 'monthly');
+    }
+  } else {
+    setKPIError('kpi-endiv', 'Erro ao carregar');
+    chartError('wrap-endiv', 'Não foi possível carregar os dados');
+    hasError = true;
+  }
+
+  /* ── DÍVIDA PÚBLICA ── */
+  if (dividaR.status === 'fulfilled') {
+    const { pts, ptsMensal, isFallback } = dividaR.value;
+    if (pts?.length) {
+      const lat = pts[pts.length - 1], prev = pts[pts.length - 2];
+      setKPI('kpi-divida-pct', lat.value.toFixed(1) + '%',
+        `${lat.date} · BPstat série 12561512`,
+        prev ? (lat.value - prev.value) : null, 'pp');
+
+      // KPI dívida total: usar série mensal 12561508 se disponível
+      if (ptsMensal?.length) {
+        const latM = ptsMensal[ptsMensal.length - 1];
+        const prevM = ptsMensal[ptsMensal.length - 13]; // mesmo mês ano anterior
+        const diffM = prevM ? latM.value - prevM.value : null;
+        setKPI('kpi-divida-total', fmtMeur(Math.round(latM.value)),
+          `${latM.date} · BPstat série 12561508`, diffM, 'M€');
+      } else if (pibOk && pibAnnual.length) {
+        const pibLat = pibAnnual[pibAnnual.length - 1];
+        setKPI('kpi-divida-total', fmtMeur(Math.round(pibLat.value * lat.value / 100)),
+          `Estimativa ${pibLat.date} (PIB × ${lat.value.toFixed(1)}%)`, null);
+      } else {
+        setKPI('kpi-divida-total', '—', 'N/D', null);
+      }
+      initChart('wrap-divida', pts, 'orange', { pct: true, suggestedMin: 0 }, 'annual');
+    }
+  } else {
+    setKPIError('kpi-divida-pct', 'Erro ao carregar');
+    setKPIError('kpi-divida-total', 'Erro ao carregar');
+    chartError('wrap-divida', 'Não foi possível carregar os dados');
+    hasError = true;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     NEW INDICATORS
+  ══════════════════════════════════════════════════════════ */
+
+  /* ── SALDO ORÇAMENTAL ── */
+  if (saldoR.status === 'fulfilled' && pibOk && pibAnnual.length) {
+    const saldoPts = saldoR.value;
+    if (saldoPts.length) {
+      const pibMap = {};
+      pibAnnual.forEach(p => { pibMap[p.date] = p.value; });
+
+      // Compute latest % PIB
+      const latSaldo  = saldoPts[saldoPts.length - 1];
+      const latPib    = pibMap[latSaldo.date] || (pibAnnual.length ? pibAnnual[pibAnnual.length - 1].value : null);
+      const pct       = latPib ? +(latSaldo.value / latPib * 100).toFixed(2) : null;
+      const pibLabel  = pibMap[latSaldo.date] ? latSaldo.date : `est. c/ PIB ${pibAnnual[pibAnnual.length-1]?.date}`;
+
+      if (pct !== null) {
+        setKPI('kpi-saldo',
+          (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%',
+          `${latSaldo.date} · ${latSaldo.value >= 0 ? 'Excedente' : 'Défice'} ${Math.abs(latSaldo.value).toLocaleString('pt-PT')} M€ · ${pibLabel}`,
+          null, null, pct >= 0 ? 'good' : 'bad');
+      } else {
+        setKPIError('kpi-saldo', 'Sem dados PIB');
+      }
+      initSaldoChart('wrap-saldo', saldoPts, pibAnnual);
+    }
+  } else {
+    setKPIError('kpi-saldo', 'Erro ao carregar');
+    chartError('wrap-saldo', 'Não foi possível carregar os dados');
+    if (saldoR.status === 'rejected') hasError = true;
+  }
+
+  /* ── SALDO ORÇAMENTAL ESTADO CENTRAL (série 88895) ── */
+  if (saldoEstadoR && saldoEstadoR.status === 'fulfilled') {
+    const pts = saldoEstadoR.value;
+    if (pts.length) {
+      initSaldoChart('wrap-saldo-estado', pts, pibAnnual);
+    } else {
+      chartError('wrap-saldo-estado', 'Sem dados disponíveis');
+    }
+  } else {
+    chartError('wrap-saldo-estado', 'Não foi possível carregar os dados');
+    hasError = true;
+  }
+
+  /* ── RECEITA E DESPESA (Estado + AP execução orçamental) ── */
+  // Totais AP calculados somando as séries decompostas já carregadas
+  function sumDecompSeries(decompResult) {
+    if (!decompResult || decompResult.status !== 'fulfilled') return [];
+    const series = decompResult.value;
+    const totMap = {};
+    series.forEach(s => s.pts.forEach(p => { totMap[p.date] = (totMap[p.date] || 0) + p.value; }));
+    return Object.keys(totMap).sort().map(d => ({ date: d, value: totMap[d] }));
+  }
+  const apDespesaLive = sumDecompSeries(despDecompR);
+
+  /* ── RECEITA E DESPESA (wrap-recdep) ── */
+  if (recDepR.status === 'fulfilled') {
+    const { receita, despesa } = recDepR.value;
+    if (receita.length && despesa.length) {
+      initChartMulti('wrap-recdep', [
+        { pts: receita, colour: 'green', label: 'Receita', fill: false },
+        { pts: despesa, colour: 'red',   label: 'Despesa', fill: false },
+      ], { meur: true }, 'annual');
+      const legendEl = document.getElementById('legend-recdep');
+      if (legendEl) legendEl.innerHTML =
+        `<span class="legend-item"><span class="legend-dot" style="background:#047857"></span>Receita</span>` +
+        `<span class="legend-item"><span class="legend-dot" style="background:#be123c"></span>Despesa</span>`;
+    }
+  } else {
+    chartError('wrap-recdep', 'Não foi possível carregar os dados');
+  }
+
+  /* ── EXECUÇÃO ORÇAMENTAL MENSAL (wrap-execorc) ── */
+  if (execOrcR.status === 'fulfilled') {
+    const byYear = execOrcR.value;
+    if (Object.keys(byYear).length) initSeasonalChart('wrap-execorc', byYear, 4);
+  } else {
+    chartError('wrap-execorc', 'Não foi possível carregar os dados');
+  }
+
+  /* ── PETRÓLEO BRENT (wrap-brent) ── */
+  if (brentR.status === 'fulfilled') {
+    const b = brentR.value;
+    if (b.length) initChart('wrap-brent', b, 'orange', { barrel: true }, 'monthly');
+  } else {
+    chartError('wrap-brent', 'Não foi possível carregar os dados');
+  }
+
+  /* ── MIX ENERGÉTICO (wrap-renovavel) + KPI ── */
+  {
+    const mix = mixEnergetico;
+    if (mix.length) {
+      const lat = mix[mix.length - 1], prev = mix[mix.length - 2];
+      setKPI('kpi-renovavel', lat.value.toFixed(1) + '%',
+        `Renováveis na geração · ${lat.date}`,
+        prev ? (lat.value - prev.value) : null, 'pp');
+      initChart('wrap-renovavel', mix, 'green', { pct: true, suggestedMin: 0 }, 'annual');
+    }
+  }
+
+  /* ── PIB PER CAPITA EU (wrap-pibpc-eu) ── */
+  if (pibEuR.status === 'fulfilled') {
+    const { pt, eu } = pibEuR.value;
+    if (pt.length && eu.length) {
+      initChartMulti('wrap-pibpc-eu', [
+        { pts: pt, colour: 'blue', label: 'Portugal', fill: false },
+        { pts: eu, colour: 'teal', label: 'UE27',     fill: false },
+      ], { eur: true }, 'annual');
+      const legendEl = document.getElementById('legend-pibpc-eu');
+      if (legendEl) legendEl.innerHTML =
+        `<span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Portugal</span>` +
+        `<span class="legend-item"><span class="legend-dot" style="background:#0e7490"></span>UE27</span>`;
+    }
+  } else {
+    chartError('wrap-pibpc-eu', 'Não foi possível carregar os dados');
+  }
+
+  /* ── OT 10Y + SPREAD (wrap-spread) + KPIs ── */
+  if (spreadR.status === 'fulfilled') {
+    const { pt, de, spread } = spreadR.value;
+    if (pt.length) {
+      const latPt = pt[pt.length - 1];
+      setKPI('kpi-ot10', latPt.value.toFixed(2) + '%', `OT 10 anos · ${latPt.date}`, null);
+      if (spread.length) {
+        const latSpread = spread[spread.length - 1], prev12 = spread[spread.length - 13];
+        setKPI('kpi-spread', latSpread.value.toFixed(2) + 'pp',
+          `vs Bund alemão · ${latSpread.date}`,
+          prev12 ? (latSpread.value - prev12.value) : null, 'pp');
+      }
+      initChartMulti('wrap-spread', [
+        { pts: pt,     colour: 'orange', label: 'OT PT 10A',  fill: false },
+        { pts: de,     colour: 'blue',   label: 'Bund DE 10A',fill: false, dash: true },
+        { pts: spread, colour: 'red',    label: 'Spread',      fill: false },
+      ], { pct: true }, 'monthly');
+      const legendEl = document.getElementById('legend-spread');
+      if (legendEl) legendEl.innerHTML =
+        `<span class="legend-item"><span class="legend-dot" style="background:#c2410c"></span>OT PT 10A</span>` +
+        `<span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Bund DE 10A</span>` +
+        `<span class="legend-item"><span class="legend-dot" style="background:#be123c"></span>Spread</span>`;
+    }
+  } else {
+    setKPIError('kpi-ot10', 'Erro ao carregar');
+    setKPIError('kpi-spread', 'Erro ao carregar');
+    chartError('wrap-spread', 'Não foi possível carregar os dados');
+  }
+
+  /* ── INFLAÇÃO (wrap-inflacao) + KPIs ── */
+  {
+    const { ipc, subjacente, alimentar } = inflacaoData;
+    if (ipc.length) {
+      const lat = ipc[ipc.length - 1], prev12 = ipc[ipc.length - 13];
+      const latSub = subjacente[subjacente.length - 1];
+      setKPI('kpi-inflacao', lat.value.toFixed(1) + '%', `IPC · ${lat.date}`,
+        prev12 ? (lat.value - prev12.value) : null, 'pp',
+        lat.value > 3 ? 'bad' : null);
+      setKPI('kpi-inflacao-sub', latSub ? latSub.value.toFixed(1) + '%' : '—',
+        `Subjacente · ${latSub?.date || '—'}`, null);
+      initChartMulti('wrap-inflacao', [
+        { pts: ipc,        colour: 'red',    label: 'IPC total',  fill: false },
+        { pts: subjacente, colour: 'orange', label: 'Subjacente', fill: false },
+        { pts: alimentar,  colour: 'purple', label: 'Alimentar',  fill: false },
+      ], { pct: true }, 'monthly');
+      const legendEl = document.getElementById('legend-inflacao');
+      if (legendEl) legendEl.innerHTML =
+        `<span class="legend-item"><span class="legend-dot" style="background:#be123c"></span>IPC total</span>` +
+        `<span class="legend-item"><span class="legend-dot" style="background:#c2410c"></span>Subjacente</span>` +
+        `<span class="legend-item"><span class="legend-dot" style="background:#6d28d9"></span>Alimentar</span>`;
+    }
+  }
+
+  /* ── EURIBOR (wrap-euribor) + KPI ── */
+  if (euriborR.status === 'fulfilled') {
+    const { e3m, e6m, e12m } = euriborR.value;
+    if (e12m.length) {
+      const lat12 = e12m[e12m.length - 1];
+      setKPI('kpi-euribor12m', lat12.value.toFixed(2) + '%', `Euribor 12M · ${lat12.date}`, null);
+      initChartMulti('wrap-euribor', [
+        { pts: e3m,  colour: 'blue',   label: 'Euribor 3M',  fill: false },
+        { pts: e6m,  colour: 'teal',   label: 'Euribor 6M',  fill: false },
+        { pts: e12m, colour: 'orange', label: 'Euribor 12M', fill: false },
+      ], { pct: true }, 'monthly');
+      const legendEl = document.getElementById('legend-euribor');
+      if (legendEl) legendEl.innerHTML =
+        `<span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>3M</span>` +
+        `<span class="legend-item"><span class="legend-dot" style="background:#0e7490"></span>6M</span>` +
+        `<span class="legend-item"><span class="legend-dot" style="background:#c2410c"></span>12M</span>`;
+    }
+  } else {
+    setKPIError('kpi-euribor12m', 'Erro ao carregar');
+    chartError('wrap-euribor', 'Não foi possível carregar os dados');
+  }
+
+  /* ── DÍVIDA PÚBLICA vs PIB NOMINAL (wrap-divida-total) ── */
+  if (dividaR.status === 'fulfilled' && pibOk && pibAnnual.length) {
+    const { pts: dividaPct, ptsAbs: dividaAbsRaw, ptsMensal: dividaMensal } = dividaR.value;
+    // Usar série directa 12561511; fallback: calcular a partir de % PIB
+    const pibMap = {};
+    pibAnnual.forEach(p => { pibMap[p.date] = p.value; });
+    const latestPib = pibAnnual[pibAnnual.length - 1].value;
+    let dividaAbs = (dividaAbsRaw && dividaAbsRaw.length)
+      ? dividaAbsRaw
+      : dividaPct.map(p => ({
+          date: p.date,
+          value: Math.round((pibMap[p.date] ?? latestPib) * p.value / 100),
+        }));
+    // Suplementar anos em falta na série anual com o último mês disponível de cada ano (12561508)
+    if (dividaMensal?.length) {
+      // Agrupar mensais por ano → guardar o último mês de cada ano
+      const lastByYear = {};
+      dividaMensal.forEach(p => {
+        const yr = p.date.slice(0, 4);
+        lastByYear[yr] = p; // sobrescreve → fica o último mês do ano
+      });
+      Object.entries(lastByYear).forEach(([yr, p]) => {
+        if (!dividaAbs.find(a => a.date === yr)) {
+          dividaAbs = [...dividaAbs, { date: yr, value: Math.round(p.value), isLatestMonthly: true }];
+        }
+      });
+      dividaAbs = dividaAbs.sort((a, b) => a.date.localeCompare(b.date));
+    }
+    if (dividaAbs.length) {
+      const wrap = document.getElementById('wrap-divida-total');
+      if (wrap) {
+        wrap.innerHTML = '<canvas></canvas>';
+        const ctx = wrap.querySelector('canvas');
+        const yearsNum = activeYears === 'max' ? 'max' : parseInt(activeYears);
+        const sliceD    = sliceByYears(dividaAbs, yearsNum, 'annual');
+        const sliceP    = sliceByYears(pibAnnual,  yearsNum, 'annual');
+        const slicePct  = sliceByYears(dividaPct,  yearsNum, 'annual');
+        const allDates  = [...new Set([...sliceD.map(p=>p.date), ...sliceP.map(p=>p.date)])].sort();
+        const dmapD = {}, dmapP = {}, dmapPct = {};
+        sliceD.forEach(p   => { dmapD[p.date]   = p.value; });
+        sliceP.forEach(p   => { dmapP[p.date]   = p.value; });
+        slicePct.forEach(p => { dmapPct[p.date] = p.value; });
+        const extrapolatedYears = new Set(
+          pibAnnual.filter(p => p.isExtrapolated).map(p => p.date)
+        );
+        const latestMonthlyYears = new Set(
+          dividaAbs.filter(p => p.isLatestMonthly).map(p => p.date)
+        );
+        const nPts = allDates.length;
+        const chart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: allDates,
+            datasets: [
+              {
+                type: 'bar',
+                label: 'PIB Nominal (M€)',
+                data: allDates.map(d => dmapP[d] ?? null),
+                backgroundColor: allDates.map(d =>
+                  extrapolatedYears.has(d) ? 'rgba(37,99,235,.2)' : 'rgba(37,99,235,.55)'
+                ),
+                borderColor: allDates.map(d =>
+                  extrapolatedYears.has(d) ? '#93c5fd' : '#2563eb'
+                ),
+                borderWidth: 1,
+                yAxisID: 'yLeft',
+                order: 3,
+              },
+              {
+                type: 'line',
+                label: 'Dívida Pública (M€)',
+                data: allDates.map(d => dmapD[d] ?? null),
+                borderColor: '#be123c',
+                backgroundColor: 'transparent',
+                borderWidth: 2.5,
+                pointRadius: nPts > 30 ? 1 : 3,
+                pointHoverRadius: 6,
+                tension: 0.3,
+                fill: false,
+                yAxisID: 'yLeft',
+                order: 1,
+              },
+              {
+                type: 'line',
+                label: 'Dívida % PIB',
+                data: allDates.map(d => dmapPct[d] ?? null),
+                borderColor: '#f59e0b',
+                backgroundColor: 'transparent',
+                borderWidth: 1.5,
+                borderDash: [5, 3],
+                pointRadius: nPts > 30 ? 0 : 2,
+                pointHoverRadius: 5,
+                tension: 0.3,
+                fill: false,
+                yAxisID: 'yRight',
+                order: 2,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            animation: { duration: 250 },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: '#111827',
+                titleColor: '#9ca3af',
+                bodyColor: '#f9fafb',
+                borderColor: '#374151',
+                borderWidth: 1,
+                padding: 10,
+                callbacks: {
+                  label: ctx => {
+                    const v = ctx.raw;
+                    if (v == null) return '';
+                    if (ctx.dataset.yAxisID === 'yRight') return ` ${ctx.dataset.label}: ${v.toFixed(1)}%`;
+                    const fmt = v >= 1000 ? (v/1000).toFixed(1)+' mil M€' : v.toLocaleString('pt-PT')+' M€';
+                    const ext = ctx.dataset.label === 'PIB Nominal (M€)' && extrapolatedYears.has(ctx.label);
+                    const latM = ctx.dataset.label === 'Dívida Pública (M€)' && latestMonthlyYears.has(ctx.label);
+                    const suffix = ext ? ' · estimativa' : latM ? ' · último mês' : '';
+                    return ` ${ctx.dataset.label}: ${fmt}${suffix}`;
+                  },
+                },
+              },
+            },
+            scales: {
+              x: { grid: { display: false }, ticks: { maxTicksLimit: 12, color: '#9ca3af', font: { size: 10 } } },
+              yLeft: {
+                position: 'left',
+                grid: { color: '#f3f4f6' },
+                ticks: { callback: v => v >= 1000 ? (v/1000).toFixed(0)+'k' : v, color: '#9ca3af', font: { size: 10 } },
+              },
+              yRight: {
+                position: 'right',
+                grid: { drawOnChartArea: false },
+                ticks: { callback: v => v + '%', color: '#f59e0b', font: { size: 10 } },
+              },
+            },
+          },
+        });
+        REGISTRY['wrap-divida-total'] = { chart, seriesList: [
+          { pts: pibAnnual, colour: 'blue', label: 'PIB Nominal (M€)',   fill: false },
+          { pts: dividaAbs, colour: 'red',  label: 'Dívida Pública (M€)', fill: false },
+          { pts: dividaPct, colour: 'orange', label: 'Dívida % PIB',      fill: false },
+        ], opts: { meur: true }, periodicity: 'annual' };
+        updateRangeLabel('wrap-divida-total', sliceD);
+      }
+    }
+  } else if (dividaR.status !== 'fulfilled') {
+    chartError('wrap-divida-total', 'Não foi possível carregar os dados');
+  }
+
+  /* �

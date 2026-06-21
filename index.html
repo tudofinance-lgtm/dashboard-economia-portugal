@@ -209,6 +209,18 @@
         <div class="kpi-value kpi-loading">…</div>
         <div class="kpi-sub">Excl. energia e alim. não transf.</div>
       </div>
+      <div class="kpi-card" id="kpi-euribor3m">
+        <div class="kpi-icon">💱</div>
+        <div class="kpi-label">Euribor 3M</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div class="kpi-sub">Taxa mensal · BCE</div>
+      </div>
+      <div class="kpi-card" id="kpi-euribor6m">
+        <div class="kpi-icon">💱</div>
+        <div class="kpi-label">Euribor 6M</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div class="kpi-sub">Taxa mensal · BCE</div>
+      </div>
       <div class="kpi-card" id="kpi-euribor12m">
         <div class="kpi-icon">💱</div>
         <div class="kpi-label">Euribor 12M</div>
@@ -2553,7 +2565,11 @@ function renderDashboard(data, fromCache) {
   if (euriborR.status === 'fulfilled') {
     const { e3m, e6m, e12m } = euriborR.value;
     if (e12m.length) {
+      const lat3  = e3m.length  ? e3m[e3m.length - 1]   : null;
+      const lat6  = e6m.length  ? e6m[e6m.length - 1]   : null;
       const lat12 = e12m[e12m.length - 1];
+      if (lat3)  setKPI('kpi-euribor3m',  lat3.value.toFixed(2)  + '%', `Euribor 3M · ${lat3.date}`,   null);
+      if (lat6)  setKPI('kpi-euribor6m',  lat6.value.toFixed(2)  + '%', `Euribor 6M · ${lat6.date}`,   null);
       setKPI('kpi-euribor12m', lat12.value.toFixed(2) + '%', `Euribor 12M · ${lat12.date}`, null);
       initChartMulti('wrap-euribor', [
         { pts: e3m,  colour: 'blue',   label: 'Euribor 3M',  fill: false },

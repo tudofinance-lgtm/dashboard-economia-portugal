@@ -690,6 +690,21 @@
    BPSTAT API CLIENT
 ══════════════════════════════════════════════════════════ */
 const API = 'https://bpstat.bportugal.pt/data/v1';
+
+/* ── CLOUDFLARE WORKER (opcional) ──────────────────────────
+   Depois de fazer deploy do Worker, substituir null pelo URL:
+   const WORKER_URL = 'https://tudofinance.pt/api/data';
+   Enquanto null, o dashboard continua a chamar as APIs directamente. */
+const WORKER_URL = null;
+let _workerData = null;
+
+async function _getWorkerData() {
+  if (_workerData) return _workerData;
+  const r = await fetch(WORKER_URL, { signal: AbortSignal.timeout(8000) });
+  if (!r.ok) throw new Error(`Worker HTTP ${r.status}`);
+  _workerData = await r.json();
+  return _workerData;
+}
 const PT_POP = 10_749_635;
 
 async function fetchDatasetPage(domainId, datasetId, page = 1) {
@@ -757,6 +772,14 @@ function extractFromDatasetPage(ds, targetSeriesId) {
 }
 
 async function getSeriesData(seriesId) {
+  /* Check Worker cache first — zero extra requests if already fetched */
+  if (WORKER_URL) {
+    try {
+      const wd = await _getWorkerData();
+      const pts = wd?.bpstat?.[String(seriesId)];
+      if (pts && pts.length) return pts;
+    } catch(e) { /* fall through to direct API */ }
+  }
   const meta = await fetchSeriesMeta(seriesId);
   const { dataset_id, domain_ids } = meta;
   const domainId = domain_ids[0];
@@ -856,6 +879,15 @@ async function loadDesemprego() {
     {date:'2025-Q1',value:6.6},{date:'2025-Q2',value:5.9},{date:'2025-Q3',value:5.8},{date:'2025-Q4',value:5.8},
     {date:'2026-Q1',value:6.1},
   ];
+  /* Check Worker first */
+  if (WORKER_URL) {
+    try {
+      const wd = await _getWorkerData();
+      const pts = wd?.eurostat?.unemp;
+      if (pts?.length > 10) return pts;
+    } catch(e) {}
+  }
+
   try {
     const url = 'https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/une_rt_q' +
       '?geo=PT&age=Y15-74&sex=T&unit=PC_ACT&s_adj=NSA&format=JSON&startPeriod=2011-Q1';
@@ -1004,6 +1036,15 @@ async function loadPIBperCapitaEU(ptPibAnnual) {
     value: Math.round(p.value * 1e6 / PT_POP),
   }));
 
+  /* Check Worker first */
+  if (WORKER_URL) {
+    try {
+      const wd = await _getWorkerData();
+      const euPts = wd?.eurostat?.pibEU;
+      if (euPts?.length > 5) return { pt: ptPts, eu: euPts };
+    } catch(e) {}
+  }
+
   // Try Eurostat live API
   try {
     const url = 'https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/nama_10_pc' +
@@ -1081,6 +1122,25 @@ async function loadSpreadOT() {
   });
   const ptMonthly = Object.keys(monthMap).sort()
     .map(ym => ({ date: ym, value: +(monthMap[ym] / monthCnt[ym]).toFixed(3) }));
+
+  /* Check Worker first */
+  if (WORKER_URL) {
+    try {
+      const wd = await _getWorkerData();
+      const bundPts = wd?.ecb?.bund;
+      const otPts = wd?.bpstat?.['12099459'];
+      if (bundPts?.length && otPts?.length) {
+        // compute spread same way as below
+        const bundMap = {};
+        bundPts.forEach(p => { bundMap[p.date] = p.value; });
+        const spread = otPts.map(p => {
+          const b = bundMap[p.date];
+          return b != null ? { date: p.date, value: Math.round((p.value - b) * 100) / 100 } : null;
+        }).filter(Boolean);
+        return { ot: otPts, bund: bundPts, spread };
+      }
+    } catch(e) {}
+  }
 
   // Try ECB API for DE Bund 10Y monthly
   let deMonthly = null;
@@ -1267,6 +1327,21 @@ async function loadInflacao() {
       .filter(p => p.value !== null);
   }
 
+  /* Check Worker first */
+  if (WORKER_URL) {
+    try {
+      const wd = await _getWorkerData();
+      const ec = wd?.ecb;
+      if (ec?.hicp?.length && ec?.hicpCore?.length && ec?.hicpFood?.length) {
+        return {
+          ipc:        [...ipcStatic,       ...ec.hicp],
+          subjacente: [...subjStatic,      ...ec.hicpCore],
+          alimentar:  [...alimentarStatic, ...ec.hicpFood],
+        };
+      }
+    } catch(e) {}
+  }
+
   try {
     const BASE = 'https://data-api.ecb.europa.eu/service/data/ICP/M.PT.N.';
     const SUFFIX = '.4.ANR?format=jsondata&startPeriod=2022-01';
@@ -1437,6 +1512,17 @@ const EURIBOR_FALLBACK = (() => {
 })();
 
 async function loadEuribor() {
+  /* Check Worker first */
+  if (WORKER_URL) {
+    try {
+      const wd = await _getWorkerData();
+      const ec = wd?.ecb;
+      if (ec?.euribor3m?.length && ec?.euribor6m?.length && ec?.euribor12m?.length) {
+        return { e3m: ec.euribor3m, e6m: ec.euribor6m, e12m: ec.euribor12m, isLive: true };
+      }
+    } catch(e) {}
+  }
+
   // Try ECB API for Euribor monthly data
   async function fetchEcbEuribor(key) {
     const url = `https://data-api.ecb.europa.eu/service/data/FM/${key}?format=jsondata&detail=dataonly&startPeriod=1999-01`;
@@ -2305,6 +2391,8 @@ async function loadRenPreco() {
 }
 
 async function fetchAllData() {
+  // Reset Worker cache so each fetchAllData gets fresh data
+  _workerData = null;
   // Phase 1: PIB (needed by saldo % PIB e PIB per capita UE)
   let pibAnnual = [];
   let pibOk = false;

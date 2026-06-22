@@ -74,6 +74,24 @@
     .ref-note{display:flex;align-items:center;gap:6px;font-size:.65rem;color:#1e40af;background:#eff6ff;border-radius:6px;padding:6px 10px;margin-top:10px}
     .ref-note::before{content:"ℹ️";font-size:.8rem}
 
+    /* CHART STATS */
+    .chart-stat-row{display:flex;gap:6px;margin-bottom:10px}
+    .chart-stat{flex:1;background:#f9fafb;border-radius:6px;padding:6px 8px}
+    .cs-label{font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:2px}
+    .cs-val{font-size:.82rem;font-weight:800;color:var(--text)}
+    .cs-orange{color:#ea580c}
+    .cs-yellow{color:#ca8a04}
+
+    /* CHART MINI LEGEND */
+    .chart-mini-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+    .chart-mini-legend span{display:flex;align-items:center;gap:4px;font-size:.58rem;color:var(--muted)}
+    .ml-line{display:inline-block;width:12px;height:3px;border-radius:2px;flex-shrink:0}
+    .ml-dash{display:inline-block;width:14px;height:0;border-top:2px dashed;flex-shrink:0}
+
+    /* THREE CHART GRID */
+    .charts-3grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    @media(max-width:900px){.charts-3grid{grid-template-columns:1fr}}
+
     /* CALCULATOR */
     .calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
     @media(max-width:700px){.calc-grid{grid-template-columns:1fr}}
@@ -212,20 +230,91 @@
       </div>
     </div>
 
-    <div class="chart-card">
-      <div class="chart-legend">
-        <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>Euribor 3M</div>
-        <div class="legend-item"><div class="legend-dot" style="background:var(--teal)"></div>Euribor 6M</div>
-        <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div>Euribor 12M</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#f59e0b;border-radius:2px;width:14px;height:4px;margin-bottom:3px"></div>Média mês anterior (referência)</div>
+    <div id="chart-loading-all" style="display:flex;align-items:center;justify-content:center;height:80px;color:var(--muted2);font-size:.8rem;animation:pulse 1.4s ease infinite">A carregar dados BPstat…</div>
+
+    <div id="charts-wrapper" class="charts-3grid" id="charts-wrapper" style="display:none">
+
+      <!-- 3M -->
+      <div class="chart-card" style="border-top:3px solid var(--blue)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+          <div>
+            <div style="font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--text)">Euribor 3M</div>
+            <div style="font-size:.6rem;color:var(--muted);margin-top:2px">3 meses · médias mensais</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:1.35rem;font-weight:900;color:var(--blue)" id="c3m-cur">—</div>
+            <div style="font-size:.58rem;color:var(--muted2)" id="c3m-cur-date"></div>
+          </div>
+        </div>
+        <div class="chart-stat-row">
+          <div class="chart-stat"><div class="cs-label">Mês anterior (ref.)</div><div class="cs-val" id="c3m-ref">—</div></div>
+          <div class="chart-stat"><div class="cs-label">Média 1 ano</div><div class="cs-val cs-orange" id="c3m-avg1">—</div></div>
+          <div class="chart-stat"><div class="cs-label">Média 5 anos</div><div class="cs-val cs-yellow" id="c3m-avg5">—</div></div>
+        </div>
+        <div class="chart-wrap" style="height:200px"><canvas id="chart-3m"></canvas></div>
+        <div class="chart-mini-legend">
+          <span><span class="ml-line" style="background:var(--blue)"></span>Euribor 3M</span>
+          <span><span class="ml-dash" style="border-color:#f59e0b"></span>Mês anterior</span>
+          <span><span class="ml-dash" style="border-color:#f97316"></span>Média 1A</span>
+          <span><span class="ml-dash" style="border-color:#eab308"></span>Média 5A</span>
+        </div>
       </div>
-      <div class="chart-wrap">
-        <div id="chart-loading" style="display:flex;align-items:center;justify-content:center;height:280px;color:var(--muted2);font-size:.8rem;animation:pulse 1.4s ease infinite">A carregar dados BPstat…</div>
-        <canvas id="euribor-chart" style="display:none"></canvas>
+
+      <!-- 6M -->
+      <div class="chart-card" style="border-top:3px solid var(--teal)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+          <div>
+            <div style="font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--text)">Euribor 6M</div>
+            <div style="font-size:.6rem;color:var(--muted);margin-top:2px">6 meses · médias mensais</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:1.35rem;font-weight:900;color:var(--teal)" id="c6m-cur">—</div>
+            <div style="font-size:.58rem;color:var(--muted2)" id="c6m-cur-date"></div>
+          </div>
+        </div>
+        <div class="chart-stat-row">
+          <div class="chart-stat"><div class="cs-label">Mês anterior (ref.)</div><div class="cs-val" id="c6m-ref">—</div></div>
+          <div class="chart-stat"><div class="cs-label">Média 1 ano</div><div class="cs-val cs-orange" id="c6m-avg1">—</div></div>
+          <div class="chart-stat"><div class="cs-label">Média 5 anos</div><div class="cs-val cs-yellow" id="c6m-avg5">—</div></div>
+        </div>
+        <div class="chart-wrap" style="height:200px"><canvas id="chart-6m"></canvas></div>
+        <div class="chart-mini-legend">
+          <span><span class="ml-line" style="background:var(--teal)"></span>Euribor 6M</span>
+          <span><span class="ml-dash" style="border-color:#f59e0b"></span>Mês anterior</span>
+          <span><span class="ml-dash" style="border-color:#f97316"></span>Média 1A</span>
+          <span><span class="ml-dash" style="border-color:#eab308"></span>Média 5A</span>
+        </div>
       </div>
-      <div class="ref-note">A linha a tracejado laranja marca a <strong>média do mês anterior</strong> — o valor que os bancos aplicam na próxima revisão da prestação.</div>
-      <div class="chart-source">Fonte: BPstat / Banco de Portugal · Séries 13168436 (3M), 13168438 (6M), 13168437 (12M)</div>
+
+      <!-- 12M -->
+      <div class="chart-card" style="border-top:3px solid var(--purple)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+          <div>
+            <div style="font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--text)">Euribor 12M</div>
+            <div style="font-size:.6rem;color:var(--muted);margin-top:2px">12 meses · médias mensais</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:1.35rem;font-weight:900;color:var(--purple)" id="c12m-cur">—</div>
+            <div style="font-size:.58rem;color:var(--muted2)" id="c12m-cur-date"></div>
+          </div>
+        </div>
+        <div class="chart-stat-row">
+          <div class="chart-stat"><div class="cs-label">Mês anterior (ref.)</div><div class="cs-val" id="c12m-ref">—</div></div>
+          <div class="chart-stat"><div class="cs-label">Média 1 ano</div><div class="cs-val cs-orange" id="c12m-avg1">—</div></div>
+          <div class="chart-stat"><div class="cs-label">Média 5 anos</div><div class="cs-val cs-yellow" id="c12m-avg5">—</div></div>
+        </div>
+        <div class="chart-wrap" style="height:200px"><canvas id="chart-12m"></canvas></div>
+        <div class="chart-mini-legend">
+          <span><span class="ml-line" style="background:var(--purple)"></span>Euribor 12M</span>
+          <span><span class="ml-dash" style="border-color:#f59e0b"></span>Mês anterior</span>
+          <span><span class="ml-dash" style="border-color:#f97316"></span>Média 1A</span>
+          <span><span class="ml-dash" style="border-color:#eab308"></span>Média 5A</span>
+        </div>
+      </div>
+
     </div>
+    <div class="ref-note" style="margin-top:12px">A linha tracejada âmbar marca a <strong>média do mês anterior</strong> — o valor que o banco aplica na próxima revisão da prestação.</div>
+    <div style="font-size:.58rem;color:var(--muted2);text-align:right;margin-top:6px">Fonte: BPstat / Banco de Portugal · Séries 13168436 (3M), 13168438 (6M), 13168437 (12M)</div>
   </section>
 
   <!-- CALCULATOR -->
@@ -444,50 +533,99 @@ async function ecbGetSeries(key) {
   return dates.map((d, i) => obs[String(i)] ? { date: d, value: obs[String(i)][0] } : null).filter(Boolean);
 }
 
-/* ── CHART ── */
-function buildChart() {
+/* ── CHARTS (3 separate) ── */
+const charts = { '3M': null, '6M': null, '12M': null };
+const CHART_IDS = { '3M': 'chart-3m', '6M': 'chart-6m', '12M': 'chart-12m' };
+
+function avgLast(pts, months) {
+  if (!pts || pts.length === 0) return null;
+  const slice = pts.slice(-months);
+  return slice.reduce((s, p) => s + p.value, 0) / slice.length;
+}
+
+function buildOneChart(mat) {
+  const data = allData[mat];
+  if (!data || data.length === 0) return;
+
   const cutoff = activeRange === 0 ? null : new Date();
   if (cutoff) cutoff.setFullYear(cutoff.getFullYear() - activeRange);
+  const pts = data.filter(p => !cutoff || new Date(p.date + '-01') >= cutoff);
+  if (!pts.length) return;
 
-  const datasets = ['3M', '6M', '12M'].map(m => {
-    const pts = allData[m].filter(p => !cutoff || new Date(p.date + '-01') >= cutoff);
-    return {
-      label: `Euribor ${m}`,
+  const colour  = COLOURS[mat];
+  const refVal  = data.length >= 2 ? data[data.length - 2].value : data[data.length - 1].value;
+  const avg1    = avgLast(data, 12);
+  const avg5    = avgLast(data, 60);
+  const startX  = pts[0].date;
+  const endX    = pts[pts.length - 1].date;
+
+  // Update stat pills
+  const sfx = mat === '12M' ? '12m' : mat.toLowerCase();
+  const curEl  = document.getElementById(`c${sfx}-cur`);
+  const curDt  = document.getElementById(`c${sfx}-cur-date`);
+  const refEl  = document.getElementById(`c${sfx}-ref`);
+  const avg1El = document.getElementById(`c${sfx}-avg1`);
+  const avg5El = document.getElementById(`c${sfx}-avg5`);
+  if (curEl)  curEl.textContent  = data[data.length-1].value.toFixed(3) + '%';
+  if (curDt)  curDt.textContent  = formatDate(data[data.length-1].date);
+  if (refEl)  refEl.textContent  = refVal.toFixed(3) + '%  (' + formatDate(data[data.length-2]?.date || data[data.length-1].date) + ')';
+  if (avg1El) avg1El.textContent = avg1 ? avg1.toFixed(3) + '%' : '—';
+  if (avg5El) avg5El.textContent = avg5 ? avg5.toFixed(3) + '%' : '—';
+
+  const datasets = [
+    // Main series
+    {
+      label: `Euribor ${mat}`,
       data: pts.map(p => ({ x: p.date, y: p.value })),
-      borderColor: COLOURS[m],
-      backgroundColor: COLOURS[m] + '12',
-      borderWidth: 1.8,
+      borderColor: colour,
+      backgroundColor: colour + '18',
+      borderWidth: 2,
       pointRadius: 0,
-      tension: 0.2,
-      fill: false
-    };
-  });
-
-  // Add reference lines (previous month avg for each maturity)
-  ['3M', '6M', '12M'].forEach(m => {
-    const pts = allData[m];
-    if (pts.length < 2) return;
-    const refPt = pts[pts.length - 2]; // previous completed month
-    const filtered = allData[m].filter(p => !cutoff || new Date(p.date + '-01') >= cutoff);
-    if (!filtered.length) return;
-    const start = filtered[0].date;
-    const end = filtered[filtered.length - 1].date;
-    datasets.push({
-      label: `Ref ${m}`,
-      data: [{ x: start, y: refPt.value }, { x: end, y: refPt.value }],
+      tension: 0.15,
+      fill: true,
+      order: 4
+    },
+    // Prev month reference (amber dashed)
+    {
+      label: 'Mês anterior',
+      data: [{ x: startX, y: refVal }, { x: endX, y: refVal }],
       borderColor: '#f59e0b',
       borderWidth: 1.5,
-      borderDash: [5, 4],
+      borderDash: [6, 4],
       pointRadius: 0,
       tension: 0,
       fill: false,
-      hidden: m !== indexante // show only selected indexante reference
-    });
-  });
+      order: 1
+    },
+    // 1-year average (orange dashed)
+    ...(avg1 != null ? [{
+      label: 'Média 1A',
+      data: [{ x: startX, y: avg1 }, { x: endX, y: avg1 }],
+      borderColor: '#f97316',
+      borderWidth: 1.5,
+      borderDash: [4, 4],
+      pointRadius: 0,
+      tension: 0,
+      fill: false,
+      order: 2
+    }] : []),
+    // 5-year average (yellow dashed)
+    ...(avg5 != null ? [{
+      label: 'Média 5A',
+      data: [{ x: startX, y: avg5 }, { x: endX, y: avg5 }],
+      borderColor: '#eab308',
+      borderWidth: 1.5,
+      borderDash: [3, 5],
+      pointRadius: 0,
+      tension: 0,
+      fill: false,
+      order: 3
+    }] : [])
+  ];
 
-  const ctx = document.getElementById('euribor-chart').getContext('2d');
-  if (chart) chart.destroy();
-  chart = new Chart(ctx, {
+  const ctx = document.getElementById(CHART_IDS[mat]).getContext('2d');
+  if (charts[mat]) charts[mat].destroy();
+  charts[mat] = new Chart(ctx, {
     type: 'line',
     data: { datasets },
     options: {
@@ -495,16 +633,10 @@ function buildChart() {
       maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
       plugins: {
-        legend: {
-          display: false
-        },
+        legend: { display: false },
         tooltip: {
           callbacks: {
-            label: ctx => {
-              if (ctx.dataset.label.startsWith('Ref')) return null;
-              return ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(3)}%`;
-            },
-            filter: item => !item.dataset.label.startsWith('Ref')
+            label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(3)}%`
           }
         }
       },
@@ -512,26 +644,31 @@ function buildChart() {
         x: {
           type: 'category',
           ticks: {
-            maxTicksLimit: 12,
-            font: { size: 10 },
+            maxTicksLimit: activeRange <= 1 ? 12 : 8,
+            font: { size: 9 },
             color: '#9ca3af',
             maxRotation: 0,
             callback: function(val, idx) {
               const label = this.getLabelForValue(val);
               if (!label) return '';
-              const [y, m] = label.split('-');
-              return m === '01' ? y : (m === '07' ? `Jul ${y}` : '');
+              const [y, mo] = label.split('-');
+              if (activeRange === 1) return mo === '01' || mo === '04' || mo === '07' || mo === '10' ? `${['Jan','','','Abr','','','Jul','','','Out','',''][parseInt(mo)-1]} ${y}` : '';
+              return mo === '01' ? y : (mo === '07' && activeRange <= 5 ? '' : '');
             }
           },
-          grid: { color: '#f3f4f6' }
+          grid: { color: '#f3f4f6', lineWidth: 0.5 }
         },
         y: {
-          ticks: { font: { size: 10 }, color: '#9ca3af', callback: v => v.toFixed(1) + '%' },
-          grid: { color: '#f3f4f6' }
+          ticks: { font: { size: 9 }, color: '#9ca3af', callback: v => v.toFixed(1) + '%' },
+          grid: { color: '#f3f4f6', lineWidth: 0.5 }
         }
       }
     }
   });
+}
+
+function buildCharts() {
+  ['3M', '6M', '12M'].forEach(m => buildOneChart(m));
 }
 
 function updateChartRange(years) {
@@ -539,7 +676,7 @@ function updateChartRange(years) {
   document.querySelectorAll('.filter-btn').forEach(b => {
     b.classList.toggle('active', parseInt(b.dataset.range) === years);
   });
-  buildChart();
+  buildCharts();
 }
 
 /* ── KPI CARDS ── */
@@ -762,9 +899,9 @@ async function init() {
     }
 
     // Chart
-    document.getElementById('chart-loading').style.display = 'none';
-    document.getElementById('euribor-chart').style.display = 'block';
-    buildChart();
+    document.getElementById('chart-loading-all').style.display = 'none';
+    document.getElementById('charts-wrapper').style.display = 'grid';
+    buildCharts();
 
     // Calculator init
     setIndexante('6M');
@@ -772,9 +909,9 @@ async function init() {
 
   } catch(e) {
     console.error('Init failed', e);
-    document.getElementById('chart-loading').textContent = 'Erro ao carregar dados. Recarregue a página.';
-    document.getElementById('chart-loading').style.animation = 'none';
-    document.getElementById('chart-loading').style.color = '#dc2626';
+    document.getElementById('chart-loading-all').textContent = 'Erro ao carregar dados. Recarregue a página.';
+    document.getElementById('chart-loading-all').style.animation = 'none';
+    document.getElementById('chart-loading-all').style.color = '#dc2626';
   }
 }
 

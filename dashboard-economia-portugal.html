@@ -2346,6 +2346,12 @@ function applyFilterExtended(years) {
       reg.chart.data.datasets[0].borderColor = values.map(v => v >= 0 ? '#059669' : '#dc2626');
       reg.chart.update();
       updateRangeLabel(wrapId, slice);
+    } else if (reg.isBar) {
+      const slice = sliceByYears(reg.allPts, yearsNum, reg.periodicity);
+      reg.chart.data.labels = slice.map(p => p.date);
+      reg.chart.data.datasets[0].data = slice.map(p => p.value);
+      reg.chart.update();
+      updateRangeLabel(wrapId, slice);
     } else if (reg.allPts && !reg.seriesList) {
       const slice = sliceByYears(reg.allPts, yearsNum, reg.periodicity);
       reg.chart.data.labels = slice.map(p => p.date);
@@ -3211,15 +3217,17 @@ function renderDashboard(data, fromCache) {
     const _popWrap = document.getElementById('wrap-pop');
     if (_popWrap) {
       _popWrap.innerHTML = '<canvas></canvas>';
-      new Chart(_popWrap.querySelector('canvas'), {
+      const _popSlice = sliceByYears(popPts, activeYears === 'max' ? 'max' : parseInt(activeYears), 'annual');
+      const _popChart = new Chart(_popWrap.querySelector('canvas'), {
         type: 'bar',
         data: {
-          labels: popPts.map(p => p.date),
-          datasets: [{ data: popPts.map(p => p.value), backgroundColor: 'rgba(37,99,235,.65)', borderColor: '#2563eb', borderWidth: 1 }],
+          labels: _popSlice.map(p => p.date),
+          datasets: [{ data: _popSlice.map(p => p.value), backgroundColor: 'rgba(37,99,235,.65)', borderColor: '#2563eb', borderWidth: 1 }],
         },
         options: { ...baseChartOptions({ label: 'Pop. (mil)', decimals: 0 }), plugins: { legend: { display: false } } },
       });
-      document.getElementById('range-pop').textContent = `${POP_BY_YEAR[0].year}–${POP_BY_YEAR[POP_BY_YEAR.length-1].year}`;
+      REGISTRY['wrap-pop'] = { chart: _popChart, allPts: popPts, isBar: true, periodicity: 'annual', rangeId: 'range-pop' };
+      updateRangeLabel('wrap-pop', _popSlice);
     }
   }
 
@@ -3232,15 +3240,17 @@ function renderDashboard(data, fromCache) {
     const _pcWrap = document.getElementById('wrap-pib-pc-pt');
     if (_pcWrap) {
       _pcWrap.innerHTML = '<canvas></canvas>';
-      new Chart(_pcWrap.querySelector('canvas'), {
+      const _pcSlice = sliceByYears(pibPcPts, activeYears === 'max' ? 'max' : parseInt(activeYears), 'annual');
+      const _pcChart = new Chart(_pcWrap.querySelector('canvas'), {
         type: 'bar',
         data: {
-          labels: pibPcPts.map(p => p.date),
-          datasets: [{ data: pibPcPts.map(p => p.value), backgroundColor: 'rgba(14,116,144,.65)', borderColor: '#0e7490', borderWidth: 1 }],
+          labels: _pcSlice.map(p => p.date),
+          datasets: [{ data: _pcSlice.map(p => p.value), backgroundColor: 'rgba(14,116,144,.65)', borderColor: '#0e7490', borderWidth: 1 }],
         },
         options: { ...baseChartOptions({ eur: true }), plugins: { legend: { display: false } } },
       });
-      if (pibPcPts.length) document.getElementById('range-pib-pc-pt').textContent = `${pibPcPts[0].date}–${pibPcPts[pibPcPts.length-1].date}`;
+      REGISTRY['wrap-pib-pc-pt'] = { chart: _pcChart, allPts: pibPcPts, isBar: true, periodicity: 'annual', rangeId: 'range-pib-pc-pt' };
+      updateRangeLabel('wrap-pib-pc-pt', _pcSlice);
     }
   } else {
     chartError('wrap-pib-pc-pt', 'Aguarda dados do PIB');

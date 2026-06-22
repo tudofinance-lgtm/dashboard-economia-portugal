@@ -3129,7 +3129,7 @@ function renderDashboard(data, fromCache) {
     if (el) {
       const valEl = el.querySelector('.kpi-value');
       const subEl = el.querySelector('.kpi-sub');
-      if (valEl) valEl.textContent = (PT_POP / 1e6).toFixed(2) + ' M';
+      if (valEl) { valEl.classList.remove('kpi-loading'); valEl.textContent = (PT_POP / 1e6).toFixed(2) + ' M'; }
       if (subEl) subEl.textContent = 'Residentes · INE · 2024';
     }
   }

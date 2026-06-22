@@ -1405,9 +1405,9 @@ async function loadEuribor() {
 
   try {
     const [e3m, e6m, e12m] = await Promise.all([
-      fetchEcbEuribor('M.U2.EUR.RT0.MM.EURIBOR3MD_.HSTA'),
-      fetchEcbEuribor('M.U2.EUR.RT0.MM.EURIBOR6MD_.HSTA'),
-      fetchEcbEuribor('M.U2.EUR.RT0.MM.EURIBOR1YD_.HSTA'),
+      fetchEcbEuribor('M.U2.EUR.RT.MM.EURIBOR3MD_.HSTA'),
+      fetchEcbEuribor('M.U2.EUR.RT.MM.EURIBOR6MD_.HSTA'),
+      fetchEcbEuribor('M.U2.EUR.RT.MM.EURIBOR1YD_.HSTA'),
     ]);
     if (e3m.length && e6m.length && e12m.length) {
       console.log('Euribor BCE OK:', e3m.slice(-3));

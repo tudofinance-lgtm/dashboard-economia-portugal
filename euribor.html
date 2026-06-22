@@ -51,7 +51,9 @@
 
     /* HEADER */
     header{background:var(--bg);max-width:1280px;margin:0 auto;padding:20px 28px 0}
-    .header-inner{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 24px;box-shadow:var(--shadow)}
+    .header-inner{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 20px 18px;box-shadow:var(--shadow)}
+    .header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+    @media(max-width:600px){.header-top{flex-direction:column;align-items:flex-start;gap:8px}}
     .header-left{}
     .breadcrumb{font-size:.65rem;color:var(--muted);margin-bottom:6px}
     .breadcrumb a{color:var(--muted);text-decoration:none}
@@ -219,31 +221,27 @@
     footer{display:flex;justify-content:space-between;align-items:center;padding:14px 28px;font-size:.63rem;color:var(--muted2);border-top:1px solid var(--border);max-width:1280px;margin:8px auto 0}
 
     /* ── NAVBAR ── */
-    .navbar{background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,.07)}
-    .navbar-inner{max-width:1440px;margin:0 auto;padding:0 28px;display:flex;align-items:center;gap:0;height:52px}
-    .navbar-brand{font-weight:900;font-size:.95rem;letter-spacing:.03em;text-transform:uppercase;color:var(--text);text-decoration:none;margin-right:28px;white-space:nowrap}
+    .navbar-brand{font-weight:900;font-size:.95rem;letter-spacing:.03em;text-transform:uppercase;color:var(--text);text-decoration:none;white-space:nowrap}
     .navbar-brand span{color:#2563eb}
-    .navbar-links{display:flex;gap:2px;flex:1}
-    .navbar-link{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:7px;font-size:.8rem;font-weight:600;color:var(--muted);text-decoration:none;transition:background .15s,color .15s;white-space:nowrap}
+    .navbar-links{display:flex;gap:2px}
+    .navbar-link{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:7px;font-size:.78rem;font-weight:600;color:var(--muted);text-decoration:none;transition:background .15s,color .15s;white-space:nowrap}
     .navbar-link:hover{background:var(--bg);color:var(--text)}
     .navbar-link.active{background:rgba(37,99,235,.10);color:#2563eb}
-    .navbar-link .nav-icon{font-size:.95rem}
-    @media(max-width:600px){.navbar-brand{font-size:.82rem;margin-right:12px}.navbar-link{padding:5px 10px;font-size:.74rem}}
+    .navbar-link .nav-icon{font-size:.9rem}
+    @media(max-width:600px){.navbar-brand{font-size:.82rem}.navbar-link{padding:5px 9px;font-size:.72rem}}
   </style>
 </head>
 <body>
 
-<nav class="navbar">
-  <div class="navbar-inner">
-    <a class="navbar-brand" href="index.html">Tudo<span>Finance</span></a>
-    <div class="navbar-links">
-      <a class="navbar-link" href="index.html"><span class="nav-icon">📊</span> Dashboard Macroeconómico</a>
-      <a class="navbar-link active" href="euribor.html"><span class="nav-icon">💶</span> Euribor &amp; Crédito</a>
-    </div>
-  </div>
-</nav>
 <header>
   <div class="header-inner">
+    <div class="header-top">
+      <a class="navbar-brand" href="index.html">Tudo<span>Finance</span></a>
+      <div class="navbar-links">
+        <a class="navbar-link" href="index.html"><span class="nav-icon">📊</span> Dashboard Macroeconómico</a>
+        <a class="navbar-link active" href="euribor.html"><span class="nav-icon">💶</span> Euribor &amp; Crédito</a>
+      </div>
+    </div>
     <h1 class="header-title">💶 Euribor &amp; Crédito à Habitação</h1>
     <div class="header-subtitle">Evolução histórica · Média de referência hipotecária · Simulador de prestação</div>
     <span id="last-update" style="display:none"></span>

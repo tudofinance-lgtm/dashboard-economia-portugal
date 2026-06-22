@@ -251,7 +251,7 @@
           <div class="chart-stat"><div class="cs-label">Média 5A</div><div class="cs-val cs-yellow" id="c3m-avg5">—</div></div>
           <div class="chart-stat"><div class="cs-label">Média 10A</div><div class="cs-val cs-yellow" id="c3m-avg10">—</div></div>
         </div>
-        <div class="chart-wrap" style="height:200px"><canvas id="chart-3m"></canvas></div>
+        <div class="chart-wrap" id="wrap-3m" style="height:200px"><canvas id="chart-3m"></canvas></div>
         <div class="chart-mini-legend">
           <span><span class="ml-line" style="background:var(--blue)"></span>Euribor 3M · médias mensais</span>
         </div>
@@ -274,7 +274,7 @@
           <div class="chart-stat"><div class="cs-label">Média 5A</div><div class="cs-val cs-yellow" id="c6m-avg5">—</div></div>
           <div class="chart-stat"><div class="cs-label">Média 10A</div><div class="cs-val cs-yellow" id="c6m-avg10">—</div></div>
         </div>
-        <div class="chart-wrap" style="height:200px"><canvas id="chart-6m"></canvas></div>
+        <div class="chart-wrap" id="wrap-6m" style="height:200px"><canvas id="chart-6m"></canvas></div>
         <div class="chart-mini-legend">
           <span><span class="ml-line" style="background:var(--teal)"></span>Euribor 6M · médias mensais</span>
         </div>
@@ -297,7 +297,7 @@
           <div class="chart-stat"><div class="cs-label">Média 5A</div><div class="cs-val cs-yellow" id="c12m-avg5">—</div></div>
           <div class="chart-stat"><div class="cs-label">Média 10A</div><div class="cs-val cs-yellow" id="c12m-avg10">—</div></div>
         </div>
-        <div class="chart-wrap" style="height:200px"><canvas id="chart-12m"></canvas></div>
+        <div class="chart-wrap" id="wrap-12m" style="height:200px"><canvas id="chart-12m"></canvas></div>
         <div class="chart-mini-legend">
           <span><span class="ml-line" style="background:var(--purple)"></span>Euribor 12M · médias mensais</span>
         </div>
@@ -527,6 +527,7 @@ async function ecbGetSeries(key) {
 /* ── CHARTS (3 separate) ── */
 const charts = { '3M': null, '6M': null, '12M': null };
 const CHART_IDS = { '3M': 'chart-3m', '6M': 'chart-6m', '12M': 'chart-12m' };
+const WRAP_IDS  = { '3M': 'wrap-3m',  '6M': 'wrap-6m',  '12M': 'wrap-12m' };
 
 function avgLast(pts, months) {
   if (!pts || pts.length === 0) return null;
@@ -580,16 +581,15 @@ function buildOneChart(mat) {
     fill: true
   }];
 
-  // Destroy old chart and reset canvas to avoid Chart.js stale state
+  // Destroy old chart, wipe wrapper, create fresh canvas
   if (charts[mat]) {
-    charts[mat].destroy();
+    try { charts[mat].destroy(); } catch(e) {}
     charts[mat] = null;
   }
-  const wrap = document.getElementById(CHART_IDS[mat]).parentNode;
-  const oldCanvas = document.getElementById(CHART_IDS[mat]);
+  const wrapEl = document.getElementById(WRAP_IDS[mat]);
+  wrapEl.innerHTML = '';
   const newCanvas = document.createElement('canvas');
-  newCanvas.id = CHART_IDS[mat];
-  wrap.replaceChild(newCanvas, oldCanvas);
+  wrapEl.appendChild(newCanvas);
 
   const MONTH_LABELS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   charts[mat] = new Chart(newCanvas.getContext('2d'), {

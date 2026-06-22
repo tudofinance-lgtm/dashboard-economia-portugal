@@ -541,7 +541,7 @@ function buildOneChart(mat) {
 
   const cutoff = activeRange === 0 ? null : new Date();
   if (cutoff) cutoff.setFullYear(cutoff.getFullYear() - activeRange);
-  const pts = data.filter(p => !cutoff || new Date(p.date + '-01') >= cutoff);
+  const pts = data.filter(p => !cutoff || new Date(p.date) >= cutoff);
   if (!pts.length) return;
 
   const colour  = COLOURS[mat];

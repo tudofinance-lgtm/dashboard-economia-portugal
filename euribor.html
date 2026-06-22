@@ -19,7 +19,8 @@
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
 
     /* HEADER */
-    header{background:var(--card);border-bottom:1px solid var(--border);padding:20px 32px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+    header{background:var(--bg);max-width:1280px;margin:0 auto;padding:20px 28px 0}
+    .header-inner{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 24px;box-shadow:var(--shadow)}
     .header-left{}
     .breadcrumb{font-size:.65rem;color:var(--muted);margin-bottom:6px}
     .breadcrumb a{color:var(--muted);text-decoration:none}
@@ -169,14 +170,10 @@
 <body>
 
 <header>
-  <div class="header-left">
+  <div class="header-inner">
     <div class="breadcrumb"><a href="index.html">← Dashboard Económico Portugal</a></div>
     <div class="header-title">💱 Euribor</div>
     <div class="header-subtitle">Evolução histórica · Média de referência hipotecária · Simulador de prestação</div>
-  </div>
-  <div class="header-meta">
-    <div><strong>BPstat · Banco de Portugal</strong></div>
-    <div id="last-update" style="color:var(--muted2)">A carregar…</div>
   </div>
 </header>
 

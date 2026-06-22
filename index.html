@@ -113,6 +113,7 @@
     <div class="header-left">
       <div class="header-title">🇵🇹 Portugal: Painel de Dados Macroeconómicos</div>
       <div class="header-subtitle">Indicadores macroeconómicos · fontes públicas · actualizado automaticamente</div>
+      <span id="last-update" style="display:none"></span>
     </div>
   </div>
 </header>
@@ -2311,7 +2312,7 @@ function renderDashboard(data, fromCache) {
   const cacheObj = fromCache ? cacheLoad() : null;
   const fetchTime = cacheObj ? new Date(cacheObj.ts) : new Date();
   const timeStr = fetchTime.toLocaleString('pt-PT', { dateStyle: 'short', timeStyle: 'short' });
-  document.getElementById('last-update').textContent =
+  const luEl = document.getElementById('last-update'); if (luEl) luEl.textContent =
     fromCache ? `Cache: ${timeStr} (dados de hoje)` : `API: ${timeStr}`;
 
   let hasError = false;

@@ -207,6 +207,7 @@
     <div class="breadcrumb"><a href="index.html">← Dashboard Económico Portugal</a></div>
     <h1 class="header-title">💱 Euribor</h1>
     <div class="header-subtitle">Evolução histórica · Média de referência hipotecária · Simulador de prestação</div>
+    <span id="last-update" style="display:none"></span>
   </div>
 </header>
 
@@ -921,7 +922,7 @@ async function init() {
     // Update "last updated"
     const lastDates = Object.values(allData).map(d => d.length ? d[d.length-1].date : '').filter(Boolean).sort();
     if (lastDates.length) {
-      document.getElementById('last-update').textContent = 'Dados: ' + formatDate(lastDates[lastDates.length-1]);
+      const luEl = document.getElementById('last-update'); if (luEl) luEl.textContent = 'Dados: ' + formatDate(lastDates[lastDates.length-1]);
     }
 
     // Chart

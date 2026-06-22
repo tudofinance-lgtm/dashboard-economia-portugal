@@ -835,28 +835,48 @@ async function loadPIB() {
   return pts.sort((a, b) => a.date.localeCompare(b.date));
 }
 
-function loadDesemprego() {
-  // INE · Inquérito ao Emprego · indOcorrCod=0012136 · Série 2021 (HM, Portugal)
-  // Q1 2011 → Q1 2026, valores trimestrais em %, ordem cronológica
-  const raw = [
-    ['2011-Q1',13.1],['2011-Q2',12.9],['2011-Q3',13.3],['2011-Q4',14.7],
-    ['2012-Q1',15.7],['2012-Q2',15.8],['2012-Q3',16.7],['2012-Q4',17.8],
-    ['2013-Q1',18.5],['2013-Q2',17.5],['2013-Q3',16.5],['2013-Q4',16.1],
-    ['2014-Q1',15.8],['2014-Q2',14.6],['2014-Q3',13.7],['2014-Q4',14.0],
-    ['2015-Q1',14.3],['2015-Q2',12.4],['2015-Q3',12.3],['2015-Q4',12.6],
-    ['2016-Q1',12.9],['2016-Q2',11.2],['2016-Q3',10.9],['2016-Q4',10.8],
-    ['2017-Q1',10.4],['2017-Q2',9.2],['2017-Q3',8.8],['2017-Q4',8.3],
-    ['2018-Q1',8.1],['2018-Q2',7.0],['2018-Q3',6.9],['2018-Q4',6.8],
-    ['2019-Q1',6.9],['2019-Q2',6.4],['2019-Q3',6.3],['2019-Q4',6.8],
-    ['2020-Q1',6.9],['2020-Q2',5.7],['2020-Q3',8.2],['2020-Q4',7.3],
-    ['2021-Q1',7.2],['2021-Q2',6.9],['2021-Q3',6.3],['2021-Q4',6.4],
-    ['2022-Q1',6.0],['2022-Q2',5.9],['2022-Q3',5.9],['2022-Q4',6.7],
-    ['2023-Q1',7.2],['2023-Q2',6.1],['2023-Q3',6.1],['2023-Q4',6.6],
-    ['2024-Q1',6.8],['2024-Q2',6.1],['2024-Q3',6.1],['2024-Q4',6.7],
-    ['2025-Q1',6.6],['2025-Q2',5.9],['2025-Q3',5.8],['2025-Q4',5.8],
-    ['2026-Q1',6.1],
+async function loadDesemprego() {
+  // Eurostat une_rt_q: taxa de desemprego trimestral PT, 15-74 anos, PC_ACT, NSA
+  // Fonte: https://ec.europa.eu/eurostat/databrowser/view/une_rt_q
+  const FALLBACK = [
+    {date:'2011-Q1',value:13.1},{date:'2011-Q2',value:12.9},{date:'2011-Q3',value:13.3},{date:'2011-Q4',value:14.7},
+    {date:'2012-Q1',value:15.7},{date:'2012-Q2',value:15.8},{date:'2012-Q3',value:16.7},{date:'2012-Q4',value:17.8},
+    {date:'2013-Q1',value:18.5},{date:'2013-Q2',value:17.5},{date:'2013-Q3',value:16.5},{date:'2013-Q4',value:16.1},
+    {date:'2014-Q1',value:15.8},{date:'2014-Q2',value:14.6},{date:'2014-Q3',value:13.7},{date:'2014-Q4',value:14.0},
+    {date:'2015-Q1',value:14.3},{date:'2015-Q2',value:12.4},{date:'2015-Q3',value:12.3},{date:'2015-Q4',value:12.6},
+    {date:'2016-Q1',value:12.9},{date:'2016-Q2',value:11.2},{date:'2016-Q3',value:10.9},{date:'2016-Q4',value:10.8},
+    {date:'2017-Q1',value:10.4},{date:'2017-Q2',value:9.2},{date:'2017-Q3',value:8.8},{date:'2017-Q4',value:8.3},
+    {date:'2018-Q1',value:8.1},{date:'2018-Q2',value:7.0},{date:'2018-Q3',value:6.9},{date:'2018-Q4',value:6.8},
+    {date:'2019-Q1',value:6.9},{date:'2019-Q2',value:6.4},{date:'2019-Q3',value:6.3},{date:'2019-Q4',value:6.8},
+    {date:'2020-Q1',value:6.9},{date:'2020-Q2',value:5.7},{date:'2020-Q3',value:8.2},{date:'2020-Q4',value:7.3},
+    {date:'2021-Q1',value:7.2},{date:'2021-Q2',value:6.9},{date:'2021-Q3',value:6.3},{date:'2021-Q4',value:6.4},
+    {date:'2022-Q1',value:6.0},{date:'2022-Q2',value:5.9},{date:'2022-Q3',value:5.9},{date:'2022-Q4',value:6.7},
+    {date:'2023-Q1',value:7.2},{date:'2023-Q2',value:6.1},{date:'2023-Q3',value:6.1},{date:'2023-Q4',value:6.6},
+    {date:'2024-Q1',value:6.8},{date:'2024-Q2',value:6.1},{date:'2024-Q3',value:6.1},{date:'2024-Q4',value:6.7},
+    {date:'2025-Q1',value:6.6},{date:'2025-Q2',value:5.9},{date:'2025-Q3',value:5.8},{date:'2025-Q4',value:5.8},
+    {date:'2026-Q1',value:6.1},
   ];
-  return raw.map(([date, value]) => ({ date, value }));
+  try {
+    const url = 'https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/une_rt_q' +
+      '?geo=PT&age=Y15-74&sex=T&unit=PC_ACT&s_adj=NSA&format=JSON&startPeriod=2011-Q1';
+    const r = await fetch(url, { signal: AbortSignal.timeout(10000) });
+    const d = await r.json();
+    const dims = d.dimension;
+    const dimOrder = ['freq','s_adj','age','unit','sex','geo','time'];
+    const sizes = dimOrder.map(k => Object.keys(dims[k].category.index).length);
+    const strides = new Array(dimOrder.length).fill(1);
+    for (let i = dimOrder.length - 2; i >= 0; i--) strides[i] = strides[i+1] * sizes[i+1];
+    const getIdx = (k, v) => dims[k].category.index[v] ?? 0;
+    const fi = [0, getIdx('s_adj','NSA'), getIdx('age','Y15-74'), getIdx('unit','PC_ACT'),
+                getIdx('sex','T'), getIdx('geo','PT'), 0];
+    const baseKey = fi.reduce((acc, v, i) => acc + v * strides[i], 0);
+    const timeKeys = Object.keys(dims.time.category.index)
+      .sort((a, b) => dims.time.category.index[a] - dims.time.category.index[b]);
+    const pts = timeKeys.map((t, ti) => ({ date: t, value: d.value[String(baseKey + ti)] }))
+      .filter(p => p.value != null);
+    if (pts.length > 10) return pts;
+  } catch(e) {}
+  return FALLBACK;
 }
 
 async function loadBalanca() {
@@ -1209,95 +1229,121 @@ function loadReceitaDespesaAP() {
    INDICATOR LOADERS — INFLAÇÃO, EURIBOR, CONFIANÇA, DÍVIDA
 ══════════════════════════════════════════════════════════ */
 
-function loadInflacao() {
-  // INE Portugal — taxa variação homóloga (%)
-  // Anual (média) até 2021; mensal a partir de 2022 (INE comunicados de imprensa)
-  // 2026: dados até maio (estimativa preliminar INE)
-  const ipc = [
-    // Médias anuais
+async function loadInflacao() {
+  // Inflação: ECB HICP (Harmonised Index of Consumer Prices) para Portugal
+  // IPC total: ICP/M.PT.N.000000.4.ANR | Subjacente: XEF000 | Alimentar: 010000
+  // Médias anuais 2006-2021 são permanentes (INE/Eurostat) — só o mensal recente precisa de API
+
+  const ipcStatic = [
     {date:'2006',value:3.1},{date:'2007',value:2.4},{date:'2008',value:2.7},
     {date:'2009',value:-0.9},{date:'2010',value:1.4},{date:'2011',value:3.6},
     {date:'2012',value:2.8},{date:'2013',value:0.3},{date:'2014',value:-0.3},
     {date:'2015',value:0.5},{date:'2016',value:0.6},{date:'2017',value:1.6},
     {date:'2018',value:1.0},{date:'2019',value:0.3},{date:'2020',value:-0.1},
     {date:'2021',value:1.3},
-    // Mensal
-    {date:'2022-01',value:3.3},{date:'2022-02',value:4.4},{date:'2022-03',value:5.5},
-    {date:'2022-04',value:7.2},{date:'2022-05',value:8.1},{date:'2022-06',value:9.0},
-    {date:'2022-07',value:9.1},{date:'2022-08',value:9.0},{date:'2022-09',value:9.2},
-    {date:'2022-10',value:10.1},{date:'2022-11',value:9.9},{date:'2022-12',value:9.6},
-    {date:'2023-01',value:9.3},{date:'2023-02',value:9.0},{date:'2023-03',value:7.9},
-    {date:'2023-04',value:6.2},{date:'2023-05',value:4.5},{date:'2023-06',value:3.8},
-    {date:'2023-07',value:3.1},{date:'2023-08',value:3.7},{date:'2023-09',value:3.8},
-    {date:'2023-10',value:3.7},{date:'2023-11',value:2.4},{date:'2023-12',value:2.3},
-    {date:'2024-01',value:2.5},{date:'2024-02',value:2.3},{date:'2024-03',value:2.4},
-    {date:'2024-04',value:2.5},{date:'2024-05',value:2.9},{date:'2024-06',value:3.0},
-    {date:'2024-07',value:2.5},{date:'2024-08',value:1.9},{date:'2024-09',value:2.1},
-    {date:'2024-10',value:2.6},{date:'2024-11',value:2.7},{date:'2024-12',value:3.0},
-    {date:'2025-01',value:2.5},{date:'2025-02',value:2.9},{date:'2025-03',value:1.9},
-    {date:'2025-04',value:2.5},{date:'2025-05',value:2.3},{date:'2025-06',value:2.4},
-    {date:'2025-07',value:2.3},{date:'2025-08',value:2.5},{date:'2025-09',value:2.4},
-    {date:'2025-10',value:2.3},{date:'2025-11',value:2.2},{date:'2025-12',value:2.2},
-    {date:'2026-01',value:1.9},{date:'2026-02',value:2.1},{date:'2026-03',value:2.7},
-    {date:'2026-04',value:3.3},{date:'2026-05',value:3.3},
   ];
-  const subjacente = [
-    // Médias anuais
+  const subjStatic = [
     {date:'2006',value:2.4},{date:'2007',value:2.2},{date:'2008',value:2.7},
     {date:'2009',value:0.9},{date:'2010',value:0.8},{date:'2011',value:2.1},
     {date:'2012',value:2.1},{date:'2013',value:0.8},{date:'2014',value:0.1},
     {date:'2015',value:0.7},{date:'2016',value:0.8},{date:'2017',value:1.5},
     {date:'2018',value:1.3},{date:'2019',value:0.6},{date:'2020',value:0.3},
     {date:'2021',value:0.9},
-    // Mensal — excl. energia e alimentos não transformados
-    {date:'2022-01',value:2.0},{date:'2022-02',value:2.8},{date:'2022-03',value:3.5},
-    {date:'2022-04',value:4.5},{date:'2022-05',value:5.0},{date:'2022-06',value:5.5},
-    {date:'2022-07',value:5.5},{date:'2022-08',value:5.3},{date:'2022-09',value:5.5},
-    {date:'2022-10',value:5.9},{date:'2022-11',value:5.8},{date:'2022-12',value:5.5},
-    {date:'2023-01',value:7.8},{date:'2023-02',value:7.6},{date:'2023-03',value:7.5},
-    {date:'2023-04',value:6.5},{date:'2023-05',value:5.8},{date:'2023-06',value:5.5},
-    {date:'2023-07',value:4.7},{date:'2023-08',value:4.7},{date:'2023-09',value:4.4},
-    {date:'2023-10',value:4.0},{date:'2023-11',value:3.5},{date:'2023-12',value:3.0},
-    {date:'2024-01',value:3.2},{date:'2024-02',value:2.8},{date:'2024-03',value:2.7},
-    {date:'2024-04',value:2.6},{date:'2024-05',value:2.5},{date:'2024-06',value:2.4},
-    {date:'2024-07',value:2.3},{date:'2024-08',value:2.1},{date:'2024-09',value:2.2},
-    {date:'2024-10',value:2.4},{date:'2024-11',value:2.5},{date:'2024-12',value:2.6},
-    {date:'2025-01',value:2.4},{date:'2025-02',value:2.3},{date:'2025-03',value:1.9},
-    {date:'2025-04',value:2.3},{date:'2025-05',value:2.3},{date:'2025-06',value:2.4},
-    {date:'2025-07',value:2.3},{date:'2025-08',value:2.5},{date:'2025-09',value:2.0},
-    {date:'2025-10',value:2.1},{date:'2025-11',value:2.2},{date:'2025-12',value:2.1},
-    {date:'2026-01',value:2.1},{date:'2026-02',value:2.0},{date:'2026-03',value:2.0},
-    {date:'2026-04',value:2.2},{date:'2026-05',value:2.2},
   ];
-  const alimentar = [
-    // Médias anuais
+  const alimentarStatic = [
     {date:'2006',value:2.8},{date:'2007',value:3.4},{date:'2008',value:5.3},
     {date:'2009',value:-1.0},{date:'2010',value:0.4},{date:'2011',value:3.0},
     {date:'2012',value:3.2},{date:'2013',value:1.7},{date:'2014',value:-1.3},
     {date:'2015',value:1.4},{date:'2016',value:0.4},{date:'2017',value:1.9},
     {date:'2018',value:1.5},{date:'2019',value:1.2},{date:'2020',value:1.0},
     {date:'2021',value:1.3},
-    // Mensal — alimentos e bebidas não alcoólicas
-    {date:'2022-01',value:4.5},{date:'2022-02',value:6.0},{date:'2022-03',value:7.5},
-    {date:'2022-04',value:9.2},{date:'2022-05',value:10.5},{date:'2022-06',value:11.5},
-    {date:'2022-07',value:12.0},{date:'2022-08',value:13.0},{date:'2022-09',value:13.5},
-    {date:'2022-10',value:14.0},{date:'2022-11',value:13.5},{date:'2022-12',value:13.0},
-    {date:'2023-01',value:17.0},{date:'2023-02',value:16.0},{date:'2023-03',value:15.0},
-    {date:'2023-04',value:13.0},{date:'2023-05',value:10.0},{date:'2023-06',value:8.0},
-    {date:'2023-07',value:7.0},{date:'2023-08',value:9.0},{date:'2023-09',value:9.5},
-    {date:'2023-10',value:10.0},{date:'2023-11',value:9.0},{date:'2023-12',value:7.5},
-    {date:'2024-01',value:4.5},{date:'2024-02',value:4.0},{date:'2024-03',value:3.8},
-    {date:'2024-04',value:3.5},{date:'2024-05',value:3.5},{date:'2024-06',value:3.8},
-    {date:'2024-07',value:3.5},{date:'2024-08',value:2.8},{date:'2024-09',value:3.0},
-    {date:'2024-10',value:3.5},{date:'2024-11',value:4.0},{date:'2024-12',value:4.5},
-    {date:'2025-01',value:3.0},{date:'2025-02',value:3.2},{date:'2025-03',value:3.0},
-    {date:'2025-04',value:3.5},{date:'2025-05',value:4.0},{date:'2025-06',value:4.5},
-    {date:'2025-07',value:5.0},{date:'2025-08',value:5.5},{date:'2025-09',value:5.8},
-    {date:'2025-10',value:6.0},{date:'2025-11',value:5.8},{date:'2025-12',value:5.5},
-    {date:'2026-01',value:4.5},{date:'2026-02',value:4.0},{date:'2026-03',value:3.7},
-    {date:'2026-04',value:4.4},{date:'2026-05',value:4.0},
   ];
-  return { ipc, subjacente, alimentar };
+
+  function parseEcbIcp(d) {
+    const tvs = d.structure.dimensions.observation[0].values;
+    const obs = Object.values(d.dataSets[0].series)[0].observations;
+    return Object.entries(obs)
+      .map(([k, v]) => ({ date: tvs[+k].id, value: v[0] }))
+      .filter(p => p.value !== null);
+  }
+
+  try {
+    const BASE = 'https://data-api.ecb.europa.eu/service/data/ICP/M.PT.N.';
+    const SUFFIX = '.4.ANR?format=jsondata&startPeriod=2022-01';
+    const [rIpc, rSubj, rFood] = await Promise.all([
+      fetch(BASE + '000000' + SUFFIX, { signal: AbortSignal.timeout(10000) }).then(r => r.json()),
+      fetch(BASE + 'XEF000' + SUFFIX, { signal: AbortSignal.timeout(10000) }).then(r => r.json()),
+      fetch(BASE + '010000' + SUFFIX, { signal: AbortSignal.timeout(10000) }).then(r => r.json()),
+    ]);
+    return {
+      ipc:        [...ipcStatic,       ...parseEcbIcp(rIpc)],
+      subjacente: [...subjStatic,      ...parseEcbIcp(rSubj)],
+      alimentar:  [...alimentarStatic, ...parseEcbIcp(rFood)],
+    };
+  } catch(e) {
+    // Fallback to hardcoded monthly data (last updated manually)
+    const ipcFull = [...ipcStatic,
+      {date:'2022-01',value:3.3},{date:'2022-02',value:4.4},{date:'2022-03',value:5.5},
+      {date:'2022-04',value:7.2},{date:'2022-05',value:8.1},{date:'2022-06',value:9.0},
+      {date:'2022-07',value:9.1},{date:'2022-08',value:9.0},{date:'2022-09',value:9.2},
+      {date:'2022-10',value:10.1},{date:'2022-11',value:9.9},{date:'2022-12',value:9.6},
+      {date:'2023-01',value:9.3},{date:'2023-02',value:9.0},{date:'2023-03',value:7.9},
+      {date:'2023-04',value:6.2},{date:'2023-05',value:4.5},{date:'2023-06',value:3.8},
+      {date:'2023-07',value:3.1},{date:'2023-08',value:3.7},{date:'2023-09',value:3.8},
+      {date:'2023-10',value:3.7},{date:'2023-11',value:2.4},{date:'2023-12',value:2.3},
+      {date:'2024-01',value:2.5},{date:'2024-02',value:2.3},{date:'2024-03',value:2.4},
+      {date:'2024-04',value:2.5},{date:'2024-05',value:2.9},{date:'2024-06',value:3.0},
+      {date:'2024-07',value:2.5},{date:'2024-08',value:1.9},{date:'2024-09',value:2.1},
+      {date:'2024-10',value:2.6},{date:'2024-11',value:2.7},{date:'2024-12',value:3.0},
+      {date:'2025-01',value:2.5},{date:'2025-02',value:2.9},{date:'2025-03',value:1.9},
+      {date:'2025-04',value:2.5},{date:'2025-05',value:2.3},{date:'2025-06',value:2.4},
+      {date:'2025-07',value:2.3},{date:'2025-08',value:2.5},{date:'2025-09',value:2.4},
+      {date:'2025-10',value:2.3},{date:'2025-11',value:2.2},{date:'2025-12',value:2.2},
+      {date:'2026-01',value:1.9},{date:'2026-02',value:2.1},{date:'2026-03',value:2.7},
+      {date:'2026-04',value:3.3},{date:'2026-05',value:3.3},
+    ];
+    const subjFull = [...subjStatic,
+      {date:'2022-01',value:2.0},{date:'2022-02',value:2.8},{date:'2022-03',value:3.5},
+      {date:'2022-04',value:4.5},{date:'2022-05',value:5.0},{date:'2022-06',value:5.5},
+      {date:'2022-07',value:5.5},{date:'2022-08',value:5.3},{date:'2022-09',value:5.5},
+      {date:'2022-10',value:5.9},{date:'2022-11',value:5.8},{date:'2022-12',value:5.5},
+      {date:'2023-01',value:7.8},{date:'2023-02',value:7.6},{date:'2023-03',value:7.5},
+      {date:'2023-04',value:6.5},{date:'2023-05',value:5.8},{date:'2023-06',value:5.5},
+      {date:'2023-07',value:4.7},{date:'2023-08',value:4.7},{date:'2023-09',value:4.4},
+      {date:'2023-10',value:4.0},{date:'2023-11',value:3.5},{date:'2023-12',value:3.0},
+      {date:'2024-01',value:3.2},{date:'2024-02',value:2.8},{date:'2024-03',value:2.7},
+      {date:'2024-04',value:2.6},{date:'2024-05',value:2.5},{date:'2024-06',value:2.4},
+      {date:'2024-07',value:2.3},{date:'2024-08',value:2.1},{date:'2024-09',value:2.2},
+      {date:'2024-10',value:2.4},{date:'2024-11',value:2.5},{date:'2024-12',value:2.6},
+      {date:'2025-01',value:2.4},{date:'2025-02',value:2.3},{date:'2025-03',value:1.9},
+      {date:'2025-04',value:2.3},{date:'2025-05',value:2.3},{date:'2025-06',value:2.4},
+      {date:'2025-07',value:2.3},{date:'2025-08',value:2.5},{date:'2025-09',value:2.0},
+      {date:'2025-10',value:2.1},{date:'2025-11',value:2.2},{date:'2025-12',value:2.1},
+      {date:'2026-01',value:2.1},{date:'2026-02',value:2.0},{date:'2026-03',value:2.0},
+      {date:'2026-04',value:2.2},{date:'2026-05',value:2.2},
+    ];
+    const alimentarFull = [...alimentarStatic,
+      {date:'2022-01',value:4.5},{date:'2022-02',value:6.0},{date:'2022-03',value:7.5},
+      {date:'2022-04',value:9.2},{date:'2022-05',value:10.5},{date:'2022-06',value:11.5},
+      {date:'2022-07',value:12.0},{date:'2022-08',value:13.0},{date:'2022-09',value:13.5},
+      {date:'2022-10',value:14.0},{date:'2022-11',value:13.5},{date:'2022-12',value:13.0},
+      {date:'2023-01',value:17.0},{date:'2023-02',value:16.0},{date:'2023-03',value:15.0},
+      {date:'2023-04',value:13.0},{date:'2023-05',value:10.0},{date:'2023-06',value:8.0},
+      {date:'2023-07',value:7.0},{date:'2023-08',value:9.0},{date:'2023-09',value:9.5},
+      {date:'2023-10',value:10.0},{date:'2023-11',value:9.0},{date:'2023-12',value:7.5},
+      {date:'2024-01',value:4.5},{date:'2024-02',value:4.0},{date:'2024-03',value:3.8},
+      {date:'2024-04',value:3.5},{date:'2024-05',value:3.5},{date:'2024-06',value:3.8},
+      {date:'2024-07',value:3.5},{date:'2024-08',value:2.8},{date:'2024-09',value:3.0},
+      {date:'2024-10',value:3.5},{date:'2024-11',value:4.0},{date:'2024-12',value:4.5},
+      {date:'2025-01',value:3.0},{date:'2025-02',value:3.2},{date:'2025-03',value:3.0},
+      {date:'2025-04',value:3.5},{date:'2025-05',value:4.0},{date:'2025-06',value:4.5},
+      {date:'2025-07',value:5.0},{date:'2025-08',value:5.5},{date:'2025-09',value:5.8},
+      {date:'2025-10',value:6.0},{date:'2025-11',value:5.8},{date:'2025-12',value:5.5},
+      {date:'2026-01',value:4.5},{date:'2026-02',value:4.0},{date:'2026-03',value:3.7},
+      {date:'2026-04',value:4.4},{date:'2026-05',value:4.0},
+    ];
+    return { ipc: ipcFull, subjacente: subjFull, alimentar: alimentarFull };
+  }
 }
 
 // Euribor static fallback (médias anuais, %)
@@ -2271,6 +2317,7 @@ async function fetchAllData() {
     saldoR, saldoEstadoR, recDepR, brentR, pibEuR, spreadR, execOrcR,
     euriborR, capFinR, recDecompR, despDecompR,
     renConsumoR, renPrecoR, renPrecoHistR, renBalancoHistR, renRenovaveisR,
+    inflacaoR,
   ] = await Promise.allSettled([
     loadDesemprego(), loadBalanca(), loadPrestacao(),
     loadEndividamento(), loadDividaPublica(),
@@ -2280,11 +2327,11 @@ async function fetchAllData() {
     loadReceitasDecompostas(), loadDespesasDecompostas(),
     loadRenConsumo(), loadRenPreco(), loadRenPrecoHistorico(),
     loadRenBalancoHist(), loadRenRenovaveisLast(),
+    loadInflacao(),
   ]);
 
-  // Static / synchronous loaders
-  const inflacaoData   = loadInflacao();
-  const confiancaData  = loadConfianca();
+  const inflacaoData = inflacaoR.status === 'fulfilled' ? inflacaoR.value : null;
+  const confiancaData = loadConfianca();
 
   return {
     pibAnnual, pibOk,
@@ -2616,7 +2663,7 @@ function renderDashboard(data, fromCache) {
   }
 
   /* ── INFLAÇÃO (wrap-inflacao) + KPIs ── */
-  {
+  if (inflacaoData) {
     const { ipc, subjacente, alimentar } = inflacaoData;
     if (ipc.length) {
       const lat = ipc[ipc.length - 1], prev12 = ipc[ipc.length - 13];

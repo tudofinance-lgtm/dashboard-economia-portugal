@@ -113,6 +113,7 @@
     <div class="header-left">
       <div class="header-title">🇵🇹 Portugal: Painel de Dados Macroeconómicos</div>
       <div class="header-subtitle">Indicadores macroeconómicos · fontes públicas · actualizado automaticamente</div>
+      <span id="last-update" style="display:none"></span>
     </div>
   </div>
 </header>
@@ -1649,7 +1650,7 @@ function initChartMulti(wrapId, seriesList, opts, periodicity) {
       backgroundColor: s.fill !== false ? c.fill : 'transparent',
       borderWidth: s.width || 2,
       borderDash: s.dash ? [6, 3] : [],
-      pointRadius: n > 100 ? 0 : n > 50 ? 1 : 3,
+      pointRadius: s.points === false ? 0 : (n > 100 ? 0 : n > 50 ? 1 : 3),
       pointHoverRadius: 5,
       tension: .35,
       fill: s.fill !== false,
@@ -2311,7 +2312,7 @@ function renderDashboard(data, fromCache) {
   const cacheObj = fromCache ? cacheLoad() : null;
   const fetchTime = cacheObj ? new Date(cacheObj.ts) : new Date();
   const timeStr = fetchTime.toLocaleString('pt-PT', { dateStyle: 'short', timeStyle: 'short' });
-  document.getElementById('last-update').textContent =
+  const luEl = document.getElementById('last-update'); if (luEl) luEl.textContent =
     fromCache ? `Cache: ${timeStr} (dados de hoje)` : `API: ${timeStr}`;
 
   let hasError = false;
@@ -2522,14 +2523,19 @@ function renderDashboard(data, fromCache) {
   if (recDepR.status === 'fulfilled') {
     const { receita, despesa } = recDepR.value;
     if (receita.length && despesa.length) {
+      const apData = loadReceitaDespesaAP();
       initChartMulti('wrap-recdep', [
-        { pts: receita, colour: 'green', label: 'Receita', fill: false },
-        { pts: despesa, colour: 'red',   label: 'Despesa', fill: false },
+        { pts: receita,       colour: 'green', label: 'Receita Estado', fill: false, points: false },
+        { pts: despesa,       colour: 'red',   label: 'Despesa Estado', fill: false, points: false },
+        { pts: apData.receita, colour: 'teal', label: 'Receita AP',    fill: false, dash: true, points: false },
+        { pts: apData.despesa, colour: 'orange', label: 'Despesa AP',  fill: false, dash: true, points: false },
       ], { meur: true }, 'annual');
       const legendEl = document.getElementById('legend-recdep');
       if (legendEl) legendEl.innerHTML =
-        `<span class="legend-item"><span class="legend-dot" style="background:#047857"></span>Receita</span>` +
-        `<span class="legend-item"><span class="legend-dot" style="background:#be123c"></span>Despesa</span>`;
+        `<span class="legend-item"><span class="legend-dot" style="background:#059669"></span>Receita Estado</span>` +
+        `<span class="legend-item"><span class="legend-dot" style="background:#dc2626"></span>Despesa Estado</span>` +
+        `<span class="legend-item"><span class="legend-dot" style="background:#0e7490;border:2px dashed #0e7490;background:none"></span>Receita AP</span>` +
+        `<span class="legend-item"><span class="legend-dot" style="border:2px dashed #c2410c;background:none"></span>Despesa AP</span>`;
     }
   } else {
     chartError('wrap-recdep', 'Não foi possível carregar os dados');

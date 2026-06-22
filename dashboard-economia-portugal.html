@@ -3208,8 +3208,19 @@ function renderDashboard(data, fromCache) {
   /* ── GRÁFICO POPULAÇÃO ── */
   {
     const popPts = POP_BY_YEAR.map(p => ({ date: String(p.year), value: +(p.pop / 1e3).toFixed(1) }));
-    initChart('wrap-pop', popPts, 'blue', { label: 'População (milhares)', fill: false, points: false });
-    document.getElementById('range-pop').textContent = `${POP_BY_YEAR[0].year}–${POP_BY_YEAR[POP_BY_YEAR.length-1].year}`;
+    const _popWrap = document.getElementById('wrap-pop');
+    if (_popWrap) {
+      _popWrap.innerHTML = '<canvas></canvas>';
+      new Chart(_popWrap.querySelector('canvas'), {
+        type: 'bar',
+        data: {
+          labels: popPts.map(p => p.date),
+          datasets: [{ data: popPts.map(p => p.value), backgroundColor: 'rgba(37,99,235,.65)', borderColor: '#2563eb', borderWidth: 1 }],
+        },
+        options: { ...baseChartOptions({ label: 'Pop. (mil)', decimals: 0 }), plugins: { legend: { display: false } } },
+      });
+      document.getElementById('range-pop').textContent = `${POP_BY_YEAR[0].year}–${POP_BY_YEAR[POP_BY_YEAR.length-1].year}`;
+    }
   }
 
   /* ── GRÁFICO PIB PER CAPITA PT (pop por ano) ── */
@@ -3218,10 +3229,18 @@ function renderDashboard(data, fromCache) {
       .filter(p => !p.isExtrapolated)
       .map(p => ({ date: p.date, value: Math.round(p.value * 1e6 / getPopForYear(p.date)) }))
       .filter(p => p.value > 0);
-    initChart('wrap-pib-pc-pt', pibPcPts, 'teal', { label: 'PIB per Capita (€)', fill: false, points: false });
-    if (pibPcPts.length) {
-      document.getElementById('range-pib-pc-pt').textContent =
-        `${pibPcPts[0].date}–${pibPcPts[pibPcPts.length-1].date}`;
+    const _pcWrap = document.getElementById('wrap-pib-pc-pt');
+    if (_pcWrap) {
+      _pcWrap.innerHTML = '<canvas></canvas>';
+      new Chart(_pcWrap.querySelector('canvas'), {
+        type: 'bar',
+        data: {
+          labels: pibPcPts.map(p => p.date),
+          datasets: [{ data: pibPcPts.map(p => p.value), backgroundColor: 'rgba(14,116,144,.65)', borderColor: '#0e7490', borderWidth: 1 }],
+        },
+        options: { ...baseChartOptions({ eur: true }), plugins: { legend: { display: false } } },
+      });
+      if (pibPcPts.length) document.getElementById('range-pib-pc-pt').textContent = `${pibPcPts[0].date}–${pibPcPts[pibPcPts.length-1].date}`;
     }
   } else {
     chartError('wrap-pib-pc-pt', 'Aguarda dados do PIB');

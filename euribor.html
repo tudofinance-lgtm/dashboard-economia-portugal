@@ -247,9 +247,10 @@
           </div>
         </div>
         <div class="chart-stat-row">
-          <div class="chart-stat"><div class="cs-label">Média 10 anos</div><div class="cs-val cs-yellow" id="c3m-avg10">—</div></div>
-          <div class="chart-stat"><div class="cs-label">Média 1A</div><div class="cs-val cs-orange" id="c3m-avg1">—</div></div>
+          <div class="chart-stat"><div class="cs-label">Média 10A</div><div class="cs-val cs-yellow" id="c3m-avg10">—</div></div>
           <div class="chart-stat"><div class="cs-label">Média 5A</div><div class="cs-val cs-yellow" id="c3m-avg5">—</div></div>
+          <div class="chart-stat"><div class="cs-label">Média 1A</div><div class="cs-val cs-orange" id="c3m-avg1">—</div></div>
+          <div class="chart-stat"><div class="cs-label" id="c3m-period-label">Início período</div><div class="cs-val" style="color:var(--text)" id="c3m-period">—</div></div>
         </div>
         <div class="chart-wrap" style="height:200px"><canvas id="chart-3m"></canvas></div>
         <div class="chart-mini-legend">
@@ -270,9 +271,10 @@
           </div>
         </div>
         <div class="chart-stat-row">
-          <div class="chart-stat"><div class="cs-label">Média 10 anos</div><div class="cs-val cs-yellow" id="c6m-avg10">—</div></div>
-          <div class="chart-stat"><div class="cs-label">Média 1A</div><div class="cs-val cs-orange" id="c6m-avg1">—</div></div>
+          <div class="chart-stat"><div class="cs-label">Média 10A</div><div class="cs-val cs-yellow" id="c6m-avg10">—</div></div>
           <div class="chart-stat"><div class="cs-label">Média 5A</div><div class="cs-val cs-yellow" id="c6m-avg5">—</div></div>
+          <div class="chart-stat"><div class="cs-label">Média 1A</div><div class="cs-val cs-orange" id="c6m-avg1">—</div></div>
+          <div class="chart-stat"><div class="cs-label" id="c6m-period-label">Início período</div><div class="cs-val" style="color:var(--text)" id="c6m-period">—</div></div>
         </div>
         <div class="chart-wrap" style="height:200px"><canvas id="chart-6m"></canvas></div>
         <div class="chart-mini-legend">
@@ -293,9 +295,10 @@
           </div>
         </div>
         <div class="chart-stat-row">
-          <div class="chart-stat"><div class="cs-label">Média 10 anos</div><div class="cs-val cs-yellow" id="c12m-avg10">—</div></div>
-          <div class="chart-stat"><div class="cs-label">Média 1A</div><div class="cs-val cs-orange" id="c12m-avg1">—</div></div>
+          <div class="chart-stat"><div class="cs-label">Média 10A</div><div class="cs-val cs-yellow" id="c12m-avg10">—</div></div>
           <div class="chart-stat"><div class="cs-label">Média 5A</div><div class="cs-val cs-yellow" id="c12m-avg5">—</div></div>
+          <div class="chart-stat"><div class="cs-label">Média 1A</div><div class="cs-val cs-orange" id="c12m-avg1">—</div></div>
+          <div class="chart-stat"><div class="cs-label" id="c12m-period-label">Início período</div><div class="cs-val" style="color:var(--text)" id="c12m-period">—</div></div>
         </div>
         <div class="chart-wrap" style="height:200px"><canvas id="chart-12m"></canvas></div>
         <div class="chart-mini-legend">
@@ -304,7 +307,7 @@
       </div>
 
     </div>
-    <div class="ref-note" style="margin-top:12px">A linha tracejada âmbar marca a <strong>média do mês anterior</strong> — o valor que o banco aplica na próxima revisão da prestação.</div>
+    <div class="ref-note" style="margin-top:12px">Os valores nos cards mostram a média do período seleccionado. O pill <strong>"Início do período"</strong> mostra a taxa Euribor no início de cada intervalo de tempo.</div>
     <div style="font-size:.58rem;color:var(--muted2);text-align:right;margin-top:6px">Fonte: BPstat / Banco de Portugal · Séries 13168436 (3M), 13168438 (6M), 13168437 (12M)</div>
   </section>
 
@@ -547,40 +550,52 @@ function buildOneChart(mat) {
   const avg1    = avgLast(data, 12);
   const avg5    = avgLast(data, 60);
   const avg10   = avgLast(data, 120);
-  const startX  = pts[0].date;
-  const endX    = pts[pts.length - 1].date;
+
+  // Period start value (value at beginning of selected range)
+  const periodStart = pts[0];
 
   // Update stat pills
   const sfx = mat === '12M' ? '12m' : mat.toLowerCase();
-  const curEl   = document.getElementById(`c${sfx}-cur`);
-  const curDt   = document.getElementById(`c${sfx}-cur-date`);
-  const avg1El  = document.getElementById(`c${sfx}-avg1`);
-  const avg5El  = document.getElementById(`c${sfx}-avg5`);
-  const avg10El = document.getElementById(`c${sfx}-avg10`);
-  if (curEl)   curEl.textContent   = data[data.length-1].value.toFixed(3) + '%';
-  if (curDt)   curDt.textContent   = formatDate(data[data.length-1].date);
-  if (avg1El)  avg1El.textContent  = avg1  ? avg1.toFixed(3)  + '%' : '—';
-  if (avg5El)  avg5El.textContent  = avg5  ? avg5.toFixed(3)  + '%' : '—';
-  if (avg10El) avg10El.textContent = avg10 ? avg10.toFixed(3) + '%' : '—';
+  const curEl      = document.getElementById(`c${sfx}-cur`);
+  const curDt      = document.getElementById(`c${sfx}-cur-date`);
+  const avg1El     = document.getElementById(`c${sfx}-avg1`);
+  const avg5El     = document.getElementById(`c${sfx}-avg5`);
+  const avg10El    = document.getElementById(`c${sfx}-avg10`);
+  const periodEl   = document.getElementById(`c${sfx}-period`);
+  const periodLbl  = document.getElementById(`c${sfx}-period-label`);
+  if (curEl)     curEl.textContent     = data[data.length-1].value.toFixed(3) + '%';
+  if (curDt)     curDt.textContent     = formatDate(data[data.length-1].date);
+  if (avg1El)    avg1El.textContent    = avg1  ? avg1.toFixed(3)  + '%' : '—';
+  if (avg5El)    avg5El.textContent    = avg5  ? avg5.toFixed(3)  + '%' : '—';
+  if (avg10El)   avg10El.textContent   = avg10 ? avg10.toFixed(3) + '%' : '—';
+  if (periodEl)  periodEl.textContent  = periodStart.value.toFixed(3) + '%';
+  if (periodLbl) periodLbl.textContent = activeRange === 0
+    ? 'Início (1999)' : `Há ${activeRange} ano${activeRange > 1 ? 's' : ''}`;
 
-  const datasets = [
-    // Main series only
-    {
-      label: `Euribor ${mat}`,
-      data: pts.map(p => ({ x: p.date, y: p.value })),
-      borderColor: colour,
-      backgroundColor: colour + '18',
-      borderWidth: 2,
-      pointRadius: 0,
-      tension: 0.15,
-      fill: true,
-      order: 1
-    }
-  ];
+  const datasets = [{
+    label: `Euribor ${mat}`,
+    data: pts.map(p => ({ x: p.date, y: p.value })),
+    borderColor: colour,
+    backgroundColor: colour + '18',
+    borderWidth: 2,
+    pointRadius: 0,
+    tension: 0.15,
+    fill: true
+  }];
 
-  const ctx = document.getElementById(CHART_IDS[mat]).getContext('2d');
-  if (charts[mat]) charts[mat].destroy();
-  charts[mat] = new Chart(ctx, {
+  // Destroy old chart and reset canvas to avoid Chart.js stale state
+  if (charts[mat]) {
+    charts[mat].destroy();
+    charts[mat] = null;
+  }
+  const wrap = document.getElementById(CHART_IDS[mat]).parentNode;
+  const oldCanvas = document.getElementById(CHART_IDS[mat]);
+  const newCanvas = document.createElement('canvas');
+  newCanvas.id = CHART_IDS[mat];
+  wrap.replaceChild(newCanvas, oldCanvas);
+
+  const MONTH_LABELS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  charts[mat] = new Chart(newCanvas.getContext('2d'), {
     type: 'line',
     data: { datasets },
     options: {
@@ -603,12 +618,16 @@ function buildOneChart(mat) {
             font: { size: 9 },
             color: '#9ca3af',
             maxRotation: 0,
-            callback: function(val, idx) {
+            callback: function(val) {
               const label = this.getLabelForValue(val);
               if (!label) return '';
               const [y, mo] = label.split('-');
-              if (activeRange === 1) return mo === '01' || mo === '04' || mo === '07' || mo === '10' ? `${['Jan','','','Abr','','','Jul','','','Out','',''][parseInt(mo)-1]} ${y}` : '';
-              return mo === '01' ? y : (mo === '07' && activeRange <= 5 ? '' : '');
+              const m = parseInt(mo) - 1;
+              if (activeRange === 1) {
+                return [0,3,6,9].includes(m) ? `${MONTH_LABELS[m]} ${y}` : '';
+              }
+              if (activeRange <= 3) return m === 0 || m === 6 ? (m === 0 ? y : MONTH_LABELS[6]) : '';
+              return m === 0 ? y : '';
             }
           },
           grid: { color: '#f3f4f6', lineWidth: 0.5 }

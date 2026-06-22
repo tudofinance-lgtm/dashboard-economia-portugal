@@ -592,7 +592,7 @@
           </div>
         </div>
         <div class="chart-legend" id="legend-rec-decomp"></div>
-        <div class="chart-wrap" style="height:240px" id="wrap-rec-decomp"><div class="chart-loading">A carregar…</div></div>
+        <div class="chart-wrap" style="height:280px" id="wrap-rec-decomp"><div class="chart-loading">A carregar…</div></div>
       </div>
       <div class="chart-card">
         <div class="chart-header">
@@ -606,7 +606,7 @@
           </div>
         </div>
         <div class="chart-legend" id="legend-desp-decomp"></div>
-        <div class="chart-wrap" style="height:240px" id="wrap-desp-decomp"><div class="chart-loading">A carregar…</div></div>
+        <div class="chart-wrap" style="height:280px" id="wrap-desp-decomp"><div class="chart-loading">A carregar…</div></div>
       </div>
     </div>
   </section>
@@ -1974,6 +1974,68 @@ function initPieChart(wrapId, seriesList) {
   if (rangeEl) rangeEl.textContent = latestYear;
 }
 
+
+/* ── PIE CHART FOR DECOMPOSIÇÃO ── */
+function initPieDecomp(wrapperId, legendId, rangeId, series) {
+  // Take the most recent year's value for each category
+  const labels = [], data = [], colours = [
+    '#2563eb','#16a34a','#dc2626','#7c3aed','#ea580c',
+    '#0d9488','#ca8a04','#9333ea','#0284c7','#b45309'
+  ];
+  let latestYear = '';
+  series.forEach((s, i) => {
+    if (!s.pts || !s.pts.length) return;
+    const last = s.pts[s.pts.length - 1];
+    if (last.date > latestYear) latestYear = last.date;
+    labels.push(s.label);
+    data.push(last.value);
+    colours[i] = colours[i] || '#6b7280';
+  });
+
+  // Update range label
+  const rangeEl = document.getElementById(rangeId);
+  if (rangeEl) rangeEl.textContent = latestYear;
+
+  // Update legend
+  const legendEl = document.getElementById(legendId);
+  if (legendEl) {
+    const total = data.reduce((a, b) => a + b, 0);
+    legendEl.innerHTML = labels.map((l, i) =>
+      `<span class="legend-item"><span class="legend-dot" style="background:${colours[i]}"></span>${l} <span style="color:var(--muted);font-size:.6rem">${total > 0 ? (data[i]/total*100).toFixed(1)+'%' : ''}</span></span>`
+    ).join('');
+  }
+
+  // Build chart
+  const wrap = document.getElementById(wrapperId);
+  if (!wrap) return;
+  wrap.innerHTML = '<canvas></canvas>';
+  const canvas = wrap.querySelector('canvas');
+  new Chart(canvas.getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{ data, backgroundColor: colours.slice(0, labels.length), borderWidth: 2, borderColor: '#fff', hoverOffset: 6 }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '52%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const total = ctx.dataset.data.reduce((a,b)=>a+b,0);
+              const pct = total > 0 ? (ctx.parsed/total*100).toFixed(1) : 0;
+              return ` ${ctx.label}: ${(ctx.parsed/1000).toFixed(1)}B€ (${pct}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
 function initStackedBarChart(wrapId, seriesList) {
   const wrap = document.getElementById(wrapId);
   if (!wrap) return;
@@ -2913,7 +2975,7 @@ function renderDashboard(data, fromCache) {
   if (recDecompR.status === 'fulfilled') {
     const series = recDecompR.value.filter(s => s.pts && s.pts.length > 0);
     if (series.length) {
-      initStackedBarChart('wrap-rec-decomp', series);
+      initPieDecomp('wrap-rec-decomp', 'legend-rec-decomp', 'range-rec-decomp', series);
     } else {
       chartError('wrap-rec-decomp', 'Sem dados disponíveis');
     }
@@ -2925,7 +2987,7 @@ function renderDashboard(data, fromCache) {
   if (despDecompR.status === 'fulfilled') {
     const series = despDecompR.value.filter(s => s.pts && s.pts.length > 0);
     if (series.length) {
-      initStackedBarChart('wrap-desp-decomp', series);
+      initPieDecomp('wrap-desp-decomp', 'legend-desp-decomp', 'range-desp-decomp', series);
     } else {
       chartError('wrap-desp-decomp', 'Sem dados disponíveis');
     }

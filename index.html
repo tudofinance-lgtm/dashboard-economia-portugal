@@ -104,10 +104,31 @@
     footer{display:flex;justify-content:space-between;align-items:center;padding:14px 28px;font-size:.64rem;color:var(--muted2);border-top:1px solid var(--border);max-width:1440px;margin:8px auto 0}
     .note{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 12px;font-size:.72rem;color:#92400e;margin-bottom:14px}
     .note-static{background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:5px 10px;font-size:.62rem;color:#0369a1;margin-top:4px;margin-bottom:7px}
+
+    /* ── NAVBAR ── */
+    .navbar{background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+    .navbar-inner{max-width:1440px;margin:0 auto;padding:0 28px;display:flex;align-items:center;gap:0;height:52px}
+    .navbar-brand{font-weight:900;font-size:.95rem;letter-spacing:.03em;text-transform:uppercase;color:var(--text);text-decoration:none;margin-right:28px;white-space:nowrap}
+    .navbar-brand span{color:#2563eb}
+    .navbar-links{display:flex;gap:2px;flex:1}
+    .navbar-link{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:7px;font-size:.8rem;font-weight:600;color:var(--muted);text-decoration:none;transition:background .15s,color .15s;white-space:nowrap}
+    .navbar-link:hover{background:var(--bg);color:var(--text)}
+    .navbar-link.active{background:rgba(37,99,235,.10);color:#2563eb}
+    .navbar-link .nav-icon{font-size:.95rem}
+    @media(max-width:600px){.navbar-brand{font-size:.82rem;margin-right:12px}.navbar-link{padding:5px 10px;font-size:.74rem}}
   </style>
 </head>
 <body>
 
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a class="navbar-brand" href="index.html">Tudo<span>Finance</span></a>
+    <div class="navbar-links">
+      <a class="navbar-link active" href="index.html"><span class="nav-icon">📊</span> Dashboard Macroeconómico</a>
+      <a class="navbar-link" href="euribor.html"><span class="nav-icon">💱</span> Euribor &amp; Crédito</a>
+    </div>
+  </div>
+</nav>
 <header>
   <div class="header-inner">
     <div class="header-left">

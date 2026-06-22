@@ -2538,8 +2538,11 @@ function renderDashboard(data, fromCache) {
     setKPI('kpi-pib', fmtMeur(lat.value),
       `Ano ${lat.date} · ${lat.value.toLocaleString('pt-PT')} M€`,
       prev ? (lat.value - prev.value)/prev.value*100 : null, '%');
+    const _popPrev = prev ? getPopForYear(prev.date) : null;
+    const pcEurPrev = (prev && _popPrev) ? Math.round(prev.value * 1e6 / _popPrev) : null;
+    const pcPct = pcEurPrev ? (pcEur - pcEurPrev) / pcEurPrev * 100 : null;
     setKPI('kpi-pib-pc', pcEur.toLocaleString('pt-PT') + ' €',
-      `Ano ${lat.date} · pop. ${(_popLat/1e6).toFixed(3)}M`, null);
+      `Ano ${lat.date} · pop. ${(_popLat/1e6).toFixed(3)}M`, pcPct, '%');
     initChart('wrap-pib', pibAnnual, 'blue', { meur: true }, 'annual');
 
     // Cards estimativa ano corrente (ponto extrapolado)

@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Euribor — Evolução e Simulador de Prestação</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg:#f0f2f5; --card:#fff; --border:#e4e7ec;
+      --text:#111827; --muted:#6b7280; --muted2:#9ca3af;
+      --accent:#111827; --green:#059669; --red:#dc2626;
+      --blue:#2563eb; --purple:#7c3aed; --teal:#0d9488;
+      --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+
+    /* HEADER */
+    header{background:var(--card);border-bottom:1px solid var(--border);padding:20px 32px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+    .header-left{}
+    .breadcrumb{font-size:.65rem;color:var(--muted);margin-bottom:6px}
+    .breadcrumb a{color:var(--muted);text-decoration:none}
+    .breadcrumb a:hover{color:var(--text)}
+    .header-title{font-size:1.55rem;font-weight:900;letter-spacing:.03em;text-transform:uppercase;color:var(--text);line-height:1.1}
+    .header-subtitle{font-size:.72rem;color:var(--muted);margin-top:4px;letter-spacing:.01em}
+    .header-meta{text-align:right;font-size:.68rem;color:var(--muted);line-height:1.9}
+    .header-meta strong{color:var(--text);font-weight:600}
+
+    /* LAYOUT */
+    main{max-width:1280px;margin:0 auto;padding:24px 28px}
+    section{margin-bottom:32px}
+    .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px}
+    h2{font-size:.9rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text)}
+    h2 em{font-style:normal;font-weight:400;color:var(--muted)}
+
+    /* KPI GRID */
+    .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+    .kpi-card{background:var(--card);border-radius:10px;padding:16px 18px 14px;box-shadow:var(--shadow);border:1px solid var(--border);position:relative;overflow:hidden}
+    .kpi-accent{border-top:3px solid var(--blue)}
+    .kpi-accent-6{border-top:3px solid var(--teal)}
+    .kpi-accent-12{border-top:3px solid var(--purple)}
+    .kpi-icon{position:absolute;top:14px;right:14px;font-size:1rem;opacity:.3}
+    .kpi-label{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:6px;padding-right:22px}
+    .kpi-value{font-size:1.7rem;font-weight:800;color:var(--text);line-height:1;margin-bottom:5px}
+    .kpi-sub{font-size:.63rem;color:var(--muted2);line-height:1.4}
+    .kpi-ref{font-size:.68rem;font-weight:700;margin-top:6px;padding:3px 7px;border-radius:4px;display:inline-block}
+    .kpi-ref-label{font-size:.58rem;color:var(--muted);margin-top:4px}
+    .tag-ref{background:#dbeafe;color:#1e40af}
+    .tag-ref-6{background:#ccfbf1;color:#0f766e}
+    .tag-ref-12{background:#ede9fe;color:#5b21b6}
+    .kpi-loading{color:var(--muted2);animation:pulse 1.4s ease infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+    /* NOTICE */
+    .notice{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;font-size:.72rem;color:#1e3a8a;margin-bottom:20px;line-height:1.6}
+    .notice strong{font-weight:700}
+
+    /* FILTER BUTTONS */
+    .filter-group{display:flex;gap:3px;background:#e9ebee;border-radius:8px;padding:3px}
+    .filter-btn{font-size:.68rem;font-weight:700;padding:4px 13px;border-radius:5px;border:none;background:transparent;color:var(--muted);cursor:pointer;transition:all .15s;letter-spacing:.02em}
+    .filter-btn:hover{color:var(--text)}
+    .filter-btn.active{background:var(--accent);color:#fff;box-shadow:0 1px 3px rgba(0,0,0,.18)}
+
+    /* CHART CARD */
+    .chart-card{background:var(--card);border-radius:10px;padding:20px 22px 16px;box-shadow:var(--shadow);border:1px solid var(--border)}
+    .chart-legend{display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap}
+    .legend-item{display:flex;align-items:center;gap:5px;font-size:.65rem;color:var(--muted);font-weight:600}
+    .legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+    .chart-wrap{position:relative;height:280px}
+    .chart-source{font-size:.58rem;color:var(--muted2);margin-top:8px;text-align:right}
+
+    /* REF LINE NOTE */
+    .ref-note{display:flex;align-items:center;gap:6px;font-size:.65rem;color:#1e40af;background:#eff6ff;border-radius:6px;padding:6px 10px;margin-top:10px}
+    .ref-note::before{content:"ℹ️";font-size:.8rem}
+
+    /* CALCULATOR */
+    .calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+    @media(max-width:700px){.calc-grid{grid-template-columns:1fr}}
+    .calc-panel{background:var(--card);border-radius:12px;padding:24px;box-shadow:var(--shadow);border:1px solid var(--border)}
+    .calc-panel h3{font-size:.8rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--text);margin-bottom:18px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+
+    /* FORM */
+    .form-group{margin-bottom:16px}
+    .form-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:block;margin-bottom:5px}
+    .form-input{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:7px;font-size:.88rem;font-weight:600;color:var(--text);background:var(--bg);transition:border-color .15s;outline:none}
+    .form-input:focus{border-color:#2563eb;background:#fff}
+    .form-hint{font-size:.6rem;color:var(--muted2);margin-top:3px}
+
+    /* INDEXANTE RADIO */
+    .radio-group{display:flex;gap:6px;margin-top:4px}
+    .radio-btn{flex:1;padding:8px 6px;border:1.5px solid var(--border);border-radius:7px;text-align:center;cursor:pointer;font-size:.72rem;font-weight:700;color:var(--muted);transition:all .15s;user-select:none}
+    .radio-btn:hover{border-color:var(--text);color:var(--text)}
+    .radio-btn.sel-3{border-color:var(--blue);color:var(--blue);background:#eff6ff}
+    .radio-btn.sel-6{border-color:var(--teal);color:var(--teal);background:#f0fdfa}
+    .radio-btn.sel-12{border-color:var(--purple);color:var(--purple);background:#f5f3ff}
+    .euribor-fill{font-size:.72rem;color:var(--muted);margin-top:5px}
+    .euribor-fill span{font-weight:700;color:var(--text)}
+
+    /* RANGE SLIDER */
+    .range-row{display:flex;align-items:center;gap:10px}
+    .range-row input[type=range]{flex:1;accent-color:var(--accent)}
+    .range-val{font-size:.88rem;font-weight:700;color:var(--text);min-width:42px;text-align:right}
+
+    /* RESULTS */
+    .result-main{text-align:center;padding:20px 0 16px;border-bottom:1px solid var(--border);margin-bottom:16px}
+    .result-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px}
+    .result-value{font-size:2.8rem;font-weight:900;color:var(--text);line-height:1}
+    .result-unit{font-size:1rem;font-weight:600;color:var(--muted);margin-left:2px}
+
+    .result-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f3f4f6;font-size:.78rem}
+    .result-row:last-child{border-bottom:none}
+    .result-row-label{color:var(--muted)}
+    .result-row-val{font-weight:700;color:var(--text)}
+    .result-row.highlight{background:#f8fafc;border-radius:6px;padding:8px 10px;margin:4px -10px}
+    .result-row.taeg .result-row-val{color:var(--blue)}
+
+    .rates-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+    .rate-box{background:var(--bg);border-radius:8px;padding:10px 12px;text-align:center}
+    .rate-box-label{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:3px}
+    .rate-box-val{font-size:1.25rem;font-weight:800;color:var(--text)}
+
+    .breakdown{background:#f9fafb;border-radius:8px;padding:12px 14px;margin-top:12px}
+    .breakdown-title{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px}
+    .breakdown-bar{height:10px;border-radius:5px;overflow:hidden;display:flex;margin-bottom:8px}
+    .bar-amort{background:#111827}
+    .bar-juros{background:#2563eb}
+    .bar-seguros{background:#f59e0b}
+    .breakdown-legend{display:flex;gap:10px;flex-wrap:wrap}
+    .bl-item{display:flex;align-items:center;gap:5px;font-size:.62rem;color:var(--muted)}
+    .bl-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+
+    /* SENSITIVITY TABLE */
+    .sens-table{width:100%;border-collapse:collapse;font-size:.75rem}
+    .sens-table th{background:#f3f4f6;padding:7px 10px;text-align:center;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);border:1px solid var(--border)}
+    .sens-table td{padding:7px 10px;text-align:center;border:1px solid var(--border);color:var(--text)}
+    .sens-table tr:hover td{background:#f9fafb}
+    .sens-table .current-row td{background:#eff6ff;font-weight:700;color:#1e40af}
+    .sens-table .col-highlight{background:#f0fdf4;font-weight:700}
+
+    /* FOOTER */
+    footer{display:flex;justify-content:space-between;align-items:center;padding:14px 28px;font-size:.63rem;color:var(--muted2);border-top:1px solid var(--border);max-width:1280px;margin:8px auto 0}
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="breadcrumb"><a href="index.html">← Dashboard Económico Portugal</a></div>
+    <div class="header-title">💱 Euribor</div>
+    <div class="header-subtitle">Evolução histórica · Média de referência hipotecária · Simulador de prestação</div>
+  </div>
+  <div class="header-meta">
+    <div><strong>BPstat · Banco de Portugal</strong></div>
+    <div id="last-update" style="color:var(--muted2)">A carregar…</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- KPI CARDS -->
+  <section>
+    <div class="section-head">
+      <h2>Taxas actuais <em>· média mensal mais recente</em></h2>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card kpi-accent" id="kpi-3m">
+        <div class="kpi-icon">💱</div>
+        <div class="kpi-label">Euribor 3M</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div class="kpi-sub" id="kpi-3m-date">A carregar</div>
+        <div class="kpi-ref tag-ref" id="kpi-3m-ref" style="display:none"></div>
+        <div class="kpi-ref-label" id="kpi-3m-ref-label" style="display:none">Mês de referência anterior</div>
+      </div>
+      <div class="kpi-card kpi-accent-6" id="kpi-6m">
+        <div class="kpi-icon">💱</div>
+        <div class="kpi-label">Euribor 6M</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div class="kpi-sub" id="kpi-6m-date">A carregar</div>
+        <div class="kpi-ref tag-ref-6" id="kpi-6m-ref" style="display:none"></div>
+        <div class="kpi-ref-label" id="kpi-6m-ref-label" style="display:none">Mês de referência anterior</div>
+      </div>
+      <div class="kpi-card kpi-accent-12" id="kpi-12m">
+        <div class="kpi-icon">💱</div>
+        <div class="kpi-label">Euribor 12M</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div class="kpi-sub" id="kpi-12m-date">A carregar</div>
+        <div class="kpi-ref tag-ref-12" id="kpi-12m-ref" style="display:none"></div>
+        <div class="kpi-ref-label" id="kpi-12m-ref-label" style="display:none">Mês de referência anterior</div>
+      </div>
+      <div class="kpi-card" style="background:#fafbfc;border-style:dashed">
+        <div class="kpi-icon">🏠</div>
+        <div class="kpi-label">Como funciona?</div>
+        <div style="font-size:.72rem;color:var(--muted);line-height:1.7;margin-top:4px">
+          O banco usa a <strong>média mensal do mês anterior</strong> ao da revisão da prestação.<br>
+          Ex: revisão em Julho → usa média de Junho.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHART -->
+  <section>
+    <div class="section-head">
+      <h2>Evolução histórica <em>· médias mensais desde 1999</em></h2>
+      <div class="filter-group">
+        <button class="filter-btn" data-range="1">1A</button>
+        <button class="filter-btn" data-range="3">3A</button>
+        <button class="filter-btn" data-range="5">5A</button>
+        <button class="filter-btn" data-range="10">10A</button>
+        <button class="filter-btn active" data-range="0">Máx</button>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>Euribor 3M</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--teal)"></div>Euribor 6M</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div>Euribor 12M</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f59e0b;border-radius:2px;width:14px;height:4px;margin-bottom:3px"></div>Média mês anterior (referência)</div>
+      </div>
+      <div class="chart-wrap">
+        <div id="chart-loading" style="display:flex;align-items:center;justify-content:center;height:280px;color:var(--muted2);font-size:.8rem;animation:pulse 1.4s ease infinite">A carregar dados BPstat…</div>
+        <canvas id="euribor-chart" style="display:none"></canvas>
+      </div>
+      <div class="ref-note">A linha a tracejado laranja marca a <strong>média do mês anterior</strong> — o valor que os bancos aplicam na próxima revisão da prestação.</div>
+      <div class="chart-source">Fonte: BPstat / Banco de Portugal · Séries 13168436 (3M), 13168438 (6M), 13168437 (12M)</div>
+    </div>
+  </section>
+
+  <!-- CALCULATOR -->
+  <section>
+    <div class="section-head">
+      <h2>Simulador de prestação <em>· crédito à habitação</em></h2>
+    </div>
+
+    <div class="calc-grid">
+      <!-- INPUTS -->
+      <div class="calc-panel">
+        <h3>Parâmetros do empréstimo</h3>
+
+        <div class="form-group">
+          <label class="form-label">Indexante Euribor</label>
+          <div class="radio-group">
+            <div class="radio-btn" id="rb-3m" onclick="setIndexante('3M')">3 Meses</div>
+            <div class="radio-btn sel-6" id="rb-6m" onclick="setIndexante('6M')">6 Meses</div>
+            <div class="radio-btn" id="rb-12m" onclick="setIndexante('12M')">12 Meses</div>
+          </div>
+          <div class="euribor-fill" id="euribor-fill">Euribor 6M: <span id="euribor-fill-val">—</span> (média mês anterior)</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Capital em dívida (€)</label>
+          <input type="number" class="form-input" id="inp-capital" value="150000" min="10000" max="2000000" step="5000" oninput="calc()">
+          <div class="form-hint">Valor actual em dívida (não o valor inicial do empréstimo)</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Prazo restante</label>
+          <div class="range-row">
+            <input type="range" id="inp-prazo" min="1" max="40" value="25" oninput="document.getElementById('prazo-val').textContent=this.value+' anos';calc()">
+            <div class="range-val" id="prazo-val">25 anos</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Spread do banco (%)</label>
+          <input type="number" class="form-input" id="inp-spread" value="1.00" min="0" max="5" step="0.05" oninput="calc()">
+          <div class="form-hint">Margem fixa do banco — não muda com o Euribor</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Seguro multirisco (€/mês)</label>
+          <input type="number" class="form-input" id="inp-multirisco" value="25" min="0" max="500" step="1" oninput="calc()">
+          <div class="form-hint">Seguro do imóvel exigido pelo banco</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Seguro de vida / habitação (€/mês)</label>
+          <input type="number" class="form-input" id="inp-vida" value="80" min="0" max="1000" step="1" oninput="calc()">
+          <div class="form-hint">Seguro de vida vinculado ao crédito</div>
+        </div>
+      </div>
+
+      <!-- RESULTS -->
+      <div class="calc-panel">
+        <h3>Resultado da simulação</h3>
+
+        <div class="result-main">
+          <div class="result-label">Prestação mensal total</div>
+          <div class="result-value" id="res-total">—<span class="result-unit">€</span></div>
+          <div style="font-size:.68rem;color:var(--muted);margin-top:4px" id="res-total-sub">capital + juros + seguros</div>
+        </div>
+
+        <div class="rates-grid">
+          <div class="rate-box">
+            <div class="rate-box-label">TAN (Taxa Nominal)</div>
+            <div class="rate-box-val" id="res-tan">—</div>
+          </div>
+          <div class="rate-box">
+            <div class="rate-box-label">TAEG (c/ seguros)</div>
+            <div class="rate-box-val" style="color:var(--blue)" id="res-taeg">—</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="result-row">
+            <span class="result-row-label">Prestação base (capital + juros)</span>
+            <span class="result-row-val" id="res-base">—</span>
+          </div>
+          <div class="result-row">
+            <span class="result-row-label">Seguro multirisco</span>
+            <span class="result-row-val" id="res-mr">—</span>
+          </div>
+          <div class="result-row">
+            <span class="result-row-label">Seguro de vida</span>
+            <span class="result-row-val" id="res-vida">—</span>
+          </div>
+          <div class="result-row" style="border-top:2px solid var(--border);margin-top:4px;padding-top:10px">
+            <span class="result-row-label" style="font-weight:700;color:var(--text)">Total mensal</span>
+            <span class="result-row-val" style="font-size:1.05rem" id="res-total2">—</span>
+          </div>
+          <div class="result-row">
+            <span class="result-row-label">Juros totais (vida do empréstimo)</span>
+            <span class="result-row-val" style="color:var(--red)" id="res-juros-total">—</span>
+          </div>
+          <div class="result-row">
+            <span class="result-row-label">Custo total do crédito</span>
+            <span class="result-row-val" id="res-custo-total">—</span>
+          </div>
+        </div>
+
+        <div class="breakdown" id="breakdown" style="display:none">
+          <div class="breakdown-title">Composição da prestação base</div>
+          <div class="breakdown-bar">
+            <div class="bar-amort" id="bar-amort" style="width:60%"></div>
+            <div class="bar-juros" id="bar-juros" style="width:40%"></div>
+          </div>
+          <div class="breakdown-legend">
+            <div class="bl-item"><div class="bl-dot" style="background:#111827"></div>Amortização: <strong id="bl-amort">—</strong></div>
+            <div class="bl-item"><div class="bl-dot" style="background:#2563eb"></div>Juros: <strong id="bl-juros">—</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SENSITIVITY TABLE -->
+  <section>
+    <div class="section-head">
+      <h2>Tabela de sensibilidade <em>· prestação base em função do Euribor e spread</em></h2>
+    </div>
+    <div class="chart-card" style="overflow-x:auto">
+      <table class="sens-table" id="sens-table">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+      <div class="chart-source" style="margin-top:10px">Valores sem seguros. Capital e prazo conforme simulador acima.</div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <span>Fonte: BPstat · Banco de Portugal · médias mensais Euribor</span>
+  <span>Dashboard Económico Portugal · <a href="index.html" style="color:inherit">← voltar ao painel</a></span>
+</footer>
+
+<script>
+/* ── CONFIG ── */
+const BPSTAT_API = 'https://bpstat.bportugal.pt/data/v1';
+const ECB_API = 'https://data-api.ecb.europa.eu/service/data';
+
+const SERIES_IDS = { '3M': 13168436, '6M': 13168438, '12M': 13168437 };
+const ECB_KEYS   = { '3M': 'FM/M.U2.EUR.RT.MM.EURIBOR3MD_.HSTA', '6M': 'FM/M.U2.EUR.RT.MM.EURIBOR6MD_.HSTA', '12M': 'FM/M.U2.EUR.RT.MM.EURIBOR1YD_.HSTA' };
+const COLOURS    = { '3M': '#2563eb', '6M': '#0d9488', '12M': '#7c3aed' };
+
+let allData   = { '3M': [], '6M': [], '12M': [] };
+let indexante = '6M';
+let chart     = null;
+let activeRange = 0; // years, 0 = all
+
+/* ── BPSTAT FETCH ── */
+async function bpFetchDataset(domainId, datasetId, seriesId) {
+  const url = `${BPSTAT_API}/domains/${domainId}/datasets/${datasetId}/?lang=PT&series_ids=${seriesId}`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+async function bpFetchMeta(seriesId) {
+  const r = await fetch(`${BPSTAT_API}/series/?series_ids=${seriesId}&lang=PT`);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return (await r.json())[0];
+}
+
+function bpExtract(ds, seriesId) {
+  const series = ds.extension?.series || [];
+  const s = series.find(x => x.id === seriesId);
+  if (!s) return null;
+  const dimIds = ds.id, dimSizes = ds.size, dims = ds.dimension, values = ds.value;
+  const timeRole = (ds.role?.time || ['reference_date'])[0];
+  const timeIdx = dimIds.indexOf(timeRole);
+  const strides = new Array(dimIds.length);
+  strides[dimIds.length - 1] = 1;
+  for (let i = dimIds.length - 2; i >= 0; i--) strides[i] = strides[i+1] * dimSizes[i+1];
+  const dimCat = {};
+  s.dimension_category.forEach(dc => { dimCat[String(dc.dimension_id)] = dc.category_id; });
+  let base = 0;
+  for (let i = 0; i < dimIds.length; i++) {
+    if (dimIds[i] === timeRole) continue;
+    const catId = dimCat[dimIds[i]];
+    const catArr = dims[dimIds[i]]?.category?.index || [];
+    const catIdx = catArr.map(String).indexOf(String(catId));
+    if (catIdx >= 0) base += catIdx * strides[i];
+  }
+  const dates = dims[timeRole]?.category?.index || [];
+  const result = [];
+  for (let t = 0; t < dates.length; t++) {
+    const key = base + t * strides[timeIdx];
+    const v = Array.isArray(values) ? values[key] : values[String(key)];
+    if (v != null) result.push({ date: dates[t], value: v });
+  }
+  return result;
+}
+
+async function bpGetSeries(seriesId) {
+  const meta = await bpFetchMeta(seriesId);
+  const ds = await bpFetchDataset(meta.domain_ids[0], meta.dataset_id, seriesId);
+  const pts = bpExtract(ds, seriesId);
+  if (!pts || pts.length === 0) throw new Error('No data');
+  return pts;
+}
+
+/* ── ECB FALLBACK ── */
+async function ecbGetSeries(key) {
+  const url = `${ECB_API}/${key}?format=jsondata&detail=dataonly&startPeriod=1999-01`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`ECB HTTP ${r.status}`);
+  const j = await r.json();
+  const td = j.structure.dimensions.observation.find(d => d.id === 'TIME_PERIOD');
+  const dates = td.values.map(v => v.id);
+  const obs = Object.values(j.dataSets[0].series)[0].observations;
+  return dates.map((d, i) => obs[String(i)] ? { date: d, value: obs[String(i)][0] } : null).filter(Boolean);
+}
+
+/* ── CHART ── */
+function buildChart() {
+  const cutoff = activeRange === 0 ? null : new Date();
+  if (cutoff) cutoff.setFullYear(cutoff.getFullYear() - activeRange);
+
+  const datasets = ['3M', '6M', '12M'].map(m => {
+    const pts = allData[m].filter(p => !cutoff || new Date(p.date + '-01') >= cutoff);
+    return {
+      label: `Euribor ${m}`,
+      data: pts.map(p => ({ x: p.date, y: p.value })),
+      borderColor: COLOURS[m],
+      backgroundColor: COLOURS[m] + '12',
+      borderWidth: 1.8,
+      pointRadius: 0,
+      tension: 0.2,
+      fill: false
+    };
+  });
+
+  // Add reference lines (previous month avg for each maturity)
+  ['3M', '6M', '12M'].forEach(m => {
+    const pts = allData[m];
+    if (pts.length < 2) return;
+    const refPt = pts[pts.length - 2]; // previous completed month
+    const filtered = allData[m].filter(p => !cutoff || new Date(p.date + '-01') >= cutoff);
+    if (!filtered.length) return;
+    const start = filtered[0].date;
+    const end = filtered[filtered.length - 1].date;
+    datasets.push({
+      label: `Ref ${m}`,
+      data: [{ x: start, y: refPt.value }, { x: end, y: refPt.value }],
+      borderColor: '#f59e0b',
+      borderWidth: 1.5,
+      borderDash: [5, 4],
+      pointRadius: 0,
+      tension: 0,
+      fill: false,
+      hidden: m !== indexante // show only selected indexante reference
+    });
+  });
+
+  const ctx = document.getElementById('euribor-chart').getContext('2d');
+  if (chart) chart.destroy();
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: { datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              if (ctx.dataset.label.startsWith('Ref')) return null;
+              return ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(3)}%`;
+            },
+            filter: item => !item.dataset.label.startsWith('Ref')
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: 'category',
+          ticks: {
+            maxTicksLimit: 12,
+            font: { size: 10 },
+            color: '#9ca3af',
+            maxRotation: 0,
+            callback: function(val, idx) {
+              const label = this.getLabelForValue(val);
+              if (!label) return '';
+              const [y, m] = label.split('-');
+              return m === '01' ? y : (m === '07' ? `Jul ${y}` : '');
+            }
+          },
+          grid: { color: '#f3f4f6' }
+        },
+        y: {
+          ticks: { font: { size: 10 }, color: '#9ca3af', callback: v => v.toFixed(1) + '%' },
+          grid: { color: '#f3f4f6' }
+        }
+      }
+    }
+  });
+}
+
+function updateChartRange(years) {
+  activeRange = years;
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.range) === years);
+  });
+  buildChart();
+}
+
+/* ── KPI CARDS ── */
+function setKPI(mat, data) {
+  if (!data || data.length === 0) return;
+  const last  = data[data.length - 1];
+  const prev  = data.length >= 2 ? data[data.length - 2] : null;
+  const suf   = mat === '3M' ? '3m' : mat === '6M' ? '6m' : '12m';
+
+  document.querySelector(`#kpi-${suf} .kpi-value`).textContent = last.value.toFixed(3) + '%';
+  document.querySelector(`#kpi-${suf} .kpi-value`).classList.remove('kpi-loading');
+  document.getElementById(`kpi-${suf}-date`).textContent = `Média ${formatDate(last.date)}`;
+
+  if (prev) {
+    const refEl  = document.getElementById(`kpi-${suf}-ref`);
+    const labEl  = document.getElementById(`kpi-${suf}-ref-label`);
+    refEl.textContent = prev.value.toFixed(3) + '%  ←  ' + formatDate(prev.date);
+    refEl.style.display = 'inline-block';
+    labEl.style.display = 'block';
+  }
+}
+
+function formatDate(d) {
+  const [y, m] = d.split('-');
+  const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  return `${months[parseInt(m)-1]} ${y}`;
+}
+
+/* ── MORTGAGE CALCULATOR ── */
+function setIndexante(m) {
+  indexante = m;
+  ['3M','6M','12M'].forEach(x => {
+    const rb = document.getElementById(`rb-${x.toLowerCase().replace('m','m')}`);
+  });
+  document.getElementById('rb-3m').className  = 'radio-btn' + (m==='3M'  ? ' sel-3'  : '');
+  document.getElementById('rb-6m').className  = 'radio-btn' + (m==='6M'  ? ' sel-6'  : '');
+  document.getElementById('rb-12m').className = 'radio-btn' + (m==='12M' ? ' sel-12' : '');
+
+  const data = allData[m];
+  if (data && data.length >= 2) {
+    const ref = data[data.length - 2].value; // previous month
+    document.getElementById('euribor-fill-val').textContent = ref.toFixed(3) + '%';
+    document.getElementById('euribor-fill').querySelector('span:first-child') && null;
+    document.getElementById('euribor-fill').innerHTML = `Euribor ${m}: <span>${ref.toFixed(3)}%</span> (média ${formatDate(data[data.length-2].date)})`;
+  }
+
+  // update chart reference line visibility
+  if (chart) {
+    chart.data.datasets.forEach(ds => {
+      if (ds.label.startsWith('Ref ')) {
+        ds.hidden = ds.label !== `Ref ${m}`;
+      }
+    });
+    chart.update();
+  }
+  calc();
+}
+
+function getEuriborRef() {
+  const data = allData[indexante];
+  if (!data || data.length < 2) return 0;
+  return data[data.length - 2].value; // previous month average
+}
+
+function fmt(n) {
+  return n.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+}
+
+function calcIRR(capital, monthlyOutflow, n) {
+  // Newton-Raphson: find monthly rate r s.t. capital = sum monthlyOutflow/(1+r)^t
+  let r = 0.003;
+  for (let iter = 0; iter < 100; iter++) {
+    let f = 0, df = 0;
+    for (let t = 1; t <= n; t++) {
+      const factor = Math.pow(1 + r, -t);
+      f  += monthlyOutflow * factor;
+      df -= t * monthlyOutflow * factor / (1 + r);
+    }
+    f -= capital;
+    const rNew = r - f / df;
+    if (Math.abs(rNew - r) < 1e-10) break;
+    r = rNew;
+  }
+  return r * 12; // annual
+}
+
+function calc() {
+  const capital   = parseFloat(document.getElementById('inp-capital').value)    || 0;
+  const prazoAnos = parseInt(document.getElementById('inp-prazo').value)         || 25;
+  const spread    = parseFloat(document.getElementById('inp-spread').value)      || 0;
+  const mr        = parseFloat(document.getElementById('inp-multirisco').value)  || 0;
+  const vida      = parseFloat(document.getElementById('inp-vida').value)        || 0;
+  const euribor   = getEuriborRef();
+
+  const n     = prazoAnos * 12;
+  const tan   = euribor + spread;          // % annual
+  const r_m   = tan / 100 / 12;           // monthly rate
+
+  let prestBase;
+  if (r_m < 0.00001) {
+    prestBase = capital / n;
+  } else {
+    prestBase = capital * r_m / (1 - Math.pow(1 + r_m, -n));
+  }
+
+  const seguros   = mr + vida;
+  const total     = prestBase + seguros;
+  const jurosPag  = prestBase * n - capital;
+  const custoTotal= total * n;
+
+  // TAEG (monthly IRR → annual)
+  let taeg = 0;
+  if (total > 0 && capital > 0) {
+    try {
+      const r_irr = calcIRR(capital, total, n);
+      taeg = r_irr * 100;
+    } catch(e) { taeg = tan; }
+  }
+
+  // Breakdown month 1
+  const jurosMes1 = capital * r_m;
+  const amortMes1 = prestBase - jurosMes1;
+  const amortPct  = prestBase > 0 ? amortMes1 / prestBase * 100 : 50;
+  const jurosPct  = 100 - amortPct;
+
+  // Update UI
+  document.getElementById('res-total').innerHTML  = capital > 0 ? total.toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2}) + '<span class="result-unit">€</span>' : '—';
+  document.getElementById('res-total-sub').textContent = `${indexante} ${euribor.toFixed(3)}% + spread ${spread.toFixed(2)}% + seguros ${seguros.toFixed(0)}€`;
+  document.getElementById('res-tan').textContent   = tan.toFixed(3) + '%';
+  document.getElementById('res-taeg').textContent  = taeg > 0 ? taeg.toFixed(3) + '%' : '—';
+  document.getElementById('res-base').textContent  = fmt(prestBase);
+  document.getElementById('res-mr').textContent    = fmt(mr);
+  document.getElementById('res-vida').textContent  = fmt(vida);
+  document.getElementById('res-total2').textContent= fmt(total);
+  document.getElementById('res-juros-total').textContent = fmt(jurosPag);
+  document.getElementById('res-custo-total').textContent = fmt(custoTotal);
+
+  // Breakdown bar
+  if (capital > 0) {
+    document.getElementById('breakdown').style.display = 'block';
+    document.getElementById('bar-amort').style.width = Math.max(5, amortPct).toFixed(1) + '%';
+    document.getElementById('bar-juros').style.width = Math.max(5, jurosPct).toFixed(1) + '%';
+    document.getElementById('bl-amort').textContent = fmt(amortMes1);
+    document.getElementById('bl-juros').textContent = fmt(jurosMes1);
+  }
+
+  // Sensitivity table
+  buildSensTable(capital, n, spread, mr, vida, euribor);
+}
+
+function buildSensTable(capital, n, spread, mr, vida, currentEuribor) {
+  const euriborLevels = [-1.5, -1.0, -0.5, 0, 0.5, 1.0, 1.5, 2.0].map(d => {
+    return parseFloat((Math.max(0, currentEuribor + d)).toFixed(3));
+  });
+  const spreads = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+
+  const thead = document.querySelector('#sens-table thead');
+  const tbody = document.querySelector('#sens-table tbody');
+  thead.innerHTML = '';
+  tbody.innerHTML = '';
+
+  const hRow = document.createElement('tr');
+  hRow.innerHTML = `<th>Euribor →<br>Spread ↓</th>` + euriborLevels.map(e => `<th>${e.toFixed(2)}%</th>`).join('');
+  thead.appendChild(hRow);
+
+  spreads.forEach(sp => {
+    const tr = document.createElement('tr');
+    const isCurrentSpread = Math.abs(sp - spread) < 0.01;
+    tr.innerHTML = `<td style="font-weight:700">${sp.toFixed(2)}%</td>` + euriborLevels.map(e => {
+      const r_m = (e + sp) / 100 / 12;
+      let p;
+      if (r_m < 0.00001) p = capital / n;
+      else p = capital * r_m / (1 - Math.pow(1 + r_m, -n));
+      const isCurrentE = Math.abs(e - currentEuribor) < 0.01;
+      const cls = (isCurrentSpread && isCurrentE) ? 'current-row' : (isCurrentE ? 'col-highlight' : '');
+      return `<td class="${cls}">${p.toLocaleString('pt-PT',{maximumFractionDigits:0})}€</td>`;
+    }).join('');
+    if (isCurrentSpread) tr.classList.add('current-row');
+    tbody.appendChild(tr);
+  });
+}
+
+/* ── FILTER BUTTONS ── */
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => updateChartRange(parseInt(btn.dataset.range)));
+});
+
+/* ── INIT ── */
+async function init() {
+  try {
+    const results = await Promise.allSettled([
+      bpGetSeries(SERIES_IDS['3M']),
+      bpGetSeries(SERIES_IDS['6M']),
+      bpGetSeries(SERIES_IDS['12M'])
+    ]);
+
+    const mats = ['3M', '6M', '12M'];
+    for (let i = 0; i < 3; i++) {
+      if (results[i].status === 'fulfilled') {
+        allData[mats[i]] = results[i].value;
+      } else {
+        // ECB fallback
+        try {
+          allData[mats[i]] = await ecbGetSeries(ECB_KEYS[mats[i]]);
+        } catch(e) {
+          console.warn('Both BPstat and ECB failed for', mats[i], e);
+        }
+      }
+    }
+
+    // KPI cards
+    setKPI('3M', allData['3M']);
+    setKPI('6M', allData['6M']);
+    setKPI('12M', allData['12M']);
+
+    // Update "last updated"
+    const lastDates = Object.values(allData).map(d => d.length ? d[d.length-1].date : '').filter(Boolean).sort();
+    if (lastDates.length) {
+      document.getElementById('last-update').textContent = 'Dados: ' + formatDate(lastDates[lastDates.length-1]);
+    }
+
+    // Chart
+    document.getElementById('chart-loading').style.display = 'none';
+    document.getElementById('euribor-chart').style.display = 'block';
+    buildChart();
+
+    // Calculator init
+    setIndexante('6M');
+    calc();
+
+  } catch(e) {
+    console.error('Init failed', e);
+    document.getElementById('chart-loading').textContent = 'Erro ao carregar dados. Recarregue a página.';
+    document.getElementById('chart-loading').style.animation = 'none';
+    document.getElementById('chart-loading').style.color = '#dc2626';
+  }
+}
+
+init();
+</script>
+</body>
+</html>

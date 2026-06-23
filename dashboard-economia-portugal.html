@@ -3,7 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard Económico — Portugal</title>
+  <title>Dashboard Económico Portugal — Indicadores Macroeconómicos em Tempo Real</title>
+  <meta name="description" content="Painel de dados macroeconómicos de Portugal: PIB, inflação, desemprego, dívida pública, balança corrente, Euribor e mais. Dados de fontes oficiais actualizados automaticamente."/>
+  <meta name="keywords" content="dashboard economia portugal, PIB portugal, inflação portugal, desemprego portugal, dívida pública, euribor, dados macroeconómicos"/>
+  <meta name="robots" content="index, follow"/>
+  <link rel="canonical" href="https://dashboardportugal.pt/"/>
+  <!-- Open Graph -->
+  <meta property="og:type" content="website"/>
+  <meta property="og:title" content="Dashboard Económico Portugal — Indicadores Macroeconómicos"/>
+  <meta property="og:description" content="Painel de dados macroeconómicos de Portugal: PIB, inflação, desemprego, dívida pública e mais. Dados de fontes oficiais actualizados automaticamente."/>
+  <meta property="og:url" content="https://dashboardportugal.pt/"/>
+  <meta property="og:locale" content="pt_PT"/>
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Dashboard Económico Portugal",
+    "description": "Painel de indicadores macroeconómicos de Portugal com dados em tempo real de fontes oficiais.",
+    "url": "https://dashboardportugal.pt/",
+    "inLanguage": "pt-PT"
+  }
+  </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <script>
     /* REN_DATA_START */
@@ -747,7 +768,7 @@ const API = 'https://bpstat.bportugal.pt/data/v1';
 
 /* ── CLOUDFLARE WORKER (opcional) ──────────────────────────
    Depois de fazer deploy do Worker, substituir null pelo URL:
-   const WORKER_URL = 'https://tudofinance.pt/api/data';
+   const WORKER_URL = 'https://dashboardportugal.pt/api/data';
    Enquanto null, o dashboard continua a chamar as APIs directamente. */
 const WORKER_URL = null;
 let _workerData = null;

@@ -423,6 +423,57 @@
         </div>
         <div class="chart-wrap" style="height:240px" id="wrap-divida-total"><div class="chart-loading">A carregar…</div></div>
       </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Prestação Mediana · Habitação</div>
+            <div class="chart-subtitle">Stock de empréstimos · percentil 50 · mensal · €</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-source">BPstat · Série 12710744</div>
+            <div class="chart-range" id="range-prestacao">–</div>
+          </div>
+        </div>
+        <div class="chart-wrap" id="wrap-prestacao"><div class="chart-loading">A carregar…</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Endividamento dos Particulares</div>
+            <div class="chart-src" id="src-endiv">BPstat · Banco de Portugal</div>
+          </div>
+          <div class="chart-range" id="range-endiv" style="text-align:right">–</div>
+        </div>
+        <div class="chart-wrap" id="wrap-endiv"><div class="chart-loading">A carregar…</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Receitas AP — Decomposição</div>
+            <div class="chart-subtitle">Ano mais recente · % do total · AP consolidadas</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-source">BPstat · 12560975 · 79 · 83 · 55 · 71</div>
+            <div class="chart-range" id="range-rec-decomp">–</div>
+          </div>
+        </div>
+        <div class="chart-legend" id="legend-rec-decomp"></div>
+        <div class="chart-wrap" style="height:280px" id="wrap-rec-decomp"><div class="chart-loading">A carregar…</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Despesas AP — Decomposição</div>
+            <div class="chart-subtitle">Ano mais recente · % do total · AP consolidadas</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-source">BPstat · 12560987–92 · 67</div>
+            <div class="chart-range" id="range-desp-decomp">–</div>
+          </div>
+        </div>
+        <div class="chart-legend" id="legend-desp-decomp"></div>
+        <div class="chart-wrap" style="height:280px" id="wrap-desp-decomp"><div class="chart-loading">A carregar…</div></div>
+      </div>
     </div>
   </section>
 
@@ -603,80 +654,6 @@
     </div>
   </section>
 
-  <!-- HABITAÇÃO E ENDIVIDAMENTO -->
-  <section>
-    <div class="section-head">
-      <h2>Habitação e Endividamento <span>· Particulares</span></h2>
-    </div>
-    <div class="charts-grid">
-      <div class="chart-card">
-        <div class="chart-header">
-          <div>
-            <div class="chart-title">Prestação Mediana · Habitação</div>
-            <div class="chart-subtitle">Stock de empréstimos · percentil 50 · mensal · €</div>
-          </div>
-          <div style="text-align:right">
-            <div class="chart-source">BPstat · Série 12710744</div>
-            <div class="chart-range" id="range-prestacao">–</div>
-          </div>
-        </div>
-        <div class="chart-wrap" id="wrap-prestacao"><div class="chart-loading">A carregar…</div></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-header">
-          <div>
-            <div class="chart-title">Endividamento dos Particulares</div>
-            <div class="chart-src" id="src-endiv">BPstat · Banco de Portugal</div>
-          </div>
-          <div class="chart-range" id="range-endiv" style="text-align:right">–</div>
-        </div>
-        <div class="chart-wrap" id="wrap-endiv"><div class="chart-loading">A carregar…</div></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- AD: LEADERBOARD 2 — a meio da página -->
-  <div class="ad-leaderboard">
-    <!-- <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins> -->
-    <div class="ad-placeholder">Publicidade · 728×90</div>
-  </div>
-
-  <!-- DECOMPOSIÇÃO RECEITAS E DESPESAS AP -->
-  <section>
-    <div class="section-head">
-      <h2>Composição Orçamental AP <span>· Receitas e Despesas por Categoria</span></h2>
-    </div>
-    <div class="charts-grid">
-      <div class="chart-card">
-        <div class="chart-header">
-          <div>
-            <div class="chart-title">Receitas AP — Decomposição</div>
-            <div class="chart-subtitle">Ano mais recente · % do total · AP consolidadas</div>
-          </div>
-          <div style="text-align:right">
-            <div class="chart-source">BPstat · 12560975 · 79 · 83 · 55 · 71</div>
-            <div class="chart-range" id="range-rec-decomp">–</div>
-          </div>
-        </div>
-        <div class="chart-legend" id="legend-rec-decomp"></div>
-        <div class="chart-wrap" style="height:280px" id="wrap-rec-decomp"><div class="chart-loading">A carregar…</div></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-header">
-          <div>
-            <div class="chart-title">Despesas AP — Decomposição</div>
-            <div class="chart-subtitle">Ano mais recente · % do total · AP consolidadas</div>
-          </div>
-          <div style="text-align:right">
-            <div class="chart-source">BPstat · 12560987–92 · 67</div>
-            <div class="chart-range" id="range-desp-decomp">–</div>
-          </div>
-        </div>
-        <div class="chart-legend" id="legend-desp-decomp"></div>
-        <div class="chart-wrap" style="height:280px" id="wrap-desp-decomp"><div class="chart-loading">A carregar…</div></div>
-      </div>
-    </div>
-  </section>
 
   <!-- SALDOS SECTORIAIS + SENTIMENTO ECONÓMICO -->
   <section>

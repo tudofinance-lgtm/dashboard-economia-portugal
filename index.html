@@ -616,7 +616,7 @@
         <div class="chart-header">
           <div>
             <div class="chart-title">PIB per Capita — Portugal</div>
-            <div class="chart-subtitle">Preços correntes · anual · €/habitante · BPstat ÷ INE</div>
+            <div class="chart-subtitle">Preços correntes · anual · BPstat ÷ INE · <span style="color:#7c3aed">---</span> PPC (Eurostat)</div>
           </div>
           <div style="text-align:right">
             <div class="chart-source">BPstat · INE</div>
@@ -1158,6 +1158,23 @@ const PT_PPP_RATE_FALLBACK = [
   {date:'2025',rate:0.839373},
 ];
 
+// EXP_PPS_EU27_2020_HAB para Portugal (Eurostat prc_ppp_ind_1 · GDP)
+// PIB per capita real em PPC (PPS por habitante) — dados directos Eurostat
+const PT_PIB_PC_PPS_HAB_FALLBACK = [
+  {date:'1995',value:12100},{date:'1996',value:12600},{date:'1997',value:13200},
+  {date:'1998',value:13900},{date:'1999',value:14800},{date:'2000',value:15700},
+  {date:'2001',value:16200},{date:'2002',value:16700},{date:'2003',value:17100},
+  {date:'2004',value:17500},{date:'2005',value:18600},{date:'2006',value:19600},
+  {date:'2007',value:20300},{date:'2008',value:20700},{date:'2009',value:20000},
+  {date:'2010',value:20700},{date:'2011',value:19900},{date:'2012',value:19500},
+  {date:'2013',value:20200},{date:'2014',value:20600},{date:'2015',value:21200},
+  {date:'2016',value:21900},{date:'2017',value:22600},{date:'2018',value:23500},
+  {date:'2019',value:24500},{date:'2020',value:22800},{date:'2021',value:24600},
+  {date:'2022',value:27800},{date:'2023',value:31100},
+  {date:'2024',value:32900},{date:'2025',value:33800}, // provisório
+];
+
+
 async function loadPIBperCapitaEU(ptPibAnnual) {
   const ptPts = ptPibAnnual.map(p => ({
     date: p.date,
@@ -1204,27 +1221,30 @@ async function loadPIBperCapitaEU(ptPibAnnual) {
     try {
       const wd = await _getWorkerData();
       const euPts = wd?.eurostat?.pibEU;
-      if (euPts?.length > 5) return { pt: ptPts, eu: euPts, ptPPS: applyPPP(ptPts, PT_PPP_RATE_FALLBACK) };
+      if (euPts?.length > 5) return { pt: ptPts, eu: euPts, ptPPS: applyPPP(ptPts, PT_PPP_RATE_FALLBACK), ptPPSHab: PT_PIB_PC_PPS_HAB_FALLBACK };
     } catch(e) {}
   }
 
-  // Try Eurostat live API — EU EUR + taxas PPP PT em paralelo
+  // Try Eurostat live API — EU EUR + taxas PPP PT + EXP_PPS_EU27_2020_HAB em paralelo
   try {
     const SIG = { signal: AbortSignal.timeout(10000) };
-    const [rEuEur, rPPP] = await Promise.all([
+    const [rEuEur, rPPP, rPPSHab] = await Promise.all([
       fetch('https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/nama_10_pc' +
         '?na_item=B1GQ&format=JSON&startPeriod=2000&lang=pt&geo=EU27_2020&unit=CP_EUR_HAB', SIG).then(r => r.json()),
       fetch('https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_ppp_ind_1' +
         '?ppp_cat18=GDP&geo=PT&indic_ppp=PPP_EU27_2020&format=JSON', SIG).then(r => r.json()),
+      fetch('https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_ppp_ind_1' +
+        '?ppp_cat18=GDP&geo=PT&indic_ppp=EXP_PPS_EU27_2020_HAB&format=JSON', SIG).then(r => r.json()),
     ]);
-    const euPts  = parseEurostatTS(rEuEur);
+    const euPts    = parseEurostatTS(rEuEur);
     const pppRates = parsePPPRates(rPPP);
-    const ptPPS = applyPPP(ptPts, pppRates.length ? pppRates : PT_PPP_RATE_FALLBACK);
-    if (euPts.length) return { pt: ptPts, eu: euPts, ptPPS, isLive: true };
+    const ptPPS    = applyPPP(ptPts, pppRates.length ? pppRates : PT_PPP_RATE_FALLBACK);
+    const ptPPSHab = parsePPPRates(rPPSHab).map(r => ({ date: r.date, value: Math.round(r.rate) }));
+    if (euPts.length) return { pt: ptPts, eu: euPts, ptPPS, ptPPSHab: ptPPSHab.length ? ptPPSHab : PT_PIB_PC_PPS_HAB_FALLBACK, isLive: true };
   } catch (e) {
     console.warn('Eurostat PIB per capita fallback:', e.message);
   }
-  return { pt: ptPts, eu: EU_PIB_PC_FALLBACK, ptPPS: applyPPP(ptPts, PT_PPP_RATE_FALLBACK) };
+  return { pt: ptPts, eu: EU_PIB_PC_FALLBACK, ptPPS: applyPPP(ptPts, PT_PPP_RATE_FALLBACK), ptPPSHab: PT_PIB_PC_PPS_HAB_FALLBACK };
 }
 
 // DE Bund 10Y fallback: valores mensais reais (BCE) até Jun 2026
@@ -3325,15 +3345,45 @@ function renderDashboard(data, fromCache) {
       .filter(p => !p.isExtrapolated)
       .map(p => ({ date: p.date, value: Math.round(p.value * 1e6 / getPopForYear(p.date)) }))
       .filter(p => p.value > 0);
+    // PPS per capita (Eurostat prc_ppp_ind_1 · EXP_PPS_EU27_2020_HAB)
+    const _ppsHabSrc = (pibEuR.status === 'fulfilled' && pibEuR.value?.ptPPSHab) ? pibEuR.value.ptPPSHab : PT_PIB_PC_PPS_HAB_FALLBACK;
     const _pcWrap = document.getElementById('wrap-pib-pc-pt');
     if (_pcWrap) {
       _pcWrap.innerHTML = '<canvas></canvas>';
       const _pcSlice = sliceByYears(pibPcPts, activeYears === 'max' ? 'max' : parseInt(activeYears), 'annual');
+      // Alinhar PPS com as mesmas labels do slice
+      const _labelSet = new Set(_pcSlice.map(p => p.date));
+      const _ppsSlice = _ppsHabSrc.filter(p => _labelSet.has(p.date));
+      const _ppsMap = Object.fromEntries(_ppsSlice.map(p => [p.date, p.value]));
+      const _ppsData = _pcSlice.map(p => _ppsMap[p.date] ?? null);
       const _pcChart = new Chart(_pcWrap.querySelector('canvas'), {
         type: 'bar',
         data: {
           labels: _pcSlice.map(p => p.date),
-          datasets: [{ data: _pcSlice.map(p => p.value), backgroundColor: 'rgba(14,116,144,.65)', borderColor: '#0e7490', borderWidth: 1 }],
+          datasets: [
+            {
+              type: 'bar',
+              label: 'PIB pc (€)',
+              data: _pcSlice.map(p => p.value),
+              backgroundColor: 'rgba(14,116,144,.65)',
+              borderColor: '#0e7490',
+              borderWidth: 1,
+              order: 2,
+            },
+            {
+              type: 'line',
+              label: 'PIB pc (PPC)',
+              data: _ppsData,
+              borderColor: '#7c3aed',
+              backgroundColor: 'transparent',
+              borderWidth: 2,
+              borderDash: [4, 3],
+              pointRadius: 0,
+              tension: 0.1,
+              spanGaps: true,
+              order: 1,
+            },
+          ],
         },
         options: { ...baseChartOptions({ eur: true }), plugins: { legend: { display: false } } },
       });

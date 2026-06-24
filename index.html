@@ -2603,7 +2603,7 @@ async function fetchAllData() {
     saldoR, saldoEstadoR, recDepR, brentR, pibEuR, spreadR, execOrcR, salariosR,
     euriborR, capFinR, recDecompR, despDecompR,
     renConsumoR, renPrecoR, renPrecoHistR, renBalancoHistR, renRenovaveisR,
-    inflacaoR, salariosR,
+    inflacaoR,
   ] = await Promise.allSettled([
     loadDesemprego(), loadBalanca(), loadPrestacao(),
     loadEndividamento(), loadDividaPublica(),

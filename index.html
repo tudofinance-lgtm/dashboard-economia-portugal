@@ -426,25 +426,33 @@
       <div class="chart-card">
         <div class="chart-header">
           <div>
-            <div class="chart-title">Prestação Mediana · Habitação</div>
-            <div class="chart-subtitle">Stock de empréstimos · percentil 50 · mensal · €</div>
+            <div class="chart-title">População Residente</div>
+            <div class="chart-subtitle">Estimativas anuais · milhares · INE</div>
           </div>
           <div style="text-align:right">
-            <div class="chart-source">BPstat · Série 12710744</div>
-            <div class="chart-range" id="range-prestacao">–</div>
+            <div class="chart-source">INE</div>
+            <div class="chart-range" id="range-pop">2000–2025</div>
           </div>
         </div>
-        <div class="chart-wrap" id="wrap-prestacao"><div class="chart-loading">A carregar…</div></div>
+        <div class="chart-wrap" style="height:196px" id="wrap-pop"><div class="chart-loading">A carregar…</div></div>
       </div>
       <div class="chart-card">
         <div class="chart-header">
           <div>
-            <div class="chart-title">Endividamento dos Particulares</div>
-            <div class="chart-src" id="src-endiv">BPstat · Banco de Portugal</div>
+            <div class="chart-title">PIB per Capita — Portugal</div>
+            <div class="chart-subtitle">Preços correntes · anual · BPstat ÷ INE · Eurostat</div>
           </div>
-          <div class="chart-range" id="range-endiv" style="text-align:right">–</div>
+          <div style="text-align:right">
+            <div class="chart-source">BPstat · INE</div>
+            <div class="chart-range" id="range-pib-pc-pt">–</div>
+          </div>
         </div>
-        <div class="chart-wrap" id="wrap-endiv"><div class="chart-loading">A carregar…</div></div>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-dot" style="background:#0e7490"></span>PIB pc (€)</span>
+          <span class="legend-item"><span class="legend-dot" style="border:2px dashed #7c3aed;background:none"></span>PIB pc PPS Eurostat (EU=100)</span>
+          <span class="legend-item"><span class="legend-dot" style="border:2px dashed #ca8a04;background:none"></span>PIB pc PPS adj. pop. INE</span>
+        </div>
+        <div class="chart-wrap" style="height:196px" id="wrap-pib-pc-pt"><div class="chart-loading">A carregar…</div></div>
       </div>
       <div class="chart-card">
         <div class="chart-header">
@@ -623,33 +631,25 @@
       <div class="chart-card">
         <div class="chart-header">
           <div>
-            <div class="chart-title">População Residente</div>
-            <div class="chart-subtitle">Estimativas anuais · milhares · INE</div>
+            <div class="chart-title">Prestação Mediana · Habitação</div>
+            <div class="chart-subtitle">Stock de empréstimos · percentil 50 · mensal · €</div>
           </div>
           <div style="text-align:right">
-            <div class="chart-source">INE</div>
-            <div class="chart-range" id="range-pop">2000–2025</div>
+            <div class="chart-source">BPstat · Série 12710744</div>
+            <div class="chart-range" id="range-prestacao">–</div>
           </div>
         </div>
-        <div class="chart-wrap" style="height:196px" id="wrap-pop"><div class="chart-loading">A carregar…</div></div>
+        <div class="chart-wrap" id="wrap-prestacao"><div class="chart-loading">A carregar…</div></div>
       </div>
       <div class="chart-card">
         <div class="chart-header">
           <div>
-            <div class="chart-title">PIB per Capita — Portugal</div>
-            <div class="chart-subtitle">Preços correntes · anual · BPstat ÷ INE · Eurostat</div>
+            <div class="chart-title">Endividamento dos Particulares</div>
+            <div class="chart-src" id="src-endiv">BPstat · Banco de Portugal</div>
           </div>
-          <div style="text-align:right">
-            <div class="chart-source">BPstat · INE</div>
-            <div class="chart-range" id="range-pib-pc-pt">–</div>
-          </div>
+          <div class="chart-range" id="range-endiv" style="text-align:right">–</div>
         </div>
-        <div class="chart-legend">
-          <span class="legend-item"><span class="legend-dot" style="background:#0e7490"></span>PIB pc (€)</span>
-          <span class="legend-item"><span class="legend-dot" style="border:2px dashed #7c3aed;background:none"></span>PIB pc PPS Eurostat (EU=100)</span>
-          <span class="legend-item"><span class="legend-dot" style="border:2px dashed #ca8a04;background:none"></span>PIB pc PPS adj. pop. INE</span>
-        </div>
-        <div class="chart-wrap" style="height:196px" id="wrap-pib-pc-pt"><div class="chart-loading">A carregar…</div></div>
+        <div class="chart-wrap" id="wrap-endiv"><div class="chart-loading">A carregar…</div></div>
       </div>
     </div>
   </section>

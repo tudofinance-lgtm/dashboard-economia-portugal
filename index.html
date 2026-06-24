@@ -490,20 +490,7 @@
         </div>
         <div class="chart-wrap" id="wrap-brent"><div class="chart-loading">A carregar…</div></div>
       </div>
-      <div class="chart-card">
-        <div class="chart-header">
-          <div>
-            <div class="chart-title">Mix Energético — % Renovável</div>
-            <div class="chart-subtitle">Produção elétrica · anual · %</div>
-          </div>
-          <div style="text-align:right">
-            <div class="chart-source">DGEG / REN</div>
-            <div class="chart-range" id="range-renovavel">–</div>
-          </div>
-        </div>
-        <div class="note-static">ℹ️ Dados estáticos DGEG — Portugal tem uma das maiores quotas renováveis da UE.</div>
-        <div class="chart-wrap" style="height:185px" id="wrap-renovavel"><div class="chart-loading">A carregar…</div></div>
-      </div>
+
       <div class="chart-card" style="grid-column:1/-1">
         <div class="chart-header">
           <div>
@@ -554,24 +541,7 @@
       <h2>Contexto Europeu <span>· Portugal vs UE</span></h2>
     </div>
     <div class="charts-grid">
-      <div class="chart-card">
-        <div class="chart-header">
-          <div>
-            <div class="chart-title">PIB per Capita — Portugal vs UE</div>
-            <div class="chart-subtitle">Preços correntes (—) e PPC (- -) · anual · €/hab</div>
-          </div>
-          <div style="text-align:right">
-            <div class="chart-source" id="src-pibpc-eu">BPstat / Eurostat</div>
-            <div class="chart-range" id="range-pibpc-eu">–</div>
-          </div>
-        </div>
-        <div class="chart-legend" id="legend-pibpc-eu">
-          <span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Portugal (€)</span>
-          <span class="legend-item"><span class="legend-dot" style="background:#0e7490"></span>UE27 (€)</span>
-          <span class="legend-item"><span class="legend-dot" style="border:2px dashed #2563eb;background:none"></span>Portugal (PPC)</span>
-        </div>
-        <div class="chart-wrap" style="height:196px" id="wrap-pibpc-eu"><div class="chart-loading">A carregar…</div></div>
-      </div>
+
       <div class="chart-card">
         <div class="chart-header">
           <div>
@@ -2887,37 +2857,6 @@ function renderDashboard(data, fromCache) {
     if (b.length) initChart('wrap-brent', b, 'orange', { barrel: true }, 'monthly');
   } else {
     chartError('wrap-brent', 'Não foi possível carregar os dados');
-  }
-
-  /* ── MIX ENERGÉTICO (wrap-renovavel) + KPI ── */
-  {
-    const mix = mixEnergetico;
-    if (mix.length) {
-      const lat = mix[mix.length - 1], prev = mix[mix.length - 2];
-      setKPI('kpi-renovavel', lat.value.toFixed(1) + '%',
-        `Renováveis na geração · ${lat.date}`,
-        prev ? (lat.value - prev.value) : null, 'pp');
-      initChart('wrap-renovavel', mix, 'green', { pct: true, suggestedMin: 0 }, 'annual');
-    }
-  }
-
-  /* ── PIB PER CAPITA EU (wrap-pibpc-eu) ── */
-  if (pibEuR.status === 'fulfilled') {
-    const { pt, eu, ptPPS } = pibEuR.value;
-    if (pt.length && eu.length) {
-      initChartMulti('wrap-pibpc-eu', [
-        { pts: pt,           colour: 'blue', label: 'Portugal (€)',   fill: false },
-        { pts: eu,           colour: 'teal', label: 'UE27 (€)',       fill: false },
-        { pts: ptPPS || [], colour: 'blue', label: 'Portugal (PPC)', fill: false, dash: true, points: false },
-      ], { eur: true }, 'annual');
-      const legendEl = document.getElementById('legend-pibpc-eu');
-      if (legendEl) legendEl.innerHTML =
-        `<span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Portugal (€)</span>` +
-        `<span class="legend-item"><span class="legend-dot" style="background:#0e7490"></span>UE27 (€)</span>` +
-        `<span class="legend-item"><span class="legend-dot" style="border:2px dashed #2563eb;background:none"></span>Portugal (PPC)</span>`;
-    }
-  } else {
-    chartError('wrap-pibpc-eu', 'Não foi possível carregar os dados');
   }
 
   /* ── OT 10Y + SPREAD (wrap-spread) + KPIs ── */

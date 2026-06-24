@@ -536,19 +536,7 @@
       <h2>Energia <span>· Preços e Mix Renovável</span></h2>
     </div>
     <div class="charts-grid">
-      <div class="chart-card">
-        <div class="chart-header">
-          <div>
-            <div class="chart-title">Preço do Petróleo Brent</div>
-            <div class="chart-subtitle">Mercado spot · mensal · €/barril</div>
-          </div>
-          <div style="text-align:right">
-            <div class="chart-source">BPstat · Série 12645918</div>
-            <div class="chart-range" id="range-brent">–</div>
-          </div>
-        </div>
-        <div class="chart-wrap" id="wrap-brent"><div class="chart-loading">A carregar…</div></div>
-      </div>
+
 
       <div class="chart-card" style="grid-column:1/-1">
         <div class="chart-header">
@@ -2826,14 +2814,6 @@ function renderDashboard(data, fromCache) {
     if (Object.keys(byYear).length) initSeasonalChart('wrap-execorc', byYear, 4);
   } else {
     chartError('wrap-execorc', 'Não foi possível carregar os dados');
-  }
-
-  /* ── PETRÓLEO BRENT (wrap-brent) ── */
-  if (brentR.status === 'fulfilled') {
-    const b = brentR.value;
-    if (b.length) initChart('wrap-brent', b, 'orange', { barrel: true }, 'monthly');
-  } else {
-    chartError('wrap-brent', 'Não foi possível carregar os dados');
   }
 
   /* ── OT 10Y + SPREAD (wrap-spread) + KPIs ── */

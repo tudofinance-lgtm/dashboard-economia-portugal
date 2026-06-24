@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inflação IHPC Portugal vs Zona Euro — Dashboard Portugal</title>
+  <meta name="description" content="Inflação IHPC em Portugal comparada com a Zona Euro por categorias. Dados do BCE/Eurostat actualizados automaticamente."/>
+  <meta name="robots" content="index, follow"/>
+  <link rel="canonical" href="https://dashboardportugal.pt/inflacao-hicp.html"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg:#f0f2f5; --card:#fff; --border:#e4e7ec;
+      --text:#111827; --muted:#6b7280; --muted2:#9ca3af;
+      --accent:#111827; --green:#059669; --red:#dc2626;
+      --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04);
+      --blue:#2563eb; --orange:#ea580c;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+
+    /* HEADER */
+    header{background:var(--bg);max-width:1440px;margin:0 auto;padding:20px 28px 0}
+    .header-inner{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 20px 18px;box-shadow:var(--shadow)}
+    .header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+    .navbar-brand{font-weight:900;font-size:.95rem;letter-spacing:.03em;text-transform:uppercase;color:var(--text);text-decoration:none;white-space:nowrap}
+    .navbar-brand span{color:#2563eb}
+    .navbar-links{display:flex;gap:2px}
+    .navbar-link{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:7px;font-size:.78rem;font-weight:600;color:var(--muted);text-decoration:none;transition:background .15s,color .15s;white-space:nowrap}
+    .navbar-link:hover{background:var(--bg);color:var(--text)}
+    .navbar-link.active{background:rgba(37,99,235,.10);color:#2563eb}
+    .nav-icon{font-size:.9rem}
+    .header-left{}
+    .header-title{font-size:1.55rem;font-weight:900;letter-spacing:.03em;text-transform:uppercase;color:var(--text);line-height:1.1}
+    .header-subtitle{font-size:.72rem;color:var(--muted);margin-top:4px;letter-spacing:.01em}
+    @media(max-width:600px){.header-top{flex-direction:column;align-items:flex-start;gap:8px}.navbar-brand{font-size:.82rem}.navbar-link{padding:5px 9px;font-size:.72rem}}
+
+    /* CONTENT */
+    main{max-width:1440px;margin:0 auto;padding:24px 28px}
+    section{margin-bottom:30px}
+    .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    h2{font-size:.95rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--text)}
+    h2 span{font-weight:400;color:var(--muted)}
+
+    /* KPI ROW */
+    .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:11px}
+    .kpi-card{background:var(--card);border-radius:10px;padding:15px 16px 14px;box-shadow:var(--shadow);border:1px solid var(--border);position:relative;overflow:hidden}
+    .kpi-icon{position:absolute;top:13px;right:13px;font-size:1rem;opacity:.35}
+    .kpi-label{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:7px;padding-right:22px}
+    .kpi-value{font-size:1.5rem;font-weight:800;color:var(--text);line-height:1;margin-bottom:4px}
+    .kpi-sub{font-size:.65rem;color:var(--muted2)}
+    .kpi-badge{display:inline-flex;align-items:center;gap:3px;font-size:.62rem;font-weight:700;margin-top:5px}
+    .badge-up{color:var(--red)}
+    .badge-down{color:var(--green)}
+    .badge-neutral{color:var(--muted)}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+    .loading{animation:pulse 1.4s ease infinite;color:var(--muted2)}
+
+    /* CHARTS */
+    .chart-card{background:var(--card);border-radius:10px;padding:18px 20px 14px;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:14px}
+    .chart-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:8px}
+    .chart-title{font-size:.78rem;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.05em}
+    .chart-subtitle{font-size:.63rem;color:var(--muted);margin-top:3px}
+    .chart-source{font-size:.58rem;color:var(--muted2);margin-top:8px;text-align:right}
+    .chart-wrap{position:relative;height:280px}
+    .chart-wrap-tall{position:relative;height:360px}
+    .chart-legend{display:flex;gap:16px;margin-bottom:8px;flex-wrap:wrap}
+    .legend-item{display:flex;align-items:center;gap:5px;font-size:.65rem;color:var(--muted);font-weight:600}
+    .legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+    /* PERIOD FILTER */
+    .filter-group{display:flex;gap:3px;background:#e9ebee;border-radius:8px;padding:3px}
+    .filter-btn{font-size:.7rem;font-weight:700;padding:4px 13px;border-radius:5px;border:none;background:transparent;color:var(--muted);cursor:pointer;transition:all .15s;letter-spacing:.02em}
+    .filter-btn.active{background:var(--accent);color:#fff;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+
+    /* INFO BOX */
+    .info-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 16px;font-size:.72rem;color:#1e40af;line-height:1.6;margin-bottom:16px}
+    .info-box strong{font-weight:700}
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-top">
+      <a class="navbar-brand" href="index.html">Dashboard<span>Portugal</span></a>
+      <div class="navbar-links">
+        <a class="navbar-link" href="index.html"><span class="nav-icon">📊</span> Dashboard Macroeconómico</a>
+        <a class="navbar-link" href="euribor.html"><span class="nav-icon">💶</span> Euribor &amp; Crédito</a>
+        <a class="navbar-link active" href="inflacao-hicp.html"><span class="nav-icon">📈</span> Inflação IHPC</a>
+      </div>
+    </div>
+    <div class="header-left">
+      <div class="header-title">🇵🇹 Portugal: Inflação IHPC</div>
+      <div class="header-subtitle">Índice Harmonizado de Preços no Consumidor · Portugal vs Zona Euro · fonte: BCE / Eurostat</div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- KPI CARDS -->
+  <section>
+    <div class="section-head">
+      <h2>Último mês disponível</h2>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon">🇵🇹</div>
+        <div class="kpi-label">Portugal — IHPC Global</div>
+        <div class="kpi-value loading" id="kpi-pt-val">—</div>
+        <div class="kpi-sub" id="kpi-pt-date">a carregar…</div>
+        <div class="kpi-badge" id="kpi-pt-diff"></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">🇪🇺</div>
+        <div class="kpi-label">Zona Euro — IHPC Global</div>
+        <div class="kpi-value loading" id="kpi-ea-val">—</div>
+        <div class="kpi-sub" id="kpi-ea-date">a carregar…</div>
+        <div class="kpi-badge" id="kpi-ea-diff"></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">↔️</div>
+        <div class="kpi-label">Diferencial PT − ZE</div>
+        <div class="kpi-value loading" id="kpi-spread-val">—</div>
+        <div class="kpi-sub">pp acima/abaixo da média europeia</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">🔥</div>
+        <div class="kpi-label">Categoria mais inflacionária (PT)</div>
+        <div class="kpi-value loading" style="font-size:1rem" id="kpi-top-cat">—</div>
+        <div class="kpi-sub" id="kpi-top-val"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BAR CHART: breakdown by category -->
+  <section>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">IHPC por categoria — variação anual</div>
+          <div class="chart-subtitle" id="bar-subtitle">Último mês disponível · % variação homóloga</div>
+        </div>
+      </div>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div>🇵🇹 Portugal</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ea580c"></div>🇪🇺 Zona Euro</div>
+      </div>
+      <div class="chart-wrap-tall">
+        <canvas id="barChart"></canvas>
+      </div>
+      <div class="chart-source">Fonte: BCE / Eurostat · IHPC · variação homóloga (ANR)</div>
+    </div>
+  </section>
+
+  <!-- LINE CHART: historical -->
+  <section>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Inflação IHPC ao longo do tempo — índice global</div>
+          <div class="chart-subtitle">Variação homóloga mensal (%) · Portugal vs Zona Euro</div>
+        </div>
+        <div class="filter-group">
+          <button class="filter-btn" onclick="setRange(36)">3A</button>
+          <button class="filter-btn active" onclick="setRange(60)">5A</button>
+          <button class="filter-btn" onclick="setRange(120)">10A</button>
+          <button class="filter-btn" onclick="setRange(0)">Tudo</button>
+        </div>
+      </div>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div>🇵🇹 Portugal</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ea580c"></div>🇪🇺 Zona Euro</div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="lineChart"></canvas>
+      </div>
+      <div class="chart-source">Fonte: BCE / Eurostat · IHPC · variação homóloga (ANR)</div>
+    </div>
+  </section>
+
+  <div class="info-box">
+    <strong>O que é o IHPC?</strong> O Índice Harmonizado de Preços no Consumidor (IHPC) é o indicador oficial de inflação da União Europeia, calculado pelo Eurostat com metodologia comum a todos os países. Permite comparações directas entre Portugal e a Zona Euro. Uma variação positiva significa aumento de preços face ao mesmo mês do ano anterior.
+  </div>
+
+</main>
+
+<script>
+const ECB = 'https://data-api.ecb.europa.eu/service/data/HICP';
+const CATS = [
+  { code: '000000', label: 'Global',           icon: '🛒' },
+  { code: '010000', label: 'Alimentação',       icon: '🍎' },
+  { code: '020000', label: 'Álcool & Tabaco',   icon: '🍷' },
+  { code: '030000', label: 'Vestuário',          icon: '👗' },
+  { code: '040000', label: 'Habitação & Energia',icon: '🏠' },
+  { code: '050000', label: 'Equipamento casa',   icon: '🔧' },
+  { code: '060000', label: 'Saúde',             icon: '➕' },
+  { code: '070000', label: 'Transportes',        icon: '✈️' },
+  { code: '080000', label: 'Comunicações',       icon: '📱' },
+  { code: '090000', label: 'Lazer & Cultura',    icon: '🎭' },
+  { code: '100000', label: 'Educação',           icon: '🎓' },
+  { code: '110000', label: 'Restauração & Hotéis',icon:'🍽️'},
+  { code: '120000', label: 'Outros bens & serv.',icon: '👤' },
+];
+
+async function fetchSeries(area, item, n) {
+  const url = `${ECB}/M.${area}.N.${item}.4D0.ANR?format=csvdata&lastNObservations=${n}`;
+  const r = await fetch(url);
+  const txt = await r.text();
+  const lines = txt.trim().split('\n').slice(1).filter(l => l.trim());
+  return lines.map(l => {
+    const p = l.split(',');
+    return { date: p[7], value: parseFloat(p[8]) };
+  }).filter(d => !isNaN(d.value));
+}
+
+let allPT = [], allEA = [];
+let barChart, lineChart;
+let currentRange = 60;
+
+function fmtDate(d) {
+  const [y, m] = d.split('-');
+  const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  return `${months[parseInt(m)-1]} ${y}`;
+}
+
+function setRange(n) {
+  currentRange = n;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  updateLineChart();
+}
+
+function updateLineChart() {
+  if (!allPT.length) return;
+  const pt = currentRange ? allPT.slice(-currentRange) : allPT;
+  const ea = currentRange ? allEA.slice(-currentRange) : allEA;
+  const labels = pt.map(d => fmtDate(d.date));
+  lineChart.data.labels = labels;
+  lineChart.data.datasets[0].data = pt.map(d => d.value);
+  lineChart.data.datasets[1].data = ea.slice(-pt.length).map(d => d.value);
+  lineChart.update();
+}
+
+async function loadAll() {
+  try {
+    // Load historical overall data
+    [allPT, allEA] = await Promise.all([
+      fetchSeries('PT', '000000', 300),
+      fetchSeries('U2', '000000', 300),
+    ]);
+
+    // KPIs
+    const lastPT = allPT[allPT.length - 1];
+    const lastEA = allEA[allEA.length - 1];
+    const prevPT = allPT[allPT.length - 2];
+    const prevEA = allEA[allEA.length - 2];
+    const spread = (lastPT.value - lastEA.value).toFixed(1);
+
+    document.getElementById('kpi-pt-val').textContent = lastPT.value.toFixed(1) + '%';
+    document.getElementById('kpi-pt-val').classList.remove('loading');
+    document.getElementById('kpi-pt-date').textContent = fmtDate(lastPT.date);
+    const diffPT = (lastPT.value - prevPT.value).toFixed(1);
+    document.getElementById('kpi-pt-diff').className = 'kpi-badge ' + (diffPT > 0 ? 'badge-up' : diffPT < 0 ? 'badge-down' : 'badge-neutral');
+    document.getElementById('kpi-pt-diff').textContent = (diffPT > 0 ? '▲ ' : '▼ ') + Math.abs(diffPT) + ' pp vs mês anterior';
+
+    document.getElementById('kpi-ea-val').textContent = lastEA.value.toFixed(1) + '%';
+    document.getElementById('kpi-ea-val').classList.remove('loading');
+    document.getElementById('kpi-ea-date').textContent = fmtDate(lastEA.date);
+    const diffEA = (lastEA.value - prevEA.value).toFixed(1);
+    document.getElementById('kpi-ea-diff').className = 'kpi-badge ' + (diffEA > 0 ? 'badge-up' : diffEA < 0 ? 'badge-down' : 'badge-neutral');
+    document.getElementById('kpi-ea-diff').textContent = (diffEA > 0 ? '▲ ' : '▼ ') + Math.abs(diffEA) + ' pp vs mês anterior';
+
+    document.getElementById('kpi-spread-val').textContent = (spread > 0 ? '+' : '') + spread + ' pp';
+    document.getElementById('kpi-spread-val').classList.remove('loading');
+
+    // Build line chart
+    const labels = allPT.slice(-60).map(d => fmtDate(d.date));
+    lineChart = new Chart(document.getElementById('lineChart'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Portugal', data: allPT.slice(-60).map(d => d.value), borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.08)', borderWidth: 2, pointRadius: 0, tension: 0.3, fill: true },
+          { label: 'Zona Euro', data: allEA.slice(-60).map(d => d.value), borderColor: '#ea580c', backgroundColor: 'rgba(234,88,12,.06)', borderWidth: 2, pointRadius: 0, tension: 0.3, fill: true },
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}%`
+            }
+          }
+        },
+        scales: {
+          x: { grid: { color: '#f3f4f6' }, ticks: { font: { size: 10 }, maxTicksLimit: 12, color: '#9ca3af' } },
+          y: {
+            grid: { color: '#f3f4f6' },
+            ticks: { font: { size: 10 }, color: '#9ca3af', callback: v => v.toFixed(1) + '%' },
+            title: { display: true, text: 'Var. homóloga (%)', font: { size: 10 }, color: '#9ca3af' }
+          }
+        }
+      }
+    });
+
+    // Load category data
+    const catCodes = CATS.map(c => c.code).join('+');
+    const [catPT, catEA] = await Promise.all([
+      fetchSeries('PT', catCodes, 1),
+      fetchSeries('U2', catCodes, 1),
+    ]);
+
+    // Map to lookup
+    const ptMap = {}, eaMap = {};
+
+    // Need multi-series fetch - fetch each series' last value
+    const catPromises = CATS.map(async cat => {
+      const [pt, ea] = await Promise.all([
+        fetchSeries('PT', cat.code, 1),
+        fetchSeries('U2', cat.code, 1),
+      ]);
+      return { cat, ptVal: pt[0]?.value, eaVal: ea[0]?.value };
+    });
+
+    const catResults = await Promise.all(catPromises);
+
+    // Update "hottest category" KPI (excluding overall)
+    const nonOverall = catResults.filter(r => r.cat.code !== '000000' && r.ptVal !== undefined);
+    const hottest = nonOverall.reduce((a, b) => (a.ptVal > b.ptVal ? a : b));
+    document.getElementById('kpi-top-cat').textContent = hottest.cat.icon + ' ' + hottest.cat.label;
+    document.getElementById('kpi-top-cat').classList.remove('loading');
+    document.getElementById('kpi-top-val').textContent = hottest.ptVal.toFixed(1) + '% var. anual';
+
+    // Bar chart subtitle
+    const latestMonth = catResults.find(r => r.ptVal !== undefined);
+    document.getElementById('bar-subtitle').textContent = `Último mês disponível · % variação homóloga`;
+
+    // Bar chart — only non-overall cats for clarity
+    const barCats = catResults.filter(r => r.cat.code !== '000000');
+    const barLabels = barCats.map(r => r.cat.icon + ' ' + r.cat.label);
+    const barPT = barCats.map(r => r.ptVal ?? null);
+    const barEA = barCats.map(r => r.eaVal ?? null);
+
+    barChart = new Chart(document.getElementById('barChart'), {
+      type: 'bar',
+      data: {
+        labels: barLabels,
+        datasets: [
+          { label: '🇵🇹 Portugal', data: barPT, backgroundColor: 'rgba(37,99,235,.8)', borderColor: '#2563eb', borderWidth: 1, borderRadius: 4 },
+          { label: '🇪🇺 Zona Euro', data: barEA, backgroundColor: 'rgba(234,88,12,.7)', borderColor: '#ea580c', borderWidth: 1, borderRadius: 4 },
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y !== null ? ctx.parsed.y.toFixed(1) + '%' : 'n/d'}`
+            }
+          }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#6b7280' } },
+          y: {
+            grid: { color: '#f3f4f6' },
+            ticks: { font: { size: 10 }, color: '#9ca3af', callback: v => v.toFixed(1) + '%' },
+            title: { display: true, text: 'Var. homóloga (%)', font: { size: 10 }, color: '#9ca3af' }
+          }
+        }
+      }
+    });
+
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+loadAll();
+</script>
+
+</body>
+</html>

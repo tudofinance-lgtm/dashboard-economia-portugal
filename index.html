@@ -3391,7 +3391,22 @@ function renderDashboard(data, fromCache) {
         },
         options: {
           ..._baseOpts,
-          plugins: { ..._baseOpts.plugins, legend: { display: false } },
+          plugins: {
+            ..._baseOpts.plugins,
+            legend: { display: false },
+            tooltip: {
+              ..._baseOpts.plugins.tooltip,
+              callbacks: {
+                label: ctx => {
+                  const v = ctx.raw;
+                  if (v == null) return '';
+                  const lbl = ctx.dataset.label ? ` ${ctx.dataset.label}: ` : ' ';
+                  if (ctx.dataset.yAxisID === 'yRight') return `${lbl}${v.toFixed(1)}`;
+                  return `${lbl}${v.toLocaleString('pt-PT')} €`;
+                },
+              },
+            },
+          },
           scales: {
             ..._baseOpts.scales,
             yRight: {

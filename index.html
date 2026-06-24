@@ -558,7 +558,7 @@
         <div class="chart-header">
           <div>
             <div class="chart-title">PIB per Capita — Portugal vs UE</div>
-            <div class="chart-subtitle">Preços correntes · anual · €/habitante</div>
+            <div class="chart-subtitle">Preços correntes (—) e PPC (- -) · anual · €/hab</div>
           </div>
           <div style="text-align:right">
             <div class="chart-source" id="src-pibpc-eu">BPstat / Eurostat</div>
@@ -566,8 +566,9 @@
           </div>
         </div>
         <div class="chart-legend" id="legend-pibpc-eu">
-          <span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Portugal</span>
-          <span class="legend-item"><span class="legend-dot" style="background:#0e7490"></span>UE27</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Portugal (€)</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#0e7490"></span>UE27 (€)</span>
+          <span class="legend-item"><span class="legend-dot" style="border:2px dashed #2563eb;background:none"></span>Portugal (PPC)</span>
         </div>
         <div class="chart-wrap" style="height:196px" id="wrap-pibpc-eu"><div class="chart-loading">A carregar…</div></div>
       </div>
@@ -1141,13 +1142,27 @@ const EU_PIB_PC_FALLBACK = [
 ];
 
 
+// Portugal GDP per capita em PPS_EU27_2020 (Eurostat prc_ppp_ind · GDP · EXP_PPS_EU27_2020_HAB)
+const PT_PIB_PC_PPS_FALLBACK = [
+  {date:'1995',value:12100},{date:'1996',value:12600},{date:'1997',value:13200},
+  {date:'1998',value:13900},{date:'1999',value:14800},{date:'2000',value:15700},
+  {date:'2001',value:16200},{date:'2002',value:16700},{date:'2003',value:17100},
+  {date:'2004',value:17500},{date:'2005',value:18600},{date:'2006',value:19600},
+  {date:'2007',value:20300},{date:'2008',value:20700},{date:'2009',value:20000},
+  {date:'2010',value:20700},{date:'2011',value:19900},{date:'2012',value:19500},
+  {date:'2013',value:20200},{date:'2014',value:20600},{date:'2015',value:21200},
+  {date:'2016',value:21900},{date:'2017',value:22600},{date:'2018',value:23500},
+  {date:'2019',value:24500},{date:'2020',value:22800},{date:'2021',value:24500},
+  {date:'2022',value:27800},{date:'2023',value:30800},{date:'2024',value:32400},
+];
+
 async function loadPIBperCapitaEU(ptPibAnnual) {
   const ptPts = ptPibAnnual.map(p => ({
     date: p.date,
     value: Math.round(p.value * 1e6 / getPopForYear(p.date)),
   }));
 
-  // Helper to parse Eurostat SDMX-JSON time series
+  // Helper: Eurostat SDMX-JSON (sdmx/2.1)
   function parseEurostatTS(json) {
     const rawIdx = json.dimension?.time?.category?.index;
     let dates;
@@ -1163,27 +1178,41 @@ async function loadPIBperCapitaEU(ptPibAnnual) {
     return pts;
   }
 
+  // Helper: Eurostat statistics/1.0 (prc_ppp_ind)
+  function parsePrcPppInd(json) {
+    const timeIdx = json.dimension?.time?.category?.index || {};
+    const vals = json.value || {};
+    return Object.entries(timeIdx)
+      .sort((a,b) => a[1]-b[1])
+      .map(([yr, i]) => { const v = vals[String(i)]; return v != null ? { date: yr, value: Math.round(v) } : null; })
+      .filter(Boolean);
+  }
+
   /* Check Worker first */
   if (WORKER_URL) {
     try {
       const wd = await _getWorkerData();
       const euPts = wd?.eurostat?.pibEU;
-      if (euPts?.length > 5) return { pt: ptPts, eu: euPts };
+      if (euPts?.length > 5) return { pt: ptPts, eu: euPts, ptPPS: PT_PIB_PC_PPS_FALLBACK };
     } catch(e) {}
   }
 
-  // Try Eurostat live API
+  // Try Eurostat live API — EU EUR + PT PPS em paralelo
   try {
-    const BASE = 'https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/nama_10_pc' +
-      '?na_item=B1GQ&format=JSON&startPeriod=2000&lang=pt';
-    const SIG  = { signal: AbortSignal.timeout(10000) };
-    const rEuEur = await fetch(`${BASE}&geo=EU27_2020&unit=CP_EUR_HAB`, SIG).then(r => r.json());
-    const euPts  = parseEurostatTS(rEuEur);
-    if (euPts.length) return { pt: ptPts, eu: euPts, isLive: true };
+    const SIG = { signal: AbortSignal.timeout(10000) };
+    const [rEuEur, rPtPPS] = await Promise.all([
+      fetch('https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/nama_10_pc' +
+        '?na_item=B1GQ&format=JSON&startPeriod=2000&lang=pt&geo=EU27_2020&unit=CP_EUR_HAB', SIG).then(r => r.json()),
+      fetch('https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_ppp_ind' +
+        '?ppp_cat=GDP&geo=PT&na_item=EXP_PPS_EU27_2020_HAB&format=JSON', SIG).then(r => r.json()),
+    ]);
+    const euPts = parseEurostatTS(rEuEur);
+    const ptPPS = parsePrcPppInd(rPtPPS);
+    if (euPts.length) return { pt: ptPts, eu: euPts, ptPPS: ptPPS.length ? ptPPS : PT_PIB_PC_PPS_FALLBACK, isLive: true };
   } catch (e) {
     console.warn('Eurostat PIB per capita fallback:', e.message);
   }
-  return { pt: ptPts, eu: EU_PIB_PC_FALLBACK };
+  return { pt: ptPts, eu: EU_PIB_PC_FALLBACK, ptPPS: PT_PIB_PC_PPS_FALLBACK };
 }
 
 // DE Bund 10Y fallback: valores mensais reais (BCE) até Jun 2026
@@ -2827,16 +2856,18 @@ function renderDashboard(data, fromCache) {
 
   /* ── PIB PER CAPITA EU (wrap-pibpc-eu) ── */
   if (pibEuR.status === 'fulfilled') {
-    const { pt, eu } = pibEuR.value;
+    const { pt, eu, ptPPS } = pibEuR.value;
     if (pt.length && eu.length) {
       initChartMulti('wrap-pibpc-eu', [
-        { pts: pt, colour: 'blue', label: 'Portugal', fill: false },
-        { pts: eu, colour: 'teal', label: 'UE27',     fill: false },
+        { pts: pt,           colour: 'blue', label: 'Portugal (€)',   fill: false },
+        { pts: eu,           colour: 'teal', label: 'UE27 (€)',       fill: false },
+        { pts: ptPPS || [], colour: 'blue', label: 'Portugal (PPC)', fill: false, dash: true, points: false },
       ], { eur: true }, 'annual');
       const legendEl = document.getElementById('legend-pibpc-eu');
       if (legendEl) legendEl.innerHTML =
-        `<span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Portugal</span>` +
-        `<span class="legend-item"><span class="legend-dot" style="background:#0e7490"></span>UE27</span>`;
+        `<span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Portugal (€)</span>` +
+        `<span class="legend-item"><span class="legend-dot" style="background:#0e7490"></span>UE27 (€)</span>` +
+        `<span class="legend-item"><span class="legend-dot" style="border:2px dashed #2563eb;background:none"></span>Portugal (PPC)</span>`;
     }
   } else {
     chartError('wrap-pibpc-eu', 'Não foi possível carregar os dados');

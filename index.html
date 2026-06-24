@@ -1429,12 +1429,14 @@ async function loadInflacao() {
     {date:'2021',value:1.3},
   ];
 
-  function parseEcbIcp(d) {
-    const tvs = d.structure.dimensions.observation[0].values;
-    const obs = Object.values(d.dataSets[0].series)[0].observations;
-    return Object.entries(obs)
-      .map(([k, v]) => ({ date: tvs[+k].id, value: v[0] }))
-      .filter(p => p.value !== null);
+  function parseHicpCsv(text) {
+    const lines = text.trim().split('\n');
+    const hi = lines[0].split(',').indexOf('OBS_VALUE');
+    const di = lines[0].split(',').indexOf('TIME_PERIOD');
+    return lines.slice(1)
+      .map(l => { const c = l.split(','); return {date: c[di], value: parseFloat(c[hi])}; })
+      .filter(p => !isNaN(p.value))
+      .sort((a,b) => a.date.localeCompare(b.date));
   }
 
   /* Check Worker first */
@@ -1453,17 +1455,17 @@ async function loadInflacao() {
   }
 
   try {
-    const BASE = 'https://data-api.ecb.europa.eu/service/data/ICP/M.PT.N.';
-    const SUFFIX = '.4.ANR?format=jsondata&startPeriod=2022-01';
+    const BASE = 'https://data-api.ecb.europa.eu/service/data/HICP/M.PT.N.';
+    const SUFFIX = '.4D0.ANR?format=csvdata&lastNObservations=60';
     const [rIpc, rSubj, rFood] = await Promise.all([
-      fetch(BASE + '000000' + SUFFIX, { signal: AbortSignal.timeout(10000) }).then(r => r.json()),
-      fetch(BASE + 'XEF000' + SUFFIX, { signal: AbortSignal.timeout(10000) }).then(r => r.json()),
-      fetch(BASE + '010000' + SUFFIX, { signal: AbortSignal.timeout(10000) }).then(r => r.json()),
+      fetch(BASE + '000000' + SUFFIX, { signal: AbortSignal.timeout(10000) }).then(r => r.text()),
+      fetch(BASE + 'XEF000' + SUFFIX, { signal: AbortSignal.timeout(10000) }).then(r => r.text()),
+      fetch(BASE + '010000' + SUFFIX, { signal: AbortSignal.timeout(10000) }).then(r => r.text()),
     ]);
     return {
-      ipc:        [...ipcStatic,       ...parseEcbIcp(rIpc)],
-      subjacente: [...subjStatic,      ...parseEcbIcp(rSubj)],
-      alimentar:  [...alimentarStatic, ...parseEcbIcp(rFood)],
+      ipc:        [...ipcStatic,       ...parseHicpCsv(rIpc)],
+      subjacente: [...subjStatic,      ...parseHicpCsv(rSubj)],
+      alimentar:  [...alimentarStatic, ...parseHicpCsv(rFood)],
     };
   } catch(e) {
     // Fallback to hardcoded monthly data (last updated manually)
@@ -2876,7 +2878,7 @@ function renderDashboard(data, fromCache) {
     if (ipc.length) {
       const lat = ipc[ipc.length - 1], prev12 = ipc[ipc.length - 13];
       const latSub = subjacente[subjacente.length - 1];
-      setKPI('kpi-inflacao', lat.value.toFixed(1) + '%', `IPC · ${lat.date}`,
+      setKPI('kpi-inflacao', lat.value.toFixed(1) + '%', `IHPC · ${lat.date}`,
         prev12 ? (lat.value - prev12.value) : null, 'pp',
         lat.value > 3 ? 'bad' : null);
       setKPI('kpi-inflacao-sub', latSub ? latSub.value.toFixed(1) + '%' : '—',

@@ -607,6 +607,24 @@
         </div>
         <div class="chart-wrap" style="height:196px" id="wrap-spread"><div class="chart-loading">A carregar…</div></div>
       </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Salário Médio — Portugal vs UE</div>
+            <div class="chart-subtitle">Bruto anual · trabalhador solteiro 100% sal. médio · EUR · Eurostat</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-source">Eurostat · earn_nt_net</div>
+            <div class="chart-range" id="range-salarios">–</div>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-dot" style="background:#059669"></span>Portugal</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>UE27</span>
+        </div>
+        <div class="chart-wrap" style="height:196px" id="wrap-salarios"><div class="chart-loading">A carregar…</div></div>
+      </div>
     </div>
   </section>
 
@@ -1116,6 +1134,28 @@ const PT_DILUTION_RATIOS = {
   '2025': 0.9471, // +604k hab
 };
 
+// earn_nt_net — Salário bruto anual, trabalhador solteiro s/ filhos, 100% salário médio, EUR
+// Fonte: Eurostat earn_nt_net · currency=EUR · estruct=GRS · ecase=P1_NCH_AW100
+const EARN_NT_NET_PT_FALLBACK = [
+  {date:'2000',value:11245},{date:'2001',value:11691},{date:'2002',value:12103},
+  {date:'2003',value:12575},{date:'2004',value:13001},{date:'2005',value:13437},
+  {date:'2006',value:13816},{date:'2007',value:14485},{date:'2008',value:14906},
+  {date:'2009',value:15223},{date:'2010',value:15495},{date:'2011',value:15508},
+  {date:'2012',value:15637},{date:'2013',value:15763},{date:'2014',value:15648},
+  {date:'2015',value:15781},{date:'2016',value:15862},{date:'2017',value:16159},
+  {date:'2018',value:16596},{date:'2019',value:17293},{date:'2020',value:17472},
+  {date:'2021',value:18410},{date:'2022',value:19436},{date:'2023',value:21000},
+  {date:'2024',value:24021},{date:'2025',value:25187},
+];
+const EARN_NT_NET_EU_FALLBACK = [
+  {date:'2013',value:31609},{date:'2014',value:32038},{date:'2015',value:32542},
+  {date:'2016',value:32939},{date:'2017',value:33447},{date:'2018',value:34311},
+  {date:'2019',value:35217},{date:'2020',value:35197},{date:'2021',value:36496},
+  {date:'2022',value:38804},{date:'2023',value:41083},{date:'2024',value:36489},
+  {date:'2025',value:37958},
+];
+
+
 
 async function loadPIBperCapitaEU(ptPibAnnual) {
   const ptPts = ptPibAnnual.map(p => ({
@@ -1222,6 +1262,28 @@ const BUND_MONTHLY_FALLBACK = [
   {date:'2026-01',value:2.51},{date:'2026-02',value:2.62},{date:'2026-03',value:2.84},
   {date:'2026-04',value:2.55},{date:'2026-05',value:2.59},{date:'2026-06',value:2.63},
 ];
+
+async function loadSalariosComparativos() {
+  try {
+    const SIG = { signal: AbortSignal.timeout(8000) };
+    const r = await fetch(
+      'https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/earn_nt_net' +
+      '?format=JSON&currency=EUR&estruct=GRS&ecase=P1_NCH_AW100&geo=PT&geo=EU27_2020',
+      SIG
+    ).then(res => res.json());
+    const timeIdx = r.dimension?.time?.category?.index || {};
+    const geoIdx  = r.dimension?.geo?.category?.index  || {};
+    const times = Object.entries(timeIdx).sort((a,b)=>a[1]-b[1]).map(e=>e[0]);
+    const nTime = times.length;
+    const vals  = r.value || {};
+    const ptIdx = geoIdx['PT'] ?? 1;
+    const euIdx = geoIdx['EU27_2020'] ?? 0;
+    const pt = times.map((t,i) => ({ date:t, value: Math.round(vals[String(nTime*ptIdx+i)] ?? null) })).filter(x=>x.value != null);
+    const eu = times.map((t,i) => ({ date:t, value: Math.round(vals[String(nTime*euIdx+i)] ?? null) })).filter(x=>x.value != null);
+    if (pt.length && eu.length) return { pt, eu, isLive: true };
+  } catch(e) { /* fallback */ }
+  return { pt: EARN_NT_NET_PT_FALLBACK, eu: EARN_NT_NET_EU_FALLBACK };
+}
 
 async function loadSpreadOT() {
   // PT OT 10Y daily (series 12099459) → aggregate to monthly average
@@ -2391,7 +2453,15 @@ function applyFilterExtended(years) {
       reg.chart.data.datasets[0].borderColor = values.map(v => v >= 0 ? '#059669' : '#dc2626');
       reg.chart.update();
       updateRangeLabel(wrapId, slice);
-    } else if (reg.isBar) {
+    } else if (reg.isSalarios) {
+      const slicePt = sliceByYears(reg.allPts, yearsNum, reg.periodicity);
+      const euMap = Object.fromEntries(reg.allEu.map(p => [p.date, p.value]));
+      reg.chart.data.labels = slicePt.map(p => p.date);
+      reg.chart.data.datasets[0].data = slicePt.map(p => p.value);
+      reg.chart.data.datasets[1].data = slicePt.map(p => euMap[p.date] ?? null);
+      reg.chart.update();
+      updateRangeLabel(wrapId, slicePt);
+  } else if (reg.isBar) {
       const slice = sliceByYears(reg.allPts, yearsNum, reg.periodicity);
       reg.chart.data.labels = slice.map(p => p.date);
       reg.chart.data.datasets[0].data = slice.map(p => p.value);
@@ -2530,15 +2600,16 @@ async function fetchAllData() {
   // Phase 2: tudo em paralelo
   const [
     desempR, balancaR, prestacaoR, endivR, dividaR,
-    saldoR, saldoEstadoR, recDepR, brentR, pibEuR, spreadR, execOrcR,
+    saldoR, saldoEstadoR, recDepR, brentR, pibEuR, spreadR, execOrcR, salariosR,
     euriborR, capFinR, recDecompR, despDecompR,
     renConsumoR, renPrecoR, renPrecoHistR, renBalancoHistR, renRenovaveisR,
-    inflacaoR,
+    inflacaoR, salariosR,
   ] = await Promise.allSettled([
     loadDesemprego(), loadBalanca(), loadPrestacao(),
     loadEndividamento(), loadDividaPublica(),
     loadSaldoOrcamental(), loadSaldoEstado(), loadReceitaDespesa(), loadPetroleoBrent(),
     loadPIBperCapitaEU(pibAnnual), loadSpreadOT(), loadExecOrcamental(),
+    loadSalariosComparativos(),
     loadEuribor(), loadCapacidadeFinanciamento(),
     loadReceitasDecompostas(), loadDespesasDecompostas(),
     loadRenConsumo(), loadRenPreco(), loadRenPrecoHistorico(),
@@ -2563,7 +2634,7 @@ function renderDashboard(data, fromCache) {
   const {
     pibAnnual, pibOk,
     desempR, balancaR, prestacaoR, endivR, dividaR,
-    saldoR, recDepR, brentR, pibEuR, spreadR, execOrcR,
+    saldoR, recDepR, brentR, pibEuR, spreadR, execOrcR, salariosR,
     euriborR, capFinR, recDecompR, despDecompR,
     saldoEstadoR, inflacaoData, confiancaData,
     renConsumoR, renPrecoR, renPrecoHistR, renBalancoHistR, renRenovaveisR,
@@ -2843,6 +2914,44 @@ function renderDashboard(data, fromCache) {
     setKPIError('kpi-ot10', 'Erro ao carregar');
     setKPIError('kpi-spread', 'Erro ao carregar');
     chartError('wrap-spread', 'Não foi possível carregar os dados');
+  }
+
+  /* ── SALÁRIOS PT vs UE (wrap-salarios) ── */
+  {
+    const salData = salariosR?.status === 'fulfilled' ? salariosR.value : null;
+    const salPt = salData?.pt || EARN_NT_NET_PT_FALLBACK;
+    const salEu = salData?.eu || EARN_NT_NET_EU_FALLBACK;
+    const salWrap = document.getElementById('wrap-salarios');
+    if (salWrap && salPt.length) {
+      salWrap.innerHTML = '<canvas></canvas>';
+      const salSlicePt = sliceByYears(salPt, activeYears === 'max' ? 'max' : parseInt(activeYears), 'annual');
+      // Align EU data to same years
+      const euMap = Object.fromEntries(salEu.map(p => [p.date, p.value]));
+      const salSliceEu = salSlicePt.map(p => ({ date: p.date, value: euMap[p.date] ?? null }));
+      const baseOpts = baseChartOptions({ eur: true });
+      const salChart = new Chart(salWrap.querySelector('canvas'), {
+        type: 'line',
+        data: {
+          labels: salSlicePt.map(p => p.date),
+          datasets: [
+            { label: 'Portugal', data: salSlicePt.map(p => p.value), borderColor: '#059669', backgroundColor: 'rgba(5,150,105,0.08)', borderWidth: 2, pointRadius: 0, tension: 0.2, fill: true },
+            { label: 'UE27',    data: salSliceEu.map(p => p.value), borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.06)',  borderWidth: 2, pointRadius: 0, tension: 0.2, fill: false, borderDash: [5,3] },
+          ],
+        },
+        options: {
+          ...baseOpts,
+          plugins: { ...baseOpts.plugins, legend: { display: false },
+            tooltip: { ...baseOpts.plugins.tooltip, callbacks: {
+              label: ctx => ctx.raw != null ? ` ${ctx.dataset.label}: ${ctx.raw.toLocaleString('pt-PT')} €` : ''
+            }}
+          },
+        },
+      });
+      REGISTRY['wrap-salarios'] = { chart: salChart, allPts: salPt, allEu: salEu, isSalarios: true, periodicity: 'annual', rangeId: 'range-salarios' };
+      updateRangeLabel('wrap-salarios', salSlicePt);
+    } else if (salWrap) {
+      chartError('wrap-salarios', 'Não foi possível carregar os dados');
+    }
   }
 
   /* ── INFLAÇÃO (wrap-inflacao) + KPIs ── */

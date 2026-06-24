@@ -1142,19 +1142,20 @@ const EU_PIB_PC_FALLBACK = [
 ];
 
 
-// Taxas PPP Portugal vs EU27_2020 (Eurostat prc_ppp_ind · GDP · PPP_EU27_2020)
+// Taxas PPP Portugal vs EU27_2020 (Eurostat prc_ppp_ind_1 · GDP · PPP_EU27_2020)
 // Fórmula: PIB em PPC = PIB Nominal (EUR) / Taxa PPP → PIB per capita PPC = PIB em PPC / População
 const PT_PPP_RATE_FALLBACK = [
-  {date:'1995',rate:0.736043},{date:'1996',rate:0.741521},{date:'1997',rate:0.766288},
+  {date:'1995',rate:0.736042},{date:'1996',rate:0.741521},{date:'1997',rate:0.766288},
   {date:'1998',rate:0.789331},{date:'1999',rate:0.790514},{date:'2000',rate:0.795700},
   {date:'2001',rate:0.810441},{date:'2002',rate:0.819759},{date:'2003',rate:0.815650},
   {date:'2004',rate:0.827489},{date:'2005',rate:0.810942},{date:'2006',rate:0.805168},
-  {date:'2007',rate:0.819050},{date:'2008',rate:0.819734},{date:'2009',rate:0.830567},
-  {date:'2010',rate:0.823298},{date:'2011',rate:0.836125},{date:'2012',rate:0.819802},
-  {date:'2013',rate:0.808533},{date:'2014',rate:0.807623},{date:'2015',rate:0.813527},
-  {date:'2016',rate:0.822592},{date:'2017',rate:0.838133},{date:'2018',rate:0.842453},
-  {date:'2019',rate:0.846808},{date:'2020',rate:0.849789},{date:'2021',rate:0.847362},
-  {date:'2022',rate:0.837145},{date:'2023',rate:0.823238},{date:'2024',rate:0.824582},
+  {date:'2007',rate:0.819050},{date:'2008',rate:0.819736},{date:'2009',rate:0.830572},
+  {date:'2010',rate:0.823303},{date:'2011',rate:0.836130},{date:'2012',rate:0.819808},
+  {date:'2013',rate:0.808538},{date:'2014',rate:0.807628},{date:'2015',rate:0.813522},
+  {date:'2016',rate:0.822598},{date:'2017',rate:0.838124},{date:'2018',rate:0.842350},
+  {date:'2019',rate:0.846712},{date:'2020',rate:0.849713},{date:'2021',rate:0.847295},
+  {date:'2022',rate:0.836990},{date:'2023',rate:0.821590},{date:'2024',rate:0.822662},
+  {date:'2025',rate:0.839373},
 ];
 
 async function loadPIBperCapitaEU(ptPibAnnual) {
@@ -1213,8 +1214,8 @@ async function loadPIBperCapitaEU(ptPibAnnual) {
     const [rEuEur, rPPP] = await Promise.all([
       fetch('https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/nama_10_pc' +
         '?na_item=B1GQ&format=JSON&startPeriod=2000&lang=pt&geo=EU27_2020&unit=CP_EUR_HAB', SIG).then(r => r.json()),
-      fetch('https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_ppp_ind' +
-        '?ppp_cat=GDP&geo=PT&na_item=PPP_EU27_2020&format=JSON', SIG).then(r => r.json()),
+      fetch('https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_ppp_ind_1' +
+        '?ppp_cat18=GDP&geo=PT&indic_ppp=PPP_EU27_2020&format=JSON', SIG).then(r => r.json()),
     ]);
     const euPts  = parseEurostatTS(rEuEur);
     const pppRates = parsePPPRates(rPPP);

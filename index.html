@@ -625,7 +625,8 @@
         </div>
         <div class="chart-legend">
           <span class="legend-item"><span class="legend-dot" style="background:#0e7490"></span>PIB pc (€)</span>
-          <span class="legend-item"><span class="legend-dot" style="border:2px dashed #7c3aed;background:none"></span>PIB pc PPS (EU=100, eixo dir.)</span>
+          <span class="legend-item"><span class="legend-dot" style="border:2px dashed #7c3aed;background:none"></span>PIB pc PPS Eurostat (EU=100)</span>
+          <span class="legend-item"><span class="legend-dot" style="border:2px dashed #ca8a04;background:none"></span>PIB pc PPS adj. pop. INE</span>
         </div>
         <div class="chart-wrap" style="height:196px" id="wrap-pib-pc-pt"><div class="chart-loading">A carregar…</div></div>
       </div>
@@ -1170,6 +1171,15 @@ const PT_TEC00114_FALLBACK = [
   {date:'2020',value:75},{date:'2021',value:74},{date:'2022',value:77},
   {date:'2023',value:81},{date:'2024',value:82},{date:'2025',value:81}, // provisório
 ];
+// Rácios de diluição INE: correcção por revisão populacional (população nova > antiga)
+// Fórmula: Índice Corrigido = Índice Eurostat × (Pop. Antiga Eurostat / Pop. Nova INE)
+const PT_DILUTION_RATIOS = {
+  '2021': 0.9832, // +178k hab
+  '2022': 0.9577, // +462k hab
+  '2023': 0.9496, // +565k hab
+  '2024': 0.9440, // +638k hab
+  '2025': 0.9471, // +604k hab
+};
 
 
 async function loadPIBperCapitaEU(ptPibAnnual) {
@@ -3352,6 +3362,12 @@ function renderDashboard(data, fromCache) {
       const _pcSlice = sliceByYears(pibPcPts, activeYears === 'max' ? 'max' : parseInt(activeYears), 'annual');
       const _pliMap = Object.fromEntries(_pliRates.map(r => [r.date, r.value]));
       const _pliData = _pcSlice.map(p => _pliMap[p.date] ?? null);
+      // Série corrigida: tec00114 × rácio de diluição INE (só para 2021-2025)
+      const _adjData = _pcSlice.map(p => {
+        const base = _pliMap[p.date];
+        const ratio = PT_DILUTION_RATIOS[p.date];
+        return (base != null && ratio) ? +(base * ratio).toFixed(1) : null;
+      });
       const _baseOpts = baseChartOptions({ eur: true });
       const _pcChart = new Chart(_pcWrap.querySelector('canvas'), {
         type: 'bar',
@@ -3381,6 +3397,20 @@ function renderDashboard(data, fromCache) {
               spanGaps: true,
               yAxisID: 'yRight',
               order: 1,
+            },
+            {
+              type: 'line',
+              label: 'PIB pc PPS adj. INE',
+              data: _adjData,
+              borderColor: '#ca8a04',
+              backgroundColor: 'transparent',
+              borderWidth: 2,
+              borderDash: [5, 4],
+              pointRadius: 0,
+              tension: 0.2,
+              spanGaps: false,
+              yAxisID: 'yRight',
+              order: 0,
             },
           ],
         },

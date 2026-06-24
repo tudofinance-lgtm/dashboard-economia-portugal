@@ -35,6 +35,19 @@
     .header-subtitle{font-size:.72rem;color:var(--muted);margin-top:4px;letter-spacing:.01em}
     @media(max-width:600px){.header-top{flex-direction:column;align-items:flex-start;gap:8px}.navbar-brand{font-size:.82rem}.navbar-link{padding:5px 9px;font-size:.72rem}}
 
+    /* ── MOBILE LAYOUT ── */
+    @media(max-width:600px){
+      header{padding:12px 14px 0}
+      main{padding:16px 14px}
+      .navbar-links{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;width:100%}
+      .navbar-links::-webkit-scrollbar{display:none}
+      .kpi-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+      .kpi-value{font-size:1.15rem}
+      .kpi-card{padding:12px 13px 11px}
+      .section-head{flex-wrap:wrap;gap:8px}
+      .chart-header{flex-direction:column;gap:3px}
+    }
+
     /* CONTENT */
     main{max-width:1440px;margin:0 auto;padding:24px 28px}
     section{margin-bottom:30px}

@@ -1142,18 +1142,19 @@ const EU_PIB_PC_FALLBACK = [
 ];
 
 
-// Portugal GDP per capita em PPS_EU27_2020 (Eurostat prc_ppp_ind · GDP · EXP_PPS_EU27_2020_HAB)
-const PT_PIB_PC_PPS_FALLBACK = [
-  {date:'1995',value:12100},{date:'1996',value:12600},{date:'1997',value:13200},
-  {date:'1998',value:13900},{date:'1999',value:14800},{date:'2000',value:15700},
-  {date:'2001',value:16200},{date:'2002',value:16700},{date:'2003',value:17100},
-  {date:'2004',value:17500},{date:'2005',value:18600},{date:'2006',value:19600},
-  {date:'2007',value:20300},{date:'2008',value:20700},{date:'2009',value:20000},
-  {date:'2010',value:20700},{date:'2011',value:19900},{date:'2012',value:19500},
-  {date:'2013',value:20200},{date:'2014',value:20600},{date:'2015',value:21200},
-  {date:'2016',value:21900},{date:'2017',value:22600},{date:'2018',value:23500},
-  {date:'2019',value:24500},{date:'2020',value:22800},{date:'2021',value:24500},
-  {date:'2022',value:27800},{date:'2023',value:30800},{date:'2024',value:32400},
+// Taxas PPP Portugal vs EU27_2020 (Eurostat prc_ppp_ind · GDP · PPP_EU27_2020)
+// Fórmula: PIB em PPC = PIB Nominal (EUR) / Taxa PPP → PIB per capita PPC = PIB em PPC / População
+const PT_PPP_RATE_FALLBACK = [
+  {date:'1995',rate:0.736043},{date:'1996',rate:0.741521},{date:'1997',rate:0.766288},
+  {date:'1998',rate:0.789331},{date:'1999',rate:0.790514},{date:'2000',rate:0.795700},
+  {date:'2001',rate:0.810441},{date:'2002',rate:0.819759},{date:'2003',rate:0.815650},
+  {date:'2004',rate:0.827489},{date:'2005',rate:0.810942},{date:'2006',rate:0.805168},
+  {date:'2007',rate:0.819050},{date:'2008',rate:0.819734},{date:'2009',rate:0.830567},
+  {date:'2010',rate:0.823298},{date:'2011',rate:0.836125},{date:'2012',rate:0.819802},
+  {date:'2013',rate:0.808533},{date:'2014',rate:0.807623},{date:'2015',rate:0.813527},
+  {date:'2016',rate:0.822592},{date:'2017',rate:0.838133},{date:'2018',rate:0.842453},
+  {date:'2019',rate:0.846808},{date:'2020',rate:0.849789},{date:'2021',rate:0.847362},
+  {date:'2022',rate:0.837145},{date:'2023',rate:0.823238},{date:'2024',rate:0.824582},
 ];
 
 async function loadPIBperCapitaEU(ptPibAnnual) {
@@ -1161,6 +1162,15 @@ async function loadPIBperCapitaEU(ptPibAnnual) {
     date: p.date,
     value: Math.round(p.value * 1e6 / getPopForYear(p.date)),
   }));
+
+  // Aplica fórmula: PIB per capita PPC = PIB per capita (€) / Taxa PPP
+  function applyPPP(ptPts, pppRates) {
+    const rateMap = {};
+    pppRates.forEach(r => { rateMap[r.date] = r.rate; });
+    return ptPts
+      .filter(p => rateMap[p.date])
+      .map(p => ({ date: p.date, value: Math.round(p.value / rateMap[p.date]) }));
+  }
 
   // Helper: Eurostat SDMX-JSON (sdmx/2.1)
   function parseEurostatTS(json) {
@@ -1178,13 +1188,13 @@ async function loadPIBperCapitaEU(ptPibAnnual) {
     return pts;
   }
 
-  // Helper: Eurostat statistics/1.0 (prc_ppp_ind)
-  function parsePrcPppInd(json) {
+  // Helper: parse taxas PPP do Eurostat statistics/1.0 (prc_ppp_ind · PPP_EU27_2020)
+  function parsePPPRates(json) {
     const timeIdx = json.dimension?.time?.category?.index || {};
     const vals = json.value || {};
     return Object.entries(timeIdx)
       .sort((a,b) => a[1]-b[1])
-      .map(([yr, i]) => { const v = vals[String(i)]; return v != null ? { date: yr, value: Math.round(v) } : null; })
+      .map(([yr, i]) => { const v = vals[String(i)]; return v != null ? { date: yr, rate: v } : null; })
       .filter(Boolean);
   }
 
@@ -1193,26 +1203,27 @@ async function loadPIBperCapitaEU(ptPibAnnual) {
     try {
       const wd = await _getWorkerData();
       const euPts = wd?.eurostat?.pibEU;
-      if (euPts?.length > 5) return { pt: ptPts, eu: euPts, ptPPS: PT_PIB_PC_PPS_FALLBACK };
+      if (euPts?.length > 5) return { pt: ptPts, eu: euPts, ptPPS: applyPPP(ptPts, PT_PPP_RATE_FALLBACK) };
     } catch(e) {}
   }
 
-  // Try Eurostat live API — EU EUR + PT PPS em paralelo
+  // Try Eurostat live API — EU EUR + taxas PPP PT em paralelo
   try {
     const SIG = { signal: AbortSignal.timeout(10000) };
-    const [rEuEur, rPtPPS] = await Promise.all([
+    const [rEuEur, rPPP] = await Promise.all([
       fetch('https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/nama_10_pc' +
         '?na_item=B1GQ&format=JSON&startPeriod=2000&lang=pt&geo=EU27_2020&unit=CP_EUR_HAB', SIG).then(r => r.json()),
       fetch('https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_ppp_ind' +
-        '?ppp_cat=GDP&geo=PT&na_item=EXP_PPS_EU27_2020_HAB&format=JSON', SIG).then(r => r.json()),
+        '?ppp_cat=GDP&geo=PT&na_item=PPP_EU27_2020&format=JSON', SIG).then(r => r.json()),
     ]);
-    const euPts = parseEurostatTS(rEuEur);
-    const ptPPS = parsePrcPppInd(rPtPPS);
-    if (euPts.length) return { pt: ptPts, eu: euPts, ptPPS: ptPPS.length ? ptPPS : PT_PIB_PC_PPS_FALLBACK, isLive: true };
+    const euPts  = parseEurostatTS(rEuEur);
+    const pppRates = parsePPPRates(rPPP);
+    const ptPPS = applyPPP(ptPts, pppRates.length ? pppRates : PT_PPP_RATE_FALLBACK);
+    if (euPts.length) return { pt: ptPts, eu: euPts, ptPPS, isLive: true };
   } catch (e) {
     console.warn('Eurostat PIB per capita fallback:', e.message);
   }
-  return { pt: ptPts, eu: EU_PIB_PC_FALLBACK, ptPPS: PT_PIB_PC_PPS_FALLBACK };
+  return { pt: ptPts, eu: EU_PIB_PC_FALLBACK, ptPPS: applyPPP(ptPts, PT_PPP_RATE_FALLBACK) };
 }
 
 // DE Bund 10Y fallback: valores mensais reais (BCE) até Jun 2026

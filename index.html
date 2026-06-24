@@ -2460,6 +2460,14 @@ function applyFilterExtended(years) {
       const slice = sliceByYears(reg.allPts, yearsNum, reg.periodicity);
       reg.chart.data.labels = slice.map(p => p.date);
       reg.chart.data.datasets[0].data = slice.map(p => p.value);
+      if (reg.isPibPcPt && reg.viPts) {
+        const _pliM = Object.fromEntries(reg.viPts.map(r => [r.date, r.value]));
+        reg.chart.data.datasets[1].data = slice.map(p => _pliM[p.date] ?? null);
+        reg.chart.data.datasets[2].data = slice.map(p => {
+          const base = _pliM[p.date]; const ratio = PT_DILUTION_RATIOS[p.date];
+          return (base != null && ratio) ? +(base * ratio).toFixed(1) : null;
+        });
+      }
       reg.chart.update();
       updateRangeLabel(wrapId, slice);
     } else if (reg.allPts && !reg.seriesList) {
@@ -3451,7 +3459,7 @@ function renderDashboard(data, fromCache) {
           },
         },
       });
-      REGISTRY['wrap-pib-pc-pt'] = { chart: _pcChart, allPts: pibPcPts, isBar: true, periodicity: 'annual', rangeId: 'range-pib-pc-pt' };
+      REGISTRY['wrap-pib-pc-pt'] = { chart: _pcChart, allPts: pibPcPts, viPts: _pliRates, isBar: true, isPibPcPt: true, periodicity: 'annual', rangeId: 'range-pib-pc-pt' };
       updateRangeLabel('wrap-pib-pc-pt', _pcSlice);
     }
   } else {

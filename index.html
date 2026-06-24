@@ -616,7 +616,7 @@
         <div class="chart-header">
           <div>
             <div class="chart-title">PIB per Capita — Portugal</div>
-            <div class="chart-subtitle">Preços correntes · anual · BPstat ÷ INE · <span style="color:#7c3aed">- - -</span> PLI nível preços (EU=100)</div>
+            <div class="chart-subtitle">Preços correntes · anual · BPstat ÷ INE · <span style="color:#7c3aed">- - -</span> PIB pc PPS (EU27=100)</div>
           </div>
           <div style="text-align:right">
             <div class="chart-source">BPstat · INE</div>
@@ -1158,20 +1158,13 @@ const PT_PPP_RATE_FALLBACK = [
   {date:'2025',rate:0.839373},
 ];
 
-// EXP_PPS_EU27_2020_HAB para Portugal (Eurostat prc_ppp_ind_1 · GDP)
-// PIB per capita real em PPC (PPS por habitante) — dados directos Eurostat
-const PT_PIB_PC_PPS_HAB_FALLBACK = [
-  {date:'1995',value:12100},{date:'1996',value:12600},{date:'1997',value:13200},
-  {date:'1998',value:13900},{date:'1999',value:14800},{date:'2000',value:15700},
-  {date:'2001',value:16200},{date:'2002',value:16700},{date:'2003',value:17100},
-  {date:'2004',value:17500},{date:'2005',value:18600},{date:'2006',value:19600},
-  {date:'2007',value:20300},{date:'2008',value:20700},{date:'2009',value:20000},
-  {date:'2010',value:20700},{date:'2011',value:19900},{date:'2012',value:19500},
-  {date:'2013',value:20200},{date:'2014',value:20600},{date:'2015',value:21200},
-  {date:'2016',value:21900},{date:'2017',value:22600},{date:'2018',value:23500},
-  {date:'2019',value:24500},{date:'2020',value:22800},{date:'2021',value:24600},
-  {date:'2022',value:27800},{date:'2023',value:31100},
-  {date:'2024',value:32900},{date:'2025',value:33800}, // provisório
+// tec00114 — PIB per capita em PPS, índice EU27_2020=100 (Eurostat)
+// VI_PPS_EU27_2020_HAB · GDP · Portugal
+const PT_TEC00114_FALLBACK = [
+  {date:'2014',value:77},{date:'2015',value:76},{date:'2016',value:77},
+  {date:'2017',value:76},{date:'2018',value:77},{date:'2019',value:77},
+  {date:'2020',value:75},{date:'2021',value:74},{date:'2022',value:77},
+  {date:'2023',value:81},{date:'2024',value:82},{date:'2025',value:81}, // provisório
 ];
 
 
@@ -1221,7 +1214,7 @@ async function loadPIBperCapitaEU(ptPibAnnual) {
     try {
       const wd = await _getWorkerData();
       const euPts = wd?.eurostat?.pibEU;
-      if (euPts?.length > 5) return { pt: ptPts, eu: euPts, ptPPS: applyPPP(ptPts, PT_PPP_RATE_FALLBACK), ptPPSHab: PT_PIB_PC_PPS_HAB_FALLBACK };
+      if (euPts?.length > 5) return { pt: ptPts, eu: euPts, ptPPS: applyPPP(ptPts, PT_PPP_RATE_FALLBACK), viPts: PT_TEC00114_FALLBACK };
     } catch(e) {}
   }
 
@@ -1233,19 +1226,18 @@ async function loadPIBperCapitaEU(ptPibAnnual) {
         '?na_item=B1GQ&format=JSON&startPeriod=2000&lang=pt&geo=EU27_2020&unit=CP_EUR_HAB', SIG).then(r => r.json()),
       fetch('https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_ppp_ind_1' +
         '?ppp_cat18=GDP&geo=PT&indic_ppp=PPP_EU27_2020&format=JSON', SIG).then(r => r.json()),
-      fetch('https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_ppp_ind_1' +
-        '?ppp_cat18=GDP&geo=PT&indic_ppp=EXP_PPS_EU27_2020_HAB&format=JSON', SIG).then(r => r.json()),
+      fetch('https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/tec00114' +
+        '?ppp_cat18=GDP&geo=PT&indic_ppp=VI_PPS_EU27_2020_HAB&format=JSON', SIG).then(r => r.json()),
     ]);
     const euPts    = parseEurostatTS(rEuEur);
     const pppRates = parsePPPRates(rPPP);
     const ptPPS    = applyPPP(ptPts, pppRates.length ? pppRates : PT_PPP_RATE_FALLBACK);
-    const ptPPSHab = parsePPPRates(rPPSHab).map(r => ({ date: r.date, value: Math.round(r.rate) }));
-    const pliPts = pppRates.map(r => ({ date: r.date, value: +(r.rate * 100).toFixed(1) }));
-    if (euPts.length) return { pt: ptPts, eu: euPts, ptPPS, ptPPSHab: ptPPSHab.length ? ptPPSHab : PT_PIB_PC_PPS_HAB_FALLBACK, pliPts: pliPts.length ? pliPts : null, isLive: true };
+    const ptPPSHab = parsePPPRates(rPPSHab).map(r => ({ date: r.date, value: Math.round(r.rate) })); // tec00114 VI index
+    if (euPts.length) return { pt: ptPts, eu: euPts, ptPPS, viPts: ptPPSHab.length ? ptPPSHab : PT_TEC00114_FALLBACK, isLive: true };
   } catch (e) {
     console.warn('Eurostat PIB per capita fallback:', e.message);
   }
-  return { pt: ptPts, eu: EU_PIB_PC_FALLBACK, ptPPS: applyPPP(ptPts, PT_PPP_RATE_FALLBACK), ptPPSHab: PT_PIB_PC_PPS_HAB_FALLBACK };
+  return { pt: ptPts, eu: EU_PIB_PC_FALLBACK, ptPPS: applyPPP(ptPts, PT_PPP_RATE_FALLBACK), viPts: PT_TEC00114_FALLBACK };
 }
 
 // DE Bund 10Y fallback: valores mensais reais (BCE) até Jun 2026
@@ -3346,11 +3338,10 @@ function renderDashboard(data, fromCache) {
       .filter(p => !p.isExtrapolated)
       .map(p => ({ date: p.date, value: Math.round(p.value * 1e6 / getPopForYear(p.date)) }))
       .filter(p => p.value > 0);
-    // PLI: Índice de Nível de Preços = Taxa PPP × 100 (EU27=100)
-    // Fonte: Eurostat prc_ppp_ind_1 · PPP_EU27_2020 · GDP
-    const _pliRates = (pibEuR.status === 'fulfilled' && pibEuR.value?.pliPts)
-      ? pibEuR.value.pliPts
-      : PT_PPP_RATE_FALLBACK.map(r => ({ date: r.date, value: +(r.rate * 100).toFixed(1) }));
+    // tec00114: PIB per capita em PPS, índice EU27_2020=100
+    const _pliRates = (pibEuR.status === 'fulfilled' && pibEuR.value?.viPts)
+      ? pibEuR.value.viPts
+      : PT_TEC00114_FALLBACK;
     const _pcWrap = document.getElementById('wrap-pib-pc-pt');
     if (_pcWrap) {
       _pcWrap.innerHTML = '<canvas></canvas>';
@@ -3375,7 +3366,7 @@ function renderDashboard(data, fromCache) {
             },
             {
               type: 'line',
-              label: 'PLI (EU=100)',
+              label: 'PIB pc PPS (EU=100)',
               data: _pliData,
               borderColor: '#7c3aed',
               backgroundColor: 'transparent',

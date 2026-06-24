@@ -616,7 +616,7 @@
         <div class="chart-header">
           <div>
             <div class="chart-title">PIB per Capita — Portugal</div>
-            <div class="chart-subtitle">Preços correntes · anual · BPstat ÷ INE · <span style="color:#7c3aed">---</span> PPC (Eurostat)</div>
+            <div class="chart-subtitle">Preços correntes · anual · BPstat ÷ INE · <span style="color:#7c3aed">- - -</span> PLI nível preços (EU=100)</div>
           </div>
           <div style="text-align:right">
             <div class="chart-source">BPstat · INE</div>
@@ -1240,7 +1240,8 @@ async function loadPIBperCapitaEU(ptPibAnnual) {
     const pppRates = parsePPPRates(rPPP);
     const ptPPS    = applyPPP(ptPts, pppRates.length ? pppRates : PT_PPP_RATE_FALLBACK);
     const ptPPSHab = parsePPPRates(rPPSHab).map(r => ({ date: r.date, value: Math.round(r.rate) }));
-    if (euPts.length) return { pt: ptPts, eu: euPts, ptPPS, ptPPSHab: ptPPSHab.length ? ptPPSHab : PT_PIB_PC_PPS_HAB_FALLBACK, isLive: true };
+    const pliPts = pppRates.map(r => ({ date: r.date, value: +(r.rate * 100).toFixed(1) }));
+    if (euPts.length) return { pt: ptPts, eu: euPts, ptPPS, ptPPSHab: ptPPSHab.length ? ptPPSHab : PT_PIB_PC_PPS_HAB_FALLBACK, pliPts: pliPts.length ? pliPts : null, isLive: true };
   } catch (e) {
     console.warn('Eurostat PIB per capita fallback:', e.message);
   }
@@ -3345,17 +3346,18 @@ function renderDashboard(data, fromCache) {
       .filter(p => !p.isExtrapolated)
       .map(p => ({ date: p.date, value: Math.round(p.value * 1e6 / getPopForYear(p.date)) }))
       .filter(p => p.value > 0);
-    // PPS per capita (Eurostat prc_ppp_ind_1 · EXP_PPS_EU27_2020_HAB)
-    const _ppsHabSrc = (pibEuR.status === 'fulfilled' && pibEuR.value?.ptPPSHab) ? pibEuR.value.ptPPSHab : PT_PIB_PC_PPS_HAB_FALLBACK;
+    // PLI: Índice de Nível de Preços = Taxa PPP × 100 (EU27=100)
+    // Fonte: Eurostat prc_ppp_ind_1 · PPP_EU27_2020 · GDP
+    const _pliRates = (pibEuR.status === 'fulfilled' && pibEuR.value?.pliPts)
+      ? pibEuR.value.pliPts
+      : PT_PPP_RATE_FALLBACK.map(r => ({ date: r.date, value: +(r.rate * 100).toFixed(1) }));
     const _pcWrap = document.getElementById('wrap-pib-pc-pt');
     if (_pcWrap) {
       _pcWrap.innerHTML = '<canvas></canvas>';
       const _pcSlice = sliceByYears(pibPcPts, activeYears === 'max' ? 'max' : parseInt(activeYears), 'annual');
-      // Alinhar PPS com as mesmas labels do slice
-      const _labelSet = new Set(_pcSlice.map(p => p.date));
-      const _ppsSlice = _ppsHabSrc.filter(p => _labelSet.has(p.date));
-      const _ppsMap = Object.fromEntries(_ppsSlice.map(p => [p.date, p.value]));
-      const _ppsData = _pcSlice.map(p => _ppsMap[p.date] ?? null);
+      const _pliMap = Object.fromEntries(_pliRates.map(r => [r.date, r.value]));
+      const _pliData = _pcSlice.map(p => _pliMap[p.date] ?? null);
+      const _baseOpts = baseChartOptions({ eur: true });
       const _pcChart = new Chart(_pcWrap.querySelector('canvas'), {
         type: 'bar',
         data: {
@@ -3368,24 +3370,46 @@ function renderDashboard(data, fromCache) {
               backgroundColor: 'rgba(14,116,144,.65)',
               borderColor: '#0e7490',
               borderWidth: 1,
+              yAxisID: 'y',
               order: 2,
             },
             {
               type: 'line',
-              label: 'PIB pc (PPC)',
-              data: _ppsData,
+              label: 'PLI (EU=100)',
+              data: _pliData,
               borderColor: '#7c3aed',
               backgroundColor: 'transparent',
               borderWidth: 2,
               borderDash: [4, 3],
               pointRadius: 0,
-              tension: 0.1,
+              tension: 0.2,
               spanGaps: true,
+              yAxisID: 'yRight',
               order: 1,
             },
           ],
         },
-        options: { ...baseChartOptions({ eur: true }), plugins: { legend: { display: false } } },
+        options: {
+          ..._baseOpts,
+          plugins: { ..._baseOpts.plugins, legend: { display: false } },
+          scales: {
+            ..._baseOpts.scales,
+            yRight: {
+              type: 'linear',
+              position: 'right',
+              min: 60,
+              max: 100,
+              grid: { drawOnChartArea: false },
+              border: { display: false },
+              ticks: {
+                color: '#7c3aed',
+                font: { size: 10 },
+                callback: v => v.toFixed(0),
+                maxTicksLimit: 6,
+              },
+            },
+          },
+        },
       });
       REGISTRY['wrap-pib-pc-pt'] = { chart: _pcChart, allPts: pibPcPts, isBar: true, periodicity: 'annual', rangeId: 'range-pib-pc-pt' };
       updateRangeLabel('wrap-pib-pc-pt', _pcSlice);

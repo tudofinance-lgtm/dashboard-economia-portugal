@@ -53,6 +53,7 @@ BPSTAT_SERIES = [
     12560943,  # Saldo mensal acumulado YTD
     12645918,  # Petróleo Brent EUR/bbl
     12099459,  # OT 10Y daily (spread)
+    12561507,  # Dívida AP % PIB — Eurostat/EDP (mais actualizado)
     # Capacidade/Necessidade Financiamento por setor
     12414395, 12427901, 12439580, 12445096, 12456320,
     # Receitas AP por categoria
@@ -349,7 +350,4 @@ def main():
     log.info(f"=== Done. {out_path} written ({size_kb:.0f} KB) ===")
     log.info(f"  BPstat series: {len(cache['bpstat'])}")
     log.info(f"  ECB keys:      {list(cache['ecb'].keys())}")
-    log.info(f"  Eurostat keys: {list(cache['eurostat'].keys())}")
-
-if __name__ == "__main__":
-    main()
+    log.info(f"  Eurostat keys: {lis

@@ -599,6 +599,7 @@
 
 <script>
 /* ── CONFIG ── */
+const WORKER_URL = '/data/cache.json';
 const BPSTAT_API = 'https://bpstat.bportugal.pt/data/v1';
 const ECB_API = 'https://data-api.ecb.europa.eu/service/data';
 
@@ -1017,7 +1018,25 @@ function applyData(data, stale) {
   if (stale) { const w = document.getElementById('stale-warning'); if (w) w.style.display = 'flex'; }
 }
 
+async function loadServerCache() {
+  if (!WORKER_URL) return null;
+  try {
+    const r = await fetch(WORKER_URL);
+    if (!r.ok) return null;
+    const j = await r.json();
+    if (j?.ecb?.euribor3m?.length) {
+      return { '3M': j.ecb.euribor3m, '6M': j.ecb.euribor6m, '12M': j.ecb.euribor12m };
+    }
+    return null;
+  } catch { return null; }
+}
+
 async function fetchFresh() {
+  // Try server cache first (data/cache.json updated daily by GitHub Actions)
+  const serverData = await loadServerCache();
+  if (serverData) return serverData;
+
+  // Fall back to direct APIs
   const results = await Promise.allSettled([
     bpGetSeries(SERIES_IDS['3M']),
     bpGetSeries(SERIES_IDS['6M']),

@@ -208,7 +208,7 @@ def fetch_ecb() -> dict:
             log.error(f"    {label} failed: {e}")
         time.sleep(0.3)
 
-    # HICP Portugal (total, core, food) — last 120 months
+    # HICP Portugal (total, core, food) — last 120 months — for index.html
     BASE   = "https://data-api.ecb.europa.eu/service/data/HICP/M.PT.N."
     SUFFIX = ".4D0.ANR?format=csvdata&lastNObservations=120"
     for label, code in [("hicp", "000000"), ("hicpCore", "XEF000"), ("hicpFood", "010000")]:
@@ -220,6 +220,27 @@ def fetch_ecb() -> dict:
         except Exception as e:
             log.error(f"    HICP {label} failed: {e}")
         time.sleep(0.3)
+
+    # HICP full dataset — PT + U2, all COICOP categories — for inflacao-hicp.html
+    COICOP_CODES = [
+        "000000", "010000", "020000", "030000", "040000", "050000",
+        "060000", "070000", "080000", "090000", "100000", "110000", "120000",
+    ]
+    log.info("  ECB HICP full (PT+U2, all categories)…")
+    hicp_pt, hicp_u2 = {}, {}
+    for code in COICOP_CODES:
+        for area, store in [("PT", hicp_pt), ("U2", hicp_u2)]:
+            suffix_hist = ".4D0.ANR?format=csvdata&lastNObservations=300" if code == "000000" else ".4D0.ANR?format=csvdata&lastNObservations=24"
+            try:
+                r = get(f"https://data-api.ecb.europa.eu/service/data/HICP/M.{area}.N.{code}{suffix_hist}")
+                store[code] = parse_ecb_hicp_csv(r.text)
+            except Exception as e:
+                log.warning(f"    HICP {area}/{code} failed: {e}")
+                store[code] = []
+            time.sleep(0.2)
+        log.info(f"    {code}: PT {len(hicp_pt.get(code,[]))} pts, U2 {len(hicp_u2.get(code,[]))} pts")
+    out["hicpPT"] = hicp_pt
+    out["hicpU2"] = hicp_u2
 
     return out
 

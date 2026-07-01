@@ -243,6 +243,7 @@
 </footer>
 
 <script>
+const WORKER_URL = '/data/cache.json';
 const ECB = 'https://data-api.ecb.europa.eu/service/data/HICP';
 const CATS = [
   { code: '000000', label: 'Global',           icon: '🛒' },
@@ -260,8 +261,20 @@ const CATS = [
   { code: '120000', label: 'Outros bens & serv.',icon: '👤' },
 ];
 
-async function fetchSeries(area, item, n) {
-  const url = `${ECB}/M.${area}.N.${item}.4D0.ANR?format=csvdata&lastNObservations=${n}`;
+let cacheData = null;
+
+async function loadCache() {
+  if (!WORKER_URL) return null;
+  try {
+    const r = await fetch(WORKER_URL);
+    if (!r.ok) return null;
+    cacheData = await r.json();
+    return cacheData;
+  } catch { return null; }
+}
+
+async function fetchSeriesFromAPI(area, code, n) {
+  const url = `${ECB}/M.${area}.N.${code}.4D0.ANR?format=csvdata&lastNObservations=${n}`;
   const r = await fetch(url);
   const txt = await r.text();
   const lines = txt.trim().split('\n').slice(1).filter(l => l.trim());
@@ -269,6 +282,17 @@ async function fetchSeries(area, item, n) {
     const p = l.split(',');
     return { date: p[7], value: parseFloat(p[8]) };
   }).filter(d => !isNaN(d.value));
+}
+
+async function fetchSeries(area, code, n) {
+  if (cacheData?.ecb) {
+    const store = area === 'PT' ? cacheData.ecb.hicpPT : cacheData.ecb.hicpU2;
+    if (store?.[code]?.length) {
+      const pts = store[code];
+      return n ? pts.slice(-n) : pts;
+    }
+  }
+  return fetchSeriesFromAPI(area, code, n);
 }
 
 let allPT = [], allEA = [];
@@ -301,6 +325,8 @@ function updateLineChart() {
 
 async function loadAll() {
   try {
+    await loadCache();
+
     // Load historical overall data
     [allPT, allEA] = await Promise.all([
       fetchSeries('PT', '000000', 300),
@@ -364,26 +390,14 @@ async function loadAll() {
       }
     });
 
-    // Load category data
-    const catCodes = CATS.map(c => c.code).join('+');
-    const [catPT, catEA] = await Promise.all([
-      fetchSeries('PT', catCodes, 1),
-      fetchSeries('U2', catCodes, 1),
-    ]);
-
-    // Map to lookup
-    const ptMap = {}, eaMap = {};
-
-    // Need multi-series fetch - fetch each series' last value
-    const catPromises = CATS.map(async cat => {
+    // Fetch last value per category (PT + U2)
+    const catResults = await Promise.all(CATS.map(async cat => {
       const [pt, ea] = await Promise.all([
         fetchSeries('PT', cat.code, 1),
         fetchSeries('U2', cat.code, 1),
       ]);
       return { cat, ptVal: pt[0]?.value, eaVal: ea[0]?.value };
-    });
-
-    const catResults = await Promise.all(catPromises);
+    }));
 
     // Update "hottest category" KPI (excluding overall)
     const nonOverall = catResults.filter(r => r.cat.code !== '000000' && r.ptVal !== undefined);
@@ -392,8 +406,6 @@ async function loadAll() {
     document.getElementById('kpi-top-cat').classList.remove('loading');
     document.getElementById('kpi-top-val').textContent = hottest.ptVal.toFixed(1) + '% var. anual';
 
-    // Bar chart subtitle
-    const latestMonth = catResults.find(r => r.ptVal !== undefined);
     document.getElementById('bar-subtitle').textContent = `Último mês disponível · % variação homóloga`;
 
     // Bar chart — only non-overall cats for clarity

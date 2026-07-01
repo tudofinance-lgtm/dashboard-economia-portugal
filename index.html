@@ -479,30 +479,30 @@
       <div class="chart-card">
         <div class="chart-header">
           <div>
-            <div class="chart-title">Receitas AP — Decomposição</div>
-            <div class="chart-subtitle">Ano mais recente · % do total · AP consolidadas</div>
+            <div class="chart-title">Receitas AP — Comparação Anual</div>
+            <div class="chart-subtitle">Ano anterior vs ano corrente · M€ · AP consolidadas</div>
           </div>
           <div style="text-align:right">
-            <div class="chart-source">BPstat · 12560975 · 79 · 83 · 55 · 71</div>
+            <div class="chart-source">BPstat · 12560971 · 75 · 79 · 83 · 55</div>
             <div class="chart-range" id="range-rec-decomp">–</div>
           </div>
         </div>
         <div class="chart-legend" id="legend-rec-decomp"></div>
-        <div class="chart-wrap" style="height:280px" id="wrap-rec-decomp"><div class="chart-loading">A carregar…</div></div>
+        <div class="chart-wrap" style="height:300px" id="wrap-rec-decomp"><div class="chart-loading">A carregar…</div></div>
       </div>
       <div class="chart-card">
         <div class="chart-header">
           <div>
-            <div class="chart-title">Despesas AP — Decomposição</div>
-            <div class="chart-subtitle">Ano mais recente · % do total · AP consolidadas</div>
+            <div class="chart-title">Despesas AP — Comparação Anual</div>
+            <div class="chart-subtitle">Ano anterior vs ano corrente · M€ · AP consolidadas</div>
           </div>
           <div style="text-align:right">
-            <div class="chart-source">BPstat · 12560987–92 · 67</div>
+            <div class="chart-source">BPstat · 12560987 · 88 · 89 · 90 · 91 · 92 · 67</div>
             <div class="chart-range" id="range-desp-decomp">–</div>
           </div>
         </div>
         <div class="chart-legend" id="legend-desp-decomp"></div>
-        <div class="chart-wrap" style="height:280px" id="wrap-desp-decomp"><div class="chart-loading">A carregar…</div></div>
+        <div class="chart-wrap" style="height:300px" id="wrap-desp-decomp"><div class="chart-loading">A carregar…</div></div>
       </div>
     </div>
   </section>
@@ -2389,6 +2389,65 @@ function initPieDecomp(wrapperId, legendId, rangeId, series) {
   });
 }
 
+/* ── GROUPED BAR: YoY comparison ── */
+function initBarYoY(wrapperId, legendId, rangeId, series) {
+  const allYears = new Set();
+  series.forEach(s => s.pts.forEach(p => allYears.add(p.date)));
+  const sortedYears = [...allYears].sort();
+  if (sortedYears.length < 2) return;
+  const currYear = sortedYears[sortedYears.length - 1];
+  const prevYear = sortedYears[sortedYears.length - 2];
+  const getVal = (s, yr) => { const pt = s.pts.find(p => p.date === yr); return pt ? pt.value : null; };
+  const labels = series.map(s => s.label);
+  const currVals = series.map(s => getVal(s, currYear));
+  const prevVals = series.map(s => getVal(s, prevYear));
+
+  const rangeEl = document.getElementById(rangeId);
+  if (rangeEl) rangeEl.textContent = `${prevYear} vs ${currYear}`;
+
+  const legendEl = document.getElementById(legendId);
+  if (legendEl) legendEl.innerHTML =
+    `<span class="legend-item"><span class="legend-dot" style="background:#d1d5db"></span>${prevYear}</span>` +
+    `<span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>${currYear}</span>`;
+
+  const wrap = document.getElementById(wrapperId);
+  if (!wrap) return;
+  wrap.innerHTML = '<canvas></canvas>';
+  const canvas = wrap.querySelector('canvas');
+  new Chart(canvas.getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: prevYear, data: prevVals, backgroundColor: '#e5e7eb', borderRadius: 3, barPercentage: 0.75, categoryPercentage: 0.8 },
+        { label: currYear, data: currVals, backgroundColor: '#2563eb', borderRadius: 3, barPercentage: 0.75, categoryPercentage: 0.8 },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const v = ctx.raw;
+              if (v == null) return '';
+              const other = ctx.chart.data.datasets[ctx.datasetIndex === 1 ? 0 : 1].data[ctx.dataIndex];
+              const pct = (ctx.datasetIndex === 1 && other) ? ` (${v >= other ? '+' : ''}${((v - other) / other * 100).toFixed(1)}% YoY)` : '';
+              return ` ${ctx.dataset.label}: ${(v / 1000).toFixed(1)}B€${pct}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, border: { display: false }, ticks: { color: '#6b7280', font: { size: 9 }, maxRotation: 25, minRotation: 0 } },
+        y: { grid: { color: '#f3f4f6' }, border: { display: false }, ticks: { color: '#6b7280', font: { size: 10 }, callback: v => `${(v / 1000).toFixed(0)}B€`, maxTicksLimit: 5 } }
+      }
+    }
+  });
+}
+
 function initStackedBarChart(wrapId, seriesList) {
   const wrap = document.getElementById(wrapId);
   if (!wrap) return;
@@ -2988,9 +3047,9 @@ function renderDashboard(data, fromCache) {
       setKPI('kpi-inflacao-sub', latSub ? latSub.value.toFixed(1) + '%' : '—',
         `Subjacente · ${latSub?.date || '—'}`, null);
       initChartMulti('wrap-inflacao', [
-        { pts: ipc,        colour: 'red',    label: 'IPC total',  fill: false },
-        { pts: subjacente, colour: 'orange', label: 'Subjacente', fill: false },
-        { pts: alimentar,  colour: 'purple', label: 'Alimentar',  fill: false },
+        { pts: ipc,        colour: 'blue',   label: 'IPC Total',           fill: false },
+        { pts: subjacente, colour: 'red',    label: 'Inflação Subjacente', fill: false },
+        { pts: alimentar,  colour: 'orange', label: 'Inflação Alimentar',  fill: false },
       ], { pct: true }, 'monthly');
       const legendEl = document.getElementById('legend-inflacao');
       if (legendEl) legendEl.innerHTML =
@@ -3497,7 +3556,7 @@ function renderDashboard(data, fromCache) {
   if (recDecompR.status === 'fulfilled') {
     const series = recDecompR.value.filter(s => s.pts && s.pts.length > 0);
     if (series.length) {
-      initPieDecomp('wrap-rec-decomp', 'legend-rec-decomp', 'range-rec-decomp', series);
+      initBarYoY('wrap-rec-decomp', 'legend-rec-decomp', 'range-rec-decomp', series);
     } else {
       chartError('wrap-rec-decomp', 'Sem dados disponíveis');
     }
@@ -3509,7 +3568,7 @@ function renderDashboard(data, fromCache) {
   if (despDecompR.status === 'fulfilled') {
     const series = despDecompR.value.filter(s => s.pts && s.pts.length > 0);
     if (series.length) {
-      initPieDecomp('wrap-desp-decomp', 'legend-desp-decomp', 'range-desp-decomp', series);
+      initBarYoY('wrap-desp-decomp', 'legend-desp-decomp', 'range-desp-decomp', series);
     } else {
       chartError('wrap-desp-decomp', 'Sem dados disponíveis');
     }

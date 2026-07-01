@@ -1382,11 +1382,11 @@ async function loadSpreadOT() {
 async function loadReceitasDecompostas() {
   // Execução orçamental AP — receitas por categoria (YTD mensal → filtro dezembro = anual)
   const CFG = [
-    { id: 12560975, label: 'Impostos Diretos' },
-    { id: 12560979, label: 'Impostos Indiretos' },
-    { id: 12560983, label: 'Contribuições e Cotizações' },
-    { id: 12560955, label: 'Outras Receitas Correntes' },
-    { id: 12560971, label: 'Receitas de Capital' },
+    { id: 12560971, label: 'Impostos Diretos' },
+    { id: 12560975, label: 'Impostos Indiretos' },
+    { id: 12560979, label: 'Contribuições e Cotizações' },
+    { id: 12560983, label: 'Outras Receitas Correntes' },
+    { id: 12560955, label: 'Receitas de Capital' },
   ];
   const results = await Promise.allSettled(CFG.map(c => getSeriesData(c.id)));
   return CFG.map((c, i) => ({
@@ -1402,13 +1402,13 @@ async function loadReceitasDecompostas() {
 async function loadDespesasDecompostas() {
   // Execução orçamental AP — despesas por categoria (YTD mensal → filtro dezembro = anual)
   const CFG = [
-    { id: 12560988, label: 'Pessoal' },
-    { id: 12560992, label: 'Transferências Correntes' },
-    { id: 12560989, label: 'Bens e Serviços' },
-    { id: 12560990, label: 'Juros e Encargos' },
-    { id: 12560987, label: 'Despesas de Capital' },
-    { id: 12560991, label: 'Subsídios' },
-    { id: 12560967, label: 'Outras' },
+    { id: 12560987, label: 'Pessoal' },
+    { id: 12560988, label: 'Bens e Serviços' },
+    { id: 12560989, label: 'Juros e Encargos' },
+    { id: 12560990, label: 'Subsídios' },
+    { id: 12560991, label: 'Transferências Correntes' },
+    { id: 12560992, label: 'Outras Despesas Correntes' },
+    { id: 12560967, label: 'Despesas de Capital' },
   ];
   const results = await Promise.allSettled(CFG.map(c => getSeriesData(c.id)));
   return CFG.map((c, i) => ({

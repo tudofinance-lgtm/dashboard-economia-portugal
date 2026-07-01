@@ -3510,4 +3510,491 @@ function renderDashboard(data, fromCache) {
               yLeft: {
                 position: 'left',
                 grid: { color: '#f3f4f6' },
-         
+                ticks: { callback: v => v >= 1000 ? (v/1000).toFixed(0)+'k' : v, color: '#9ca3af', font: { size: 10 } },
+              },
+              yRight: {
+                position: 'right',
+                grid: { drawOnChartArea: false },
+                ticks: { callback: v => v + '%', color: '#f59e0b', font: { size: 10 } },
+              },
+            },
+          },
+        });
+        REGISTRY['wrap-divida-total'] = { chart, seriesList: [
+          { pts: pibAnnual, colour: 'blue', label: 'PIB Nominal (M€)',   fill: false },
+          { pts: dividaAbs, colour: 'red',  label: 'Dívida Pública (M€)', fill: false },
+          { pts: dividaPct, colour: 'orange', label: 'Dívida % PIB',      fill: false },
+        ], opts: { meur: true }, periodicity: 'annual' };
+        updateRangeLabel('wrap-divida-total', sliceD);
+      }
+    }
+  } else if (dividaR.status !== 'fulfilled') {
+    chartError('wrap-divida-total', 'Não foi possível carregar os dados');
+  }
+
+  /* ── REN: KPI CONSUMO ELÉTRICO ── */
+  try {
+    const renC = renConsumoR.status === 'fulfilled' ? renConsumoR.value : null;
+    if (renC) {
+      const el = document.getElementById('kpi-ren-consumo');
+      const sub = document.getElementById('kpi-ren-consumo-sub');
+      if (el) el.querySelector('.kpi-value').textContent =
+        renC.yearEvol != null ? (renC.yearEvol >= 0 ? '+' : '') + renC.yearEvol.toFixed(1) + '%' : '—';
+      if (sub) sub.textContent = 'Variação anual · ' + renC.month + ' · REN';
+    }
+  } catch(e) { console.warn('REN consumo KPI:', e); }
+
+  /* ── REN: KPI PREÇO MERCADO ELÉTRICO ── */
+  try {
+    const renP = renPrecoR.status === 'fulfilled' ? renPrecoR.value : null;
+    if (renP) {
+      const elP = document.getElementById('kpi-ren-preco');
+      const subP = document.getElementById('kpi-ren-preco-sub');
+      const badgeEl = document.getElementById('kpi-ren-preco-badge');
+      if (elP) elP.querySelector('.kpi-value').textContent =
+        renP.avgPrice != null ? renP.avgPrice.toFixed(1) + ' €/MWh' : '—';
+      if (subP) subP.textContent = 'Média mensal PT · ' + renP.month + ' · REN';
+      if (badgeEl && renPrecoHistR.status === 'fulfilled') {
+        const hist = renPrecoHistR.value;
+        if (Array.isArray(hist) && hist.length >= 13) {
+          const last = hist[hist.length - 1];
+          const prev12 = hist[hist.length - 13];
+          if (last && prev12 && prev12.value) {
+            const chg = ((last.value - prev12.value) / prev12.value) * 100;
+            badgeEl.className = 'kpi-badge ' + (chg >= 0 ? 'badge-down' : 'badge-up');
+            badgeEl.textContent = (chg >= 0 ? '▲ +' : '▼ ') + chg.toFixed(1) + '% vs ano ant.';
+          }
+        }
+      }
+    }
+  } catch(e) { console.warn('REN preço KPI:', e); }
+
+  /* ── REN: BALANÇO ELÉTRICO MENSAL (wrap-ren-balanco) ── */
+  if (renBalancoHistR.status === 'fulfilled') {
+    const hist = renBalancoHistR.value;
+    if (Array.isArray(hist) && hist.length) {
+      const wrap = document.getElementById('wrap-ren-balanco');
+      if (wrap) {
+        wrap.innerHTML = '<canvas></canvas>';
+        const ctx = wrap.querySelector('canvas');
+        const yearsNum = activeYears === 'max' ? 'max' : parseInt(activeYears);
+        const sliced = yearsNum === 'max' ? hist : hist.slice(-yearsNum * 12);
+        const labels = sliced.map(d => d.date);
+        const chart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [
+              {
+                type: 'line',
+                label: 'Geração Total (GWh)',
+                data: sliced.map(d => d.total_gen),
+                borderColor: '#2563eb',
+                backgroundColor: 'transparent',
+                borderWidth: 2,
+                pointRadius: 0,
+                yAxisID: 'yLeft',
+                order: 1,
+              },
+              {
+                type: 'line',
+                label: 'Renováveis (GWh)',
+                data: sliced.map(d => d.renewable),
+                borderColor: '#047857',
+                backgroundColor: 'transparent',
+                borderWidth: 1.5,
+                borderDash: [4, 3],
+                pointRadius: 0,
+                yAxisID: 'yLeft',
+                order: 2,
+              },
+              {
+                type: 'bar',
+                label: 'Saldo Import. (GWh)',
+                data: sliced.map(d => d.import_bal),
+                backgroundColor: sliced.map(d => d.import_bal >= 0 ? 'rgba(249,115,22,0.75)' : 'rgba(4,120,87,0.75)'),
+                borderColor: sliced.map(d => d.import_bal >= 0 ? '#f97316' : '#047857'),
+                borderWidth: 1,
+                yAxisID: 'yLeft',
+                order: 3,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            animation: { duration: 250 },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: '#111827', titleColor: '#9ca3af',
+                bodyColor: '#f9fafb', borderColor: '#374151', borderWidth: 1, padding: 10,
+              },
+            },
+            scales: {
+              x: { grid: { display: false }, ticks: { maxTicksLimit: 12, color: '#9ca3af', font: { size: 10 } } },
+              yLeft: { grid: { color: '#f3f4f6' }, ticks: { color: '#9ca3af', font: { size: 10 } } },
+            },
+          },
+        });
+        REGISTRY['wrap-ren-balanco'] = {
+          chart,
+          _renHist: hist,
+          periodicity: 'monthly',
+        };
+        const legendEl = document.getElementById('legend-ren-balanco');
+        if (legendEl) legendEl.innerHTML =
+          '<span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Geração</span>' +
+          '<span class="legend-item"><span class="legend-dot" style="background:#047857"></span>Renováveis</span>' +
+          '<span class="legend-item"><span class="legend-dot" style="background:#f97316"></span>Saldo (laranja=importador)</span>';
+        updateRangeLabel('wrap-ren-balanco', sliced);
+      }
+    }
+  } else {
+    chartError('wrap-ren-balanco', 'Sem dados REN balanço');
+  }
+
+  /* ── REN: RENOVÁVEIS DECOMPOSIÇÃO (wrap-ren-renovaveis) ── */
+  if (renRenovaveisR.status === 'fulfilled') {
+    const r = renRenovaveisR.value;
+    if (r) {
+      const wrap = document.getElementById('wrap-ren-renovaveis');
+      if (wrap) {
+        wrap.innerHTML = '<canvas></canvas>';
+        const ctx = wrap.querySelector('canvas');
+        new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Hídrica', 'Eólica', 'Solar', 'Biomassa'],
+            datasets: [{
+              data: [r.hydro || 0, r.wind || 0, r.solar || 0, r.biomass || 0],
+              backgroundColor: ['#2563eb', '#047857', '#f59e0b', '#6d28d9'],
+              borderWidth: 2,
+              borderColor: '#ffffff',
+            }],
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false, animation: { duration: 250 },
+            plugins: {
+              legend: { position: 'right', labels: { color: '#64748b', font: { size: 11 } } },
+              tooltip: {
+                callbacks: { label: ctx2 => ' ' + ctx2.label + ': ' + (ctx2.raw || 0).toFixed(0) + ' GWh' },
+              },
+            },
+          },
+        });
+      }
+    }
+  } else {
+    chartError('wrap-ren-renovaveis', 'Sem dados REN renováveis');
+  }
+
+  /* ── REN: HISTÓRICO PREÇO ELÉTRICO (wrap-ren-preco-hist) ── */
+  if (renPrecoHistR.status === 'fulfilled') {
+    const hist = renPrecoHistR.value;
+    if (Array.isArray(hist) && hist.length) {
+      initChart('wrap-ren-preco-hist', hist.map(d => ({ date: d.date, value: d.value })),
+        'orange', { pct: false }, 'monthly');
+    }
+  } else {
+    chartError('wrap-ren-preco-hist', 'Sem dados histórico preço');
+  }
+
+  /* ── POPULAÇÃO KPI ── */
+  {
+    const el = document.getElementById('kpi-populacao');
+    if (el) {
+      const valEl = el.querySelector('.kpi-value');
+      const subEl = el.querySelector('.kpi-sub');
+      const _latPop = POP_BY_YEAR[POP_BY_YEAR.length - 1];
+      if (valEl) { valEl.classList.remove('kpi-loading'); valEl.textContent = (_latPop.pop / 1e6).toFixed(3) + ' M'; }
+      if (subEl) subEl.textContent = `Residentes · INE · ${_latPop.year}`;
+    }
+  }
+
+  /* ── GRÁFICO POPULAÇÃO ── */
+  {
+    const popPts = POP_BY_YEAR.map(p => ({ date: String(p.year), value: +(p.pop / 1e3).toFixed(1) }));
+    const _popWrap = document.getElementById('wrap-pop');
+    if (_popWrap) {
+      _popWrap.innerHTML = '<canvas></canvas>';
+      const _popSlice = sliceByYears(popPts, activeYears === 'max' ? 'max' : parseInt(activeYears), 'annual');
+      const _popChart = new Chart(_popWrap.querySelector('canvas'), {
+        type: 'bar',
+        data: {
+          labels: _popSlice.map(p => p.date),
+          datasets: [{ data: _popSlice.map(p => p.value), backgroundColor: 'rgba(37,99,235,.65)', borderColor: '#2563eb', borderWidth: 1 }],
+        },
+        options: { ...baseChartOptions({ label: 'Pop. (mil)', decimals: 0 }), plugins: { legend: { display: false } } },
+      });
+      REGISTRY['wrap-pop'] = { chart: _popChart, allPts: popPts, isBar: true, periodicity: 'annual', rangeId: 'range-pop' };
+      updateRangeLabel('wrap-pop', _popSlice);
+    }
+  }
+
+  /* ── GRÁFICO PIB PER CAPITA PT (pop por ano) ── */
+  if (pibAnnual && pibAnnual.length > 1) {
+    const pibPcPts = pibAnnual
+      .filter(p => !p.isExtrapolated)
+      .map(p => ({ date: p.date, value: Math.round(p.value * 1e6 / getPopForYear(p.date)) }))
+      .filter(p => p.value > 0);
+    // tec00114: PIB per capita em PPS, índice EU27_2020=100
+    const _pliRates = (pibEuR.status === 'fulfilled' && pibEuR.value?.viPts)
+      ? pibEuR.value.viPts
+      : PT_TEC00114_FALLBACK;
+    const _pcWrap = document.getElementById('wrap-pib-pc-pt');
+    if (_pcWrap) {
+      _pcWrap.innerHTML = '<canvas></canvas>';
+      const _pcSlice = sliceByYears(pibPcPts, activeYears === 'max' ? 'max' : parseInt(activeYears), 'annual');
+      const _pliMap = Object.fromEntries(_pliRates.map(r => [r.date, r.value]));
+      const _pliData = _pcSlice.map(p => _pliMap[p.date] ?? null);
+      // Série corrigida: tec00114 × rácio de diluição INE (só para 2021-2025)
+      const _adjData = _pcSlice.map(p => {
+        const base = _pliMap[p.date];
+        const ratio = PT_DILUTION_RATIOS[p.date];
+        return (base != null && ratio) ? +(base * ratio).toFixed(1) : null;
+      });
+      const _baseOpts = baseChartOptions({ eur: true });
+      const _pcChart = new Chart(_pcWrap.querySelector('canvas'), {
+        type: 'bar',
+        data: {
+          labels: _pcSlice.map(p => p.date),
+          datasets: [
+            {
+              type: 'bar',
+              label: 'PIB pc (€)',
+              data: _pcSlice.map(p => p.value),
+              backgroundColor: 'rgba(14,116,144,.65)',
+              borderColor: '#0e7490',
+              borderWidth: 1,
+              yAxisID: 'y',
+              order: 2,
+            },
+            {
+              type: 'line',
+              label: 'PIB pc PPS (EU=100)',
+              data: _pliData,
+              borderColor: '#7c3aed',
+              backgroundColor: 'transparent',
+              borderWidth: 2,
+              borderDash: [4, 3],
+              pointRadius: 0,
+              tension: 0.2,
+              spanGaps: true,
+              yAxisID: 'yRight',
+              order: 1,
+            },
+            {
+              type: 'line',
+              label: 'PIB pc PPS adj. INE',
+              data: _adjData,
+              borderColor: '#ca8a04',
+              backgroundColor: 'transparent',
+              borderWidth: 2,
+              borderDash: [5, 4],
+              pointRadius: 0,
+              tension: 0.2,
+              spanGaps: false,
+              yAxisID: 'yRight',
+              order: 0,
+            },
+          ],
+        },
+        options: {
+          ..._baseOpts,
+          plugins: {
+            ..._baseOpts.plugins,
+            legend: { display: false },
+            tooltip: {
+              ..._baseOpts.plugins.tooltip,
+              callbacks: {
+                label: ctx => {
+                  const v = ctx.raw;
+                  if (v == null) return '';
+                  const lbl = ctx.dataset.label ? ` ${ctx.dataset.label}: ` : ' ';
+                  if (ctx.dataset.yAxisID === 'yRight') return `${lbl}${v.toFixed(1)}`;
+                  return `${lbl}${v.toLocaleString('pt-PT')} €`;
+                },
+              },
+            },
+          },
+          scales: {
+            ..._baseOpts.scales,
+            yRight: {
+              type: 'linear',
+              position: 'right',
+              min: 60,
+              max: 100,
+              grid: { drawOnChartArea: false },
+              border: { display: false },
+              ticks: {
+                color: '#7c3aed',
+                font: { size: 10 },
+                callback: v => v.toFixed(0),
+                maxTicksLimit: 6,
+              },
+            },
+          },
+        },
+      });
+      REGISTRY['wrap-pib-pc-pt'] = { chart: _pcChart, allPts: pibPcPts, viPts: _pliRates, isBar: true, isPibPcPt: true, periodicity: 'annual', rangeId: 'range-pib-pc-pt' };
+      updateRangeLabel('wrap-pib-pc-pt', _pcSlice);
+    }
+  } else {
+    chartError('wrap-pib-pc-pt', 'Aguarda dados do PIB');
+  }
+
+  /* ── RECEITAS DECOMPOSTAS (wrap-rec-decomp) ── */
+  if (recDecompR.status === 'fulfilled') {
+    const series = recDecompR.value.filter(s => s.pts && s.pts.length > 0);
+    if (series.length) {
+      initPieWithYoY('wrap-rec-decomp', 'legend-rec-decomp', 'range-rec-decomp', series);
+    } else {
+      chartError('wrap-rec-decomp', 'Sem dados disponíveis');
+    }
+  } else {
+    chartError('wrap-rec-decomp', 'Não foi possível carregar os dados');
+  }
+
+  /* ── DESPESAS DECOMPOSTAS (wrap-desp-decomp) ── */
+  if (despDecompR.status === 'fulfilled') {
+    const series = despDecompR.value.filter(s => s.pts && s.pts.length > 0);
+    if (series.length) {
+      initPieWithYoY('wrap-desp-decomp', 'legend-desp-decomp', 'range-desp-decomp', series);
+    } else {
+      chartError('wrap-desp-decomp', 'Sem dados disponíveis');
+    }
+  } else {
+    chartError('wrap-desp-decomp', 'Não foi possível carregar os dados');
+  }
+
+  /* ── CAPACIDADE DE FINANCIAMENTO / SALDOS SECTORIAIS (wrap-cap-fin) ── */
+  if (capFinR.status === 'fulfilled') {
+    const series = capFinR.value.filter(s => s.pts && s.pts.length > 0);
+    if (series.length) {
+      initChartMulti('wrap-cap-fin', series, { pct: true }, 'quarterly');
+      const legendEl = document.getElementById('legend-cap-fin');
+      if (legendEl) legendEl.innerHTML = series.map(s =>
+        '<span class="legend-item"><span class="legend-dot" style="background:' +
+        (COLORS[s.colour] ? COLORS[s.colour].line : '#64748b') + '"></span>' + s.label + '</span>'
+      ).join('');
+    } else {
+      chartError('wrap-cap-fin', 'Sem dados disponíveis');
+    }
+  } else {
+    chartError('wrap-cap-fin', 'Não foi possível carregar os dados');
+  }
+
+  /* ── INDICADORES DE CONFIANÇA (wrap-confianca) ── */
+  {
+    const { consumidores, empresas } = confiancaData;
+    if (consumidores && consumidores.length) {
+      initChartMulti('wrap-confianca', [
+        { pts: consumidores, colour: 'blue',   label: 'Consumidores', fill: false },
+        { pts: empresas,     colour: 'orange',  label: 'Empresas',     fill: false },
+      ], {}, 'annual');
+      const legendEl = document.getElementById('legend-confianca');
+      if (legendEl) legendEl.innerHTML =
+        '<span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Consumidores</span>' +
+        '<span class="legend-item"><span class="legend-dot" style="background:#c2410c"></span>Empresas</span>';
+    }
+  }
+
+  /* ── DÍVIDA CONSOLIDADA (wrap-divida-consolidada) ── */
+  (function() {
+    const wrap = document.getElementById('wrap-divida-consolidada');
+    if (!wrap) return;
+    if (dividaR.status !== 'fulfilled') { chartError('wrap-divida-consolidada', 'Sem dados'); return; }
+    const { pts: ptsDivida } = dividaR.value;
+    const { publica, empresas, familias } = loadDividaConsolidada(ptsDivida);
+    initChartMulti('wrap-divida-consolidada', [
+      { pts: publica,  colour: 'orange', label: 'Adm. Públicas', fill: false },
+      { pts: empresas, colour: 'blue',   label: 'Empresas NF',   fill: false },
+      { pts: familias, colour: 'teal',   label: 'Famílias',      fill: false },
+    ], { pct: true }, 'annual');
+    const legendEl = document.getElementById('legend-divida-consolidada');
+    if (legendEl) legendEl.innerHTML =
+      '<span class="legend-item"><span class="legend-dot" style="background:#c2410c"></span>Adm. Públicas</span>' +
+      '<span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Empresas NF</span>' +
+      '<span class="legend-item"><span class="legend-dot" style="background:#0e7490"></span>Famílias</span>';
+  })();
+
+} // end renderDashboard
+
+/* ══════════════════════════════════════════════════════════
+   INIT — carregar dados e renderizar
+══════════════════════════════════════════════════════════ */
+(async () => {
+  const cached = cacheLoad();
+
+  if (cached) {
+    // Fresh cache — render immediately, refresh silently in background
+    renderDashboard(cached, true);
+    fetchAllData().then(d => { cacheSave(d); }).catch(() => {});
+    return;
+  }
+
+  try {
+    const d = await fetchAllData();
+    cacheSave(d);
+    renderDashboard(d, false);
+  } catch(e) {
+    console.error('Dashboard init failed:', e);
+    // Stale fallback
+    const stale = cacheLoadAny();
+    if (stale) {
+      renderDashboard(stale, true);
+      const w = document.getElementById('stale-warning');
+      if (w) w.style.display = 'block';
+    }
+  }
+})();
+  </script>
+
+<!-- GDPR BANNER -->
+<div id="gdpr-banner" style="display:none">
+  <div class="gdpr-text">
+    🍪 Este site usa cookies de publicidade (Google AdSense) para financiar o seu funcionamento gratuito.
+    Consulte a nossa <a href="politica-privacidade.html">Política de Privacidade</a>.
+  </div>
+  <div class="gdpr-btns">
+    <button id="gdpr-accept" onclick="gdprAccept()">Aceitar</button>
+    <button id="gdpr-reject" onclick="gdprReject()">Rejeitar</button>
+  </div>
+</div>
+
+<script>
+  // ── GDPR ─────────────────────────────────────────────────────
+  (function() {
+    const consent = localStorage.getItem('gdpr_consent');
+    if (consent === null) {
+      document.getElementById('gdpr-banner').style.display = 'flex';
+    } else if (consent === 'accepted') {
+      loadAds();
+    }
+  })();
+
+  function gdprAccept() {
+    localStorage.setItem('gdpr_consent', 'accepted');
+    document.getElementById('gdpr-banner').style.display = 'none';
+    loadAds();
+  }
+
+  function gdprReject() {
+    localStorage.setItem('gdpr_consent', 'rejected');
+    document.getElementById('gdpr-banner').style.display = 'none';
+  }
+
+  function loadAds() {
+    // Only load AdSense script after consent
+    if (document.querySelector('script[src*="adsbygoogle"]')) return;
+    const s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1015529156935926';
+    s.crossOrigin = 'anonymous';
+    document.head.appendChild(s);
+  }
+</script>
+</body>
+</html>

@@ -2400,11 +2400,23 @@ function initPieWithYoY(wrapperId, legendId, rangeId, series) {
   const colours = ['#2563eb','#16a34a','#dc2626','#7c3aed','#ea580c','#0d9488','#ca8a04'];
   const monthNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
-  // Build sorted list of years from annual data
+  // Build sorted list of years from annual (December) data
   const allYearsSet = new Set();
   series.forEach(s => s.pts.forEach(p => allYearsSet.add(p.date)));
   const sortedYears = [...allYearsSet].sort();
-  const recentYears = sortedYears.slice(-5); // last 5 complete years
+
+  // Detect partial current year from monthly data (year not yet in annual)
+  let partialYear = null, partialLatestMonth = null;
+  const allMonthsSet = new Set();
+  series.forEach(s => { if (s.monthlyPts) s.monthlyPts.forEach(p => allMonthsSet.add(p.date)); });
+  if (allMonthsSet.size) {
+    const latestMo = [...allMonthsSet].sort().pop();
+    const latestYr = latestMo.slice(0, 4);
+    if (!allYearsSet.has(latestYr)) { partialYear = latestYr; partialLatestMonth = latestMo; }
+  }
+
+  // Last 5 complete years + partial current year if available
+  const recentYears = [...sortedYears.slice(-5), ...(partialYear ? [partialYear] : [])];
 
   const hasMonthly = series.some(s => s.monthlyPts && s.monthlyPts.length > 0);
 
@@ -2421,7 +2433,7 @@ function initPieWithYoY(wrapperId, legendId, rangeId, series) {
     wrap.parentNode.insertBefore(filterBar, wrap);
   }
 
-  let activeMode = recentYears[recentYears.length - 1]; // default: most recent year
+  let activeMode = recentYears[recentYears.length - 1]; // default: most recent (incl. partial year)
 
   const getVal = (s, yr) => { const pt = s.pts.find(p => p.date === yr); return pt ? pt.value : null; };
 
@@ -2449,20 +2461,39 @@ function initPieWithYoY(wrapperId, legendId, rangeId, series) {
   };
 
   const renderAnnual = (yr) => {
-    const prevYr = sortedYears[sortedYears.indexOf(yr) - 1];
+    const isPartial = yr === partialYear;
+    const prevYr = isPartial ? sortedYears[sortedYears.length - 1] : sortedYears[sortedYears.indexOf(yr) - 1];
     const labels = [], currVals = [], yoyPcts = [];
-    series.forEach(s => {
-      const curr = getVal(s, yr);
-      const prev = prevYr ? getVal(s, prevYr) : null;
-      if (curr == null) return;
-      labels.push(s.label);
-      currVals.push(curr);
-      yoyPcts.push(prev != null ? ((curr - prev) / Math.abs(prev) * 100) : null);
-    });
+
+    if (isPartial && partialLatestMonth) {
+      // Use latest available YTD month for current year; compare to same month last year
+      const prevMo = prevYr + partialLatestMonth.slice(4);
+      series.forEach(s => {
+        const curr = s.monthlyPts?.find(p => p.date === partialLatestMonth)?.value ?? null;
+        const prev = s.monthlyPts?.find(p => p.date === prevMo)?.value ?? null;
+        if (curr == null) return;
+        labels.push(s.label);
+        currVals.push(curr);
+        yoyPcts.push(prev != null ? ((curr - prev) / Math.abs(prev) * 100) : null);
+      });
+    } else {
+      series.forEach(s => {
+        const curr = getVal(s, yr);
+        const prev = prevYr ? getVal(s, prevYr) : null;
+        if (curr == null) return;
+        labels.push(s.label);
+        currVals.push(curr);
+        yoyPcts.push(prev != null ? ((curr - prev) / Math.abs(prev) * 100) : null);
+      });
+    }
+
     const total = currVals.reduce((a, b) => a + b, 0);
 
     const rangeEl = document.getElementById(rangeId);
-    if (rangeEl) rangeEl.textContent = yr + (prevYr ? ` vs ${prevYr}` : '');
+    if (rangeEl) {
+      const moLabel = isPartial ? ` até ${monthNames[parseInt(partialLatestMonth.slice(5)) - 1]}` : '';
+      rangeEl.textContent = yr + moLabel + (prevYr ? ` vs ${prevYr}` : '');
+    }
 
     const legendEl = document.getElementById(legendId);
     if (legendEl) {
@@ -3728,163 +3759,4 @@ function renderDashboard(data, fromCache) {
           },
         },
       });
-      REGISTRY['wrap-pib-pc-pt'] = { chart: _pcChart, allPts: pibPcPts, viPts: _pliRates, isBar: true, isPibPcPt: true, periodicity: 'annual', rangeId: 'range-pib-pc-pt' };
-      updateRangeLabel('wrap-pib-pc-pt', _pcSlice);
-    }
-  } else {
-    chartError('wrap-pib-pc-pt', 'Aguarda dados do PIB');
-  }
-
-  /* ── RECEITAS DECOMPOSTAS (wrap-rec-decomp) ── */
-  if (recDecompR.status === 'fulfilled') {
-    const series = recDecompR.value.filter(s => s.pts && s.pts.length > 0);
-    if (series.length) {
-      initPieWithYoY('wrap-rec-decomp', 'legend-rec-decomp', 'range-rec-decomp', series);
-    } else {
-      chartError('wrap-rec-decomp', 'Sem dados disponíveis');
-    }
-  } else {
-    chartError('wrap-rec-decomp', 'Não foi possível carregar os dados');
-  }
-
-  /* ── DESPESAS DECOMPOSTAS (wrap-desp-decomp) ── */
-  if (despDecompR.status === 'fulfilled') {
-    const series = despDecompR.value.filter(s => s.pts && s.pts.length > 0);
-    if (series.length) {
-      initPieWithYoY('wrap-desp-decomp', 'legend-desp-decomp', 'range-desp-decomp', series);
-    } else {
-      chartError('wrap-desp-decomp', 'Sem dados disponíveis');
-    }
-  } else {
-    chartError('wrap-desp-decomp', 'Não foi possível carregar os dados');
-  }
-
-  /* ── CAPACIDADE DE FINANCIAMENTO / SALDOS SECTORIAIS (wrap-cap-fin) ── */
-  if (capFinR.status === 'fulfilled') {
-    const series = capFinR.value.filter(s => s.pts && s.pts.length > 0);
-    if (series.length) {
-      initChartMulti('wrap-cap-fin', series, { pct: true }, 'quarterly');
-      const legendEl = document.getElementById('legend-cap-fin');
-      if (legendEl) legendEl.innerHTML = series.map(s =>
-        '<span class="legend-item"><span class="legend-dot" style="background:' +
-        (COLORS[s.colour] ? COLORS[s.colour].line : '#64748b') + '"></span>' + s.label + '</span>'
-      ).join('');
-    } else {
-      chartError('wrap-cap-fin', 'Sem dados disponíveis');
-    }
-  } else {
-    chartError('wrap-cap-fin', 'Não foi possível carregar os dados');
-  }
-
-  /* ── INDICADORES DE CONFIANÇA (wrap-confianca) ── */
-  {
-    const { consumidores, empresas } = confiancaData;
-    if (consumidores && consumidores.length) {
-      initChartMulti('wrap-confianca', [
-        { pts: consumidores, colour: 'blue',   label: 'Consumidores', fill: false },
-        { pts: empresas,     colour: 'orange',  label: 'Empresas',     fill: false },
-      ], {}, 'annual');
-      const legendEl = document.getElementById('legend-confianca');
-      if (legendEl) legendEl.innerHTML =
-        '<span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Consumidores</span>' +
-        '<span class="legend-item"><span class="legend-dot" style="background:#c2410c"></span>Empresas</span>';
-    }
-  }
-
-  /* ── DÍVIDA CONSOLIDADA (wrap-divida-consolidada) ── */
-  (function() {
-    const wrap = document.getElementById('wrap-divida-consolidada');
-    if (!wrap) return;
-    if (dividaR.status !== 'fulfilled') { chartError('wrap-divida-consolidada', 'Sem dados'); return; }
-    const { pts: ptsDivida } = dividaR.value;
-    const { publica, empresas, familias } = loadDividaConsolidada(ptsDivida);
-    initChartMulti('wrap-divida-consolidada', [
-      { pts: publica,  colour: 'orange', label: 'Adm. Públicas', fill: false },
-      { pts: empresas, colour: 'blue',   label: 'Empresas NF',   fill: false },
-      { pts: familias, colour: 'teal',   label: 'Famílias',      fill: false },
-    ], { pct: true }, 'annual');
-    const legendEl = document.getElementById('legend-divida-consolidada');
-    if (legendEl) legendEl.innerHTML =
-      '<span class="legend-item"><span class="legend-dot" style="background:#c2410c"></span>Adm. Públicas</span>' +
-      '<span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Empresas NF</span>' +
-      '<span class="legend-item"><span class="legend-dot" style="background:#0e7490"></span>Famílias</span>';
-  })();
-
-} // end renderDashboard
-
-/* ══════════════════════════════════════════════════════════
-   INIT — carregar dados e renderizar
-══════════════════════════════════════════════════════════ */
-(async () => {
-  const cached = cacheLoad();
-
-  if (cached) {
-    // Fresh cache — render immediately, refresh silently in background
-    renderDashboard(cached, true);
-    fetchAllData().then(d => { cacheSave(d); }).catch(() => {});
-    return;
-  }
-
-  try {
-    const d = await fetchAllData();
-    cacheSave(d);
-    renderDashboard(d, false);
-  } catch(e) {
-    console.error('Dashboard init failed:', e);
-    // Stale fallback
-    const stale = cacheLoadAny();
-    if (stale) {
-      renderDashboard(stale, true);
-      const w = document.getElementById('stale-warning');
-      if (w) w.style.display = 'block';
-    }
-  }
-})();
-  </script>
-
-<!-- GDPR BANNER -->
-<div id="gdpr-banner" style="display:none">
-  <div class="gdpr-text">
-    🍪 Este site usa cookies de publicidade (Google AdSense) para financiar o seu funcionamento gratuito.
-    Consulte a nossa <a href="politica-privacidade.html">Política de Privacidade</a>.
-  </div>
-  <div class="gdpr-btns">
-    <button id="gdpr-accept" onclick="gdprAccept()">Aceitar</button>
-    <button id="gdpr-reject" onclick="gdprReject()">Rejeitar</button>
-  </div>
-</div>
-
-<script>
-  // ── GDPR ─────────────────────────────────────────────────────
-  (function() {
-    const consent = localStorage.getItem('gdpr_consent');
-    if (consent === null) {
-      document.getElementById('gdpr-banner').style.display = 'flex';
-    } else if (consent === 'accepted') {
-      loadAds();
-    }
-  })();
-
-  function gdprAccept() {
-    localStorage.setItem('gdpr_consent', 'accepted');
-    document.getElementById('gdpr-banner').style.display = 'none';
-    loadAds();
-  }
-
-  function gdprReject() {
-    localStorage.setItem('gdpr_consent', 'rejected');
-    document.getElementById('gdpr-banner').style.display = 'none';
-  }
-
-  function loadAds() {
-    // Only load AdSense script after consent
-    if (document.querySelector('script[src*="adsbygoogle"]')) return;
-    const s = document.createElement('script');
-    s.async = true;
-    s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1015529156935926';
-    s.crossOrigin = 'anonymous';
-    document.head.appendChild(s);
-  }
-</script>
-</body>
-</html>
+      REGISTRY['wrap-pib-pc-pt'] = { chart: _pcCh

@@ -350,4 +350,7 @@ def main():
     log.info(f"=== Done. {out_path} written ({size_kb:.0f} KB) ===")
     log.info(f"  BPstat series: {len(cache['bpstat'])}")
     log.info(f"  ECB keys:      {list(cache['ecb'].keys())}")
-    log.info(f"  Eurostat keys: {lis
+    log.info(f"  Eurostat keys: {list(cache['eurostat'].keys())}")
+
+if __name__ == "__main__":
+    main()

@@ -479,8 +479,8 @@
       <div class="chart-card">
         <div class="chart-header">
           <div>
-            <div class="chart-title">Receitas AP — Comparação Anual</div>
-            <div class="chart-subtitle">Ano anterior vs ano corrente · M€ · AP consolidadas</div>
+            <div class="chart-title">Receitas AP — Decomposição</div>
+            <div class="chart-subtitle">Ano mais recente · % do total · variação YoY na legenda</div>
           </div>
           <div style="text-align:right">
             <div class="chart-source">BPstat · 12560971 · 75 · 79 · 83 · 55</div>
@@ -493,8 +493,8 @@
       <div class="chart-card">
         <div class="chart-header">
           <div>
-            <div class="chart-title">Despesas AP — Comparação Anual</div>
-            <div class="chart-subtitle">Ano anterior vs ano corrente · M€ · AP consolidadas</div>
+            <div class="chart-title">Despesas AP — Decomposição</div>
+            <div class="chart-subtitle">Ano mais recente · % do total · variação YoY na legenda</div>
           </div>
           <div style="text-align:right">
             <div class="chart-source">BPstat · 12560987 · 88 · 89 · 90 · 91 · 92 · 67</div>
@@ -2389,6 +2389,61 @@ function initPieDecomp(wrapperId, legendId, rangeId, series) {
   });
 }
 
+/* ── DONUT + YoY badges na legenda ── */
+function initPieWithYoY(wrapperId, legendId, rangeId, series) {
+  const allYears = new Set();
+  series.forEach(s => s.pts.forEach(p => allYears.add(p.date)));
+  const sortedYears = [...allYears].sort();
+  const currYear = sortedYears[sortedYears.length - 1];
+  const prevYear = sortedYears[sortedYears.length - 2];
+  const getVal = (s, yr) => { const pt = s.pts.find(p => p.date === yr); return pt ? pt.value : null; };
+  const colours = ['#2563eb','#16a34a','#dc2626','#7c3aed','#ea580c','#0d9488','#ca8a04'];
+  const labels = [], currVals = [], yoyPcts = [];
+  series.forEach((s, i) => {
+    const curr = getVal(s, currYear);
+    const prev = getVal(s, prevYear);
+    if (curr == null) return;
+    labels.push(s.label);
+    currVals.push(curr);
+    yoyPcts.push(prev ? ((curr - prev) / prev * 100) : null);
+  });
+  const total = currVals.reduce((a, b) => a + b, 0);
+  const rangeEl = document.getElementById(rangeId);
+  if (rangeEl) rangeEl.textContent = currYear;
+  const legendEl = document.getElementById(legendId);
+  if (legendEl) {
+    legendEl.innerHTML = labels.map((l, i) => {
+      const pct = total > 0 ? (currVals[i] / total * 100).toFixed(1) : 0;
+      const yoy = yoyPcts[i];
+      const yoyBadge = yoy != null
+        ? `<span style="font-size:.6rem;font-weight:700;margin-left:5px;color:${yoy >= 0 ? '#059669' : '#dc2626'}">${yoy >= 0 ? '▲' : '▼'}${Math.abs(yoy).toFixed(1)}%</span>`
+        : '';
+      return `<span class="legend-item"><span class="legend-dot" style="background:${colours[i]}"></span>${l}&nbsp;<span style="color:#9ca3af;font-size:.6rem">${pct}%</span>${yoyBadge}</span>`;
+    }).join('');
+  }
+  const wrap = document.getElementById(wrapperId);
+  if (!wrap) return;
+  wrap.innerHTML = '<canvas></canvas>';
+  const canvas = wrap.querySelector('canvas');
+  new Chart(canvas.getContext('2d'), {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data: currVals, backgroundColor: colours.slice(0, labels.length), borderWidth: 2, borderColor: '#fff', hoverOffset: 6 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '52%',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => {
+          const v = ctx.raw;
+          const pct = total > 0 ? (v / total * 100).toFixed(1) : 0;
+          const yoy = yoyPcts[ctx.dataIndex];
+          const yoyStr = yoy != null ? `  ·  YoY: ${yoy >= 0 ? '+' : ''}${yoy.toFixed(1)}%` : '';
+          return ` ${ctx.label}: ${(v/1000).toFixed(1)}B€ (${pct}%)${yoyStr}`;
+        }}}
+      }
+    }
+  });
+}
+
 /* ── GROUPED BAR: YoY comparison ── */
 function initBarYoY(wrapperId, legendId, rangeId, series) {
   const allYears = new Set();
@@ -3556,7 +3611,7 @@ function renderDashboard(data, fromCache) {
   if (recDecompR.status === 'fulfilled') {
     const series = recDecompR.value.filter(s => s.pts && s.pts.length > 0);
     if (series.length) {
-      initBarYoY('wrap-rec-decomp', 'legend-rec-decomp', 'range-rec-decomp', series);
+      initPieWithYoY('wrap-rec-decomp', 'legend-rec-decomp', 'range-rec-decomp', series);
     } else {
       chartError('wrap-rec-decomp', 'Sem dados disponíveis');
     }
@@ -3568,7 +3623,7 @@ function renderDashboard(data, fromCache) {
   if (despDecompR.status === 'fulfilled') {
     const series = despDecompR.value.filter(s => s.pts && s.pts.length > 0);
     if (series.length) {
-      initBarYoY('wrap-desp-decomp', 'legend-desp-decomp', 'range-desp-decomp', series);
+      initPieWithYoY('wrap-desp-decomp', 'legend-desp-decomp', 'range-desp-decomp', series);
     } else {
       chartError('wrap-desp-decomp', 'Sem dados disponíveis');
     }

@@ -480,7 +480,7 @@
         <div class="chart-header">
           <div>
             <div class="chart-title">Receitas AP — Decomposição</div>
-            <div class="chart-subtitle">Ano mais recente · % do total · variação YoY na legenda</div>
+            <div class="chart-subtitle">Últimos 5 anos · mensal YTD · % do total · variação YoY</div>
           </div>
           <div style="text-align:right">
             <div class="chart-source">BPstat · 12560971 · 75 · 79 · 83 · 55</div>
@@ -494,7 +494,7 @@
         <div class="chart-header">
           <div>
             <div class="chart-title">Despesas AP — Decomposição</div>
-            <div class="chart-subtitle">Ano mais recente · % do total · variação YoY na legenda</div>
+            <div class="chart-subtitle">Últimos 5 anos · mensal YTD · % do total · variação YoY</div>
           </div>
           <div style="text-align:right">
             <div class="chart-source">BPstat · 12560987 · 88 · 89 · 90 · 91 · 92 · 67</div>
@@ -1396,6 +1396,9 @@ async function loadReceitasDecompostas() {
           .filter(p => p.date.slice(5, 7) === '12')
           .map(p => ({ date: p.date.slice(0, 4), value: p.value }))
       : [],
+    monthlyPts: results[i].status === 'fulfilled'
+      ? results[i].value.map(p => ({ date: p.date.slice(0, 7), value: p.value }))
+      : [],
   }));
 }
 
@@ -1417,6 +1420,9 @@ async function loadDespesasDecompostas() {
       ? results[i].value
           .filter(p => p.date.slice(5, 7) === '12')
           .map(p => ({ date: p.date.slice(0, 4), value: p.value }))
+      : [],
+    monthlyPts: results[i].status === 'fulfilled'
+      ? results[i].value.map(p => ({ date: p.date.slice(0, 7), value: p.value }))
       : [],
   }));
 }
@@ -2391,57 +2397,179 @@ function initPieDecomp(wrapperId, legendId, rangeId, series) {
 
 /* ── DONUT + YoY badges na legenda ── */
 function initPieWithYoY(wrapperId, legendId, rangeId, series) {
-  const allYears = new Set();
-  series.forEach(s => s.pts.forEach(p => allYears.add(p.date)));
-  const sortedYears = [...allYears].sort();
-  const currYear = sortedYears[sortedYears.length - 1];
-  const prevYear = sortedYears[sortedYears.length - 2];
-  const getVal = (s, yr) => { const pt = s.pts.find(p => p.date === yr); return pt ? pt.value : null; };
   const colours = ['#2563eb','#16a34a','#dc2626','#7c3aed','#ea580c','#0d9488','#ca8a04'];
-  const labels = [], currVals = [], yoyPcts = [];
-  series.forEach((s, i) => {
-    const curr = getVal(s, currYear);
-    const prev = getVal(s, prevYear);
-    if (curr == null) return;
-    labels.push(s.label);
-    currVals.push(curr);
-    yoyPcts.push(prev ? ((curr - prev) / prev * 100) : null);
-  });
-  const total = currVals.reduce((a, b) => a + b, 0);
-  const rangeEl = document.getElementById(rangeId);
-  if (rangeEl) rangeEl.textContent = currYear;
-  const legendEl = document.getElementById(legendId);
-  if (legendEl) {
-    legendEl.innerHTML = labels.map((l, i) => {
-      const pct = total > 0 ? (currVals[i] / total * 100).toFixed(1) : 0;
-      const yoy = yoyPcts[i];
-      const yoyBadge = yoy != null
-        ? `<span style="font-size:.6rem;font-weight:700;margin-left:5px;color:${yoy >= 0 ? '#059669' : '#dc2626'}">${yoy >= 0 ? '▲' : '▼'}${Math.abs(yoy).toFixed(1)}%</span>`
-        : '';
-      return `<span class="legend-item"><span class="legend-dot" style="background:${colours[i]}"></span>${l}&nbsp;<span style="color:#9ca3af;font-size:.6rem">${pct}%</span>${yoyBadge}</span>`;
-    }).join('');
-  }
+  const monthNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+  // Build sorted list of years from annual data
+  const allYearsSet = new Set();
+  series.forEach(s => s.pts.forEach(p => allYearsSet.add(p.date)));
+  const sortedYears = [...allYearsSet].sort();
+  const recentYears = sortedYears.slice(-5); // last 5 complete years
+
+  const hasMonthly = series.some(s => s.monthlyPts && s.monthlyPts.length > 0);
+
   const wrap = document.getElementById(wrapperId);
   if (!wrap) return;
-  wrap.innerHTML = '<canvas></canvas>';
-  const canvas = wrap.querySelector('canvas');
-  new Chart(canvas.getContext('2d'), {
-    type: 'doughnut',
-    data: { labels, datasets: [{ data: currVals, backgroundColor: colours.slice(0, labels.length), borderWidth: 2, borderColor: '#fff', hoverOffset: 6 }] },
-    options: {
-      responsive: true, maintainAspectRatio: false, cutout: '52%',
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: ctx => {
-          const v = ctx.raw;
-          const pct = total > 0 ? (v / total * 100).toFixed(1) : 0;
-          const yoy = yoyPcts[ctx.dataIndex];
-          const yoyStr = yoy != null ? `  ·  YoY: ${yoy >= 0 ? '+' : ''}${yoy.toFixed(1)}%` : '';
-          return ` ${ctx.label}: ${(v/1000).toFixed(1)}B€ (${pct}%)${yoyStr}`;
-        }}}
-      }
+
+  // Insert filter bar before the chart wrap (only once)
+  const filterId = wrapperId + '-filter';
+  let filterBar = document.getElementById(filterId);
+  if (!filterBar) {
+    filterBar = document.createElement('div');
+    filterBar.id = filterId;
+    filterBar.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;';
+    wrap.parentNode.insertBefore(filterBar, wrap);
+  }
+
+  let activeMode = recentYears[recentYears.length - 1]; // default: most recent year
+
+  const getVal = (s, yr) => { const pt = s.pts.find(p => p.date === yr); return pt ? pt.value : null; };
+
+  const btnCss = (active) =>
+    `border:1px solid ${active ? '#2563eb' : '#e5e7eb'};background:${active ? '#2563eb' : '#fff'};` +
+    `color:${active ? '#fff' : '#6b7280'};border-radius:4px;padding:2px 9px;font-size:.65rem;` +
+    `cursor:pointer;transition:all .15s;`;
+
+  const renderButtons = () => {
+    filterBar.innerHTML = '';
+    recentYears.forEach(yr => {
+      const btn = document.createElement('button');
+      btn.textContent = yr;
+      btn.style.cssText = btnCss(activeMode === yr);
+      btn.onclick = () => { activeMode = yr; render(); };
+      filterBar.appendChild(btn);
+    });
+    if (hasMonthly) {
+      const btn = document.createElement('button');
+      btn.textContent = 'Mensal';
+      btn.style.cssText = btnCss(activeMode === 'mensal');
+      btn.onclick = () => { activeMode = 'mensal'; render(); };
+      filterBar.appendChild(btn);
     }
-  });
+  };
+
+  const renderAnnual = (yr) => {
+    const prevYr = sortedYears[sortedYears.indexOf(yr) - 1];
+    const labels = [], currVals = [], yoyPcts = [];
+    series.forEach(s => {
+      const curr = getVal(s, yr);
+      const prev = prevYr ? getVal(s, prevYr) : null;
+      if (curr == null) return;
+      labels.push(s.label);
+      currVals.push(curr);
+      yoyPcts.push(prev != null ? ((curr - prev) / Math.abs(prev) * 100) : null);
+    });
+    const total = currVals.reduce((a, b) => a + b, 0);
+
+    const rangeEl = document.getElementById(rangeId);
+    if (rangeEl) rangeEl.textContent = yr + (prevYr ? ` vs ${prevYr}` : '');
+
+    const legendEl = document.getElementById(legendId);
+    if (legendEl) {
+      legendEl.innerHTML = labels.map((l, i) => {
+        const pct = total > 0 ? (currVals[i] / total * 100).toFixed(1) : 0;
+        const yoy = yoyPcts[i];
+        const yoyBadge = yoy != null
+          ? `<span style="font-size:.6rem;font-weight:700;margin-left:5px;color:${yoy >= 0 ? '#059669' : '#dc2626'}">${yoy >= 0 ? '▲' : '▼'}${Math.abs(yoy).toFixed(1)}%</span>`
+          : '';
+        return `<span class="legend-item"><span class="legend-dot" style="background:${colours[i]}"></span>${l}&nbsp;<span style="color:#9ca3af;font-size:.6rem">${pct}%</span>${yoyBadge}</span>`;
+      }).join('');
+    }
+
+    wrap.innerHTML = '<canvas></canvas>';
+    const canvas = wrap.querySelector('canvas');
+    new Chart(canvas.getContext('2d'), {
+      type: 'doughnut',
+      data: { labels, datasets: [{ data: currVals, backgroundColor: colours.slice(0, labels.length), borderWidth: 2, borderColor: '#fff', hoverOffset: 6 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: '52%',
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => {
+            const v = ctx.raw;
+            const pct = total > 0 ? (v / total * 100).toFixed(1) : 0;
+            const yoy = yoyPcts[ctx.dataIndex];
+            const yoyStr = yoy != null ? `  YoY: ${yoy >= 0 ? '+' : ''}${yoy.toFixed(1)}%` : '';
+            return ` ${ctx.label}: ${(v/1000).toFixed(1)}B€ (${pct}%)${yoyStr}`;
+          }}}
+        }
+      }
+    });
+  };
+
+  const renderMonthly = () => {
+    // Determine current and previous year from the monthly data
+    const allMonths = new Set();
+    series.forEach(s => { if (s.monthlyPts) s.monthlyPts.forEach(p => allMonths.add(p.date)); });
+    const sortedMonths = [...allMonths].sort();
+    if (!sortedMonths.length) return;
+
+    // Use the year of the latest available month as "current year"
+    const latestMonth = sortedMonths[sortedMonths.length - 1];
+    const curYr = latestMonth.slice(0, 4);
+    const prevYr = String(parseInt(curYr) - 1);
+
+    // Get months available in the current year
+    const curMonths = sortedMonths.filter(m => m.startsWith(curYr));
+
+    // Sum all categories per month
+    const sumMonth = (ym) => series.reduce((sum, s) => {
+      const pt = s.monthlyPts?.find(p => p.date === ym);
+      return sum + (pt ? pt.value : 0);
+    }, 0);
+
+    const curTotals  = curMonths.map(m => sumMonth(m));
+    const prevTotals = curMonths.map(m => sumMonth(prevYr + m.slice(4)));
+    const labels     = curMonths.map(m => monthNames[parseInt(m.slice(5)) - 1]);
+
+    const rangeEl = document.getElementById(rangeId);
+    if (rangeEl) rangeEl.textContent = `${curYr} vs ${prevYr} (YTD)`;
+
+    const legendEl = document.getElementById(legendId);
+    if (legendEl) {
+      legendEl.innerHTML =
+        `<span class="legend-item"><span class="legend-dot" style="background:#d1d5db"></span>${prevYr}</span>` +
+        `<span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>${curYr}</span>`;
+    }
+
+    wrap.innerHTML = '<canvas></canvas>';
+    const canvas = wrap.querySelector('canvas');
+    new Chart(canvas.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: prevYr, data: prevTotals, backgroundColor: '#e5e7eb', borderRadius: 3, barPercentage: 0.75, categoryPercentage: 0.82 },
+          { label: curYr,  data: curTotals,  backgroundColor: '#2563eb', borderRadius: 3, barPercentage: 0.75, categoryPercentage: 0.82 },
+        ],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => {
+            const v = ctx.raw;
+            if (!v) return '';
+            const other = ctx.chart.data.datasets[ctx.datasetIndex === 1 ? 0 : 1].data[ctx.dataIndex];
+            const yoy = (ctx.datasetIndex === 1 && other) ? `  YoY: ${v >= other ? '+' : ''}${((v - other) / Math.abs(other) * 100).toFixed(1)}%` : '';
+            return ` ${ctx.dataset.label}: ${(v/1000).toFixed(1)}B€${yoy}`;
+          }}}
+        },
+        scales: {
+          x: { grid: { display: false }, border: { display: false }, ticks: { color: '#6b7280', font: { size: 10 } } },
+          y: { grid: { color: '#f3f4f6' }, border: { display: false }, ticks: { color: '#6b7280', font: { size: 10 }, callback: v => `${(v/1000).toFixed(0)}B€`, maxTicksLimit: 5 } }
+        }
+      }
+    });
+  };
+
+  const render = () => {
+    renderButtons();
+    if (activeMode === 'mensal') renderMonthly();
+    else renderAnnual(activeMode);
+  };
+
+  render();
 }
 
 /* ── GROUPED BAR: YoY comparison ── */
@@ -3635,128 +3763,4 @@ function renderDashboard(data, fromCache) {
   if (capFinR.status === 'fulfilled') {
     const series = capFinR.value.filter(s => s.pts && s.pts.length > 0);
     if (series.length) {
-      initChartMulti('wrap-cap-fin', series, { pct: true }, 'quarterly');
-      const legendEl = document.getElementById('legend-cap-fin');
-      if (legendEl) legendEl.innerHTML = series.map(s =>
-        '<span class="legend-item"><span class="legend-dot" style="background:' +
-        (COLORS[s.colour] ? COLORS[s.colour].line : '#64748b') + '"></span>' + s.label + '</span>'
-      ).join('');
-    } else {
-      chartError('wrap-cap-fin', 'Sem dados disponíveis');
-    }
-  } else {
-    chartError('wrap-cap-fin', 'Não foi possível carregar os dados');
-  }
-
-  /* ── INDICADORES DE CONFIANÇA (wrap-confianca) ── */
-  {
-    const { consumidores, empresas } = confiancaData;
-    if (consumidores && consumidores.length) {
-      initChartMulti('wrap-confianca', [
-        { pts: consumidores, colour: 'blue',   label: 'Consumidores', fill: false },
-        { pts: empresas,     colour: 'orange',  label: 'Empresas',     fill: false },
-      ], {}, 'annual');
-      const legendEl = document.getElementById('legend-confianca');
-      if (legendEl) legendEl.innerHTML =
-        '<span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Consumidores</span>' +
-        '<span class="legend-item"><span class="legend-dot" style="background:#c2410c"></span>Empresas</span>';
-    }
-  }
-
-  /* ── DÍVIDA CONSOLIDADA (wrap-divida-consolidada) ── */
-  (function() {
-    const wrap = document.getElementById('wrap-divida-consolidada');
-    if (!wrap) return;
-    if (dividaR.status !== 'fulfilled') { chartError('wrap-divida-consolidada', 'Sem dados'); return; }
-    const { pts: ptsDivida } = dividaR.value;
-    const { publica, empresas, familias } = loadDividaConsolidada(ptsDivida);
-    initChartMulti('wrap-divida-consolidada', [
-      { pts: publica,  colour: 'orange', label: 'Adm. Públicas', fill: false },
-      { pts: empresas, colour: 'blue',   label: 'Empresas NF',   fill: false },
-      { pts: familias, colour: 'teal',   label: 'Famílias',      fill: false },
-    ], { pct: true }, 'annual');
-    const legendEl = document.getElementById('legend-divida-consolidada');
-    if (legendEl) legendEl.innerHTML =
-      '<span class="legend-item"><span class="legend-dot" style="background:#c2410c"></span>Adm. Públicas</span>' +
-      '<span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>Empresas NF</span>' +
-      '<span class="legend-item"><span class="legend-dot" style="background:#0e7490"></span>Famílias</span>';
-  })();
-
-} // end renderDashboard
-
-/* ══════════════════════════════════════════════════════════
-   INIT — carregar dados e renderizar
-══════════════════════════════════════════════════════════ */
-(async () => {
-  const cached = cacheLoad();
-
-  if (cached) {
-    // Fresh cache — render immediately, refresh silently in background
-    renderDashboard(cached, true);
-    fetchAllData().then(d => { cacheSave(d); }).catch(() => {});
-    return;
-  }
-
-  try {
-    const d = await fetchAllData();
-    cacheSave(d);
-    renderDashboard(d, false);
-  } catch(e) {
-    console.error('Dashboard init failed:', e);
-    // Stale fallback
-    const stale = cacheLoadAny();
-    if (stale) {
-      renderDashboard(stale, true);
-      const w = document.getElementById('stale-warning');
-      if (w) w.style.display = 'block';
-    }
-  }
-})();
-  </script>
-
-<!-- GDPR BANNER -->
-<div id="gdpr-banner" style="display:none">
-  <div class="gdpr-text">
-    🍪 Este site usa cookies de publicidade (Google AdSense) para financiar o seu funcionamento gratuito.
-    Consulte a nossa <a href="politica-privacidade.html">Política de Privacidade</a>.
-  </div>
-  <div class="gdpr-btns">
-    <button id="gdpr-accept" onclick="gdprAccept()">Aceitar</button>
-    <button id="gdpr-reject" onclick="gdprReject()">Rejeitar</button>
-  </div>
-</div>
-
-<script>
-  // ── GDPR ─────────────────────────────────────────────────────
-  (function() {
-    const consent = localStorage.getItem('gdpr_consent');
-    if (consent === null) {
-      document.getElementById('gdpr-banner').style.display = 'flex';
-    } else if (consent === 'accepted') {
-      loadAds();
-    }
-  })();
-
-  function gdprAccept() {
-    localStorage.setItem('gdpr_consent', 'accepted');
-    document.getElementById('gdpr-banner').style.display = 'none';
-    loadAds();
-  }
-
-  function gdprReject() {
-    localStorage.setItem('gdpr_consent', 'rejected');
-    document.getElementById('gdpr-banner').style.display = 'none';
-  }
-
-  function loadAds() {
-    // Only load AdSense script after consent
-    if (document.querySelector('script[src*="adsbygoogle"]')) return;
-    const s = document.createElement('script');
-    s.async = true;
-    s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1015529156935926';
-    s.crossOrigin = 'anonymous';
-    document.head.appendChild(s);
-  }
-</script>
-</body>
-</html>
+      ini

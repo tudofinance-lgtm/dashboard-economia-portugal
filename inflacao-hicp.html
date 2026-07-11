@@ -532,12 +532,12 @@ loadAll();
   }
 
   function loadAds() {
+    // TODO: uncomment the blocks below once AdSense account is approved
     if (document.querySelector('script[src*="adsbygoogle"]')) {
-      // Script already loaded, just push the slots
-      document.getElementById('ad-slot-1').style.display = 'flex';
-      document.getElementById('ad-slot-2').style.display = 'flex';
-      (adsbygoogle = window.adsbygoogle || []).push({});
-      (adsbygoogle = window.adsbygoogle || []).push({});
+      // document.getElementById('ad-slot-1').style.display = 'flex';
+      // document.getElementById('ad-slot-2').style.display = 'flex';
+      // (adsbygoogle = window.adsbygoogle || []).push({});
+      // (adsbygoogle = window.adsbygoogle || []).push({});
       return;
     }
     const s = document.createElement('script');
@@ -545,10 +545,10 @@ loadAll();
     s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1015529156935926';
     s.crossOrigin = 'anonymous';
     s.onload = function() {
-      document.getElementById('ad-slot-1').style.display = 'flex';
-      document.getElementById('ad-slot-2').style.display = 'flex';
-      (adsbygoogle = window.adsbygoogle || []).push({});
-      (adsbygoogle = window.adsbygoogle || []).push({});
+      // document.getElementById('ad-slot-1').style.display = 'flex';
+      // document.getElementById('ad-slot-2').style.display = 'flex';
+      // (adsbygoogle = window.adsbygoogle || []).push({});
+      // (adsbygoogle = window.adsbygoogle || []).push({});
     };
     document.head.appendChild(s);
   }

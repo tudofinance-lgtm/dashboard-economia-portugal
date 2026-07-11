@@ -1123,12 +1123,13 @@ init();
   }
 
   function loadAds() {
-    // Show ad slots
-    ['ad-slot-1','ad-slot-2','ad-slot-3'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.style.display = '';
-    });
-    // Load AdSense script (only once)
+    // TODO: uncomment the block below once AdSense account is approved
+    // ['ad-slot-1','ad-slot-2','ad-slot-3'].forEach(id => {
+    //   const el = document.getElementById(id);
+    //   if (el) el.style.display = '';
+    // });
+
+    // Load AdSense script (only once) — needed for approval review
     if (document.querySelector('script[src*="adsbygoogle"]')) return;
     const s = document.createElement('script');
     s.async = true;

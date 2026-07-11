@@ -27,7 +27,6 @@
     gtag('config', 'G-Q1HGNHGTKK');
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1015529156935926" crossorigin="anonymous"></script>
   <style>
     :root {
       --bg:#f0f2f5; --card:#fff; --border:#e4e7ec;
@@ -174,9 +173,8 @@
   </section>
 
   <!-- AD: LEADERBOARD 1 — após KPIs -->
-  <div class="ad-leaderboard">
+  <div class="ad-leaderboard" id="ad-slot-1" style="display:none">
     <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-1015529156935926" data-ad-slot="5645404457" data-ad-format="auto" data-full-width-responsive="true"></ins>
-    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
   </div>
 
   <!-- BAR CHART: breakdown by category -->
@@ -226,9 +224,8 @@
   </section>
 
   <!-- AD: LEADERBOARD 2 — após gráficos -->
-  <div class="ad-leaderboard">
+  <div class="ad-leaderboard" id="ad-slot-2" style="display:none">
     <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-1015529156935926" data-ad-slot="5645404457" data-ad-format="auto" data-full-width-responsive="true"></ins>
-    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
   </div>
 
   <div class="info-box">
@@ -501,6 +498,62 @@ async function loadAll() {
 }
 
 loadAll();
+</script>
+
+<!-- GDPR BANNER -->
+<div id="gdpr-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#1f2937;color:#f9fafb;padding:14px 24px;align-items:center;gap:16px;flex-wrap:wrap;font-size:.78rem;box-shadow:0 -2px 12px rgba(0,0,0,.2)">
+  <div style="flex:1;min-width:220px;line-height:1.5">
+    🍪 Este site usa cookies de publicidade (Google AdSense) para financiar o seu funcionamento gratuito.
+    Consulte a nossa <a href="politica-privacidade.html" style="color:#93c5fd;text-decoration:underline">Política de Privacidade</a>.
+  </div>
+  <div style="display:flex;gap:8px;flex-shrink:0">
+    <button id="gdpr-accept" onclick="gdprAccept()" style="padding:7px 18px;border-radius:6px;border:none;font-size:.75rem;font-weight:700;cursor:pointer;background:#2563eb;color:#fff">Aceitar</button>
+    <button id="gdpr-reject" onclick="gdprReject()" style="padding:7px 18px;border-radius:6px;border:1px solid #4b5563;font-size:.75rem;font-weight:700;cursor:pointer;background:#374151;color:#d1d5db">Rejeitar</button>
+  </div>
+</div>
+
+<script>
+  (function() {
+    const consent = localStorage.getItem('gdpr_consent');
+    if (consent === null) {
+      document.getElementById('gdpr-banner').style.display = 'flex';
+    } else if (consent === 'accepted') {
+      loadAds();
+    }
+  })();
+
+  function gdprAccept() {
+    localStorage.setItem('gdpr_consent', 'accepted');
+    document.getElementById('gdpr-banner').style.display = 'none';
+    loadAds();
+  }
+
+  function gdprReject() {
+    localStorage.setItem('gdpr_consent', 'rejected');
+    document.getElementById('gdpr-banner').style.display = 'none';
+  }
+
+  function loadAds() {
+    if (document.querySelector('script[src*="adsbygoogle"]')) {
+      // Script already loaded, just push the slots
+      document.getElementById('ad-slot-1').style.display = 'flex';
+      document.getElementById('ad-slot-2').style.display = 'flex';
+      (adsbygoogle = window.adsbygoogle || []).push({});
+      (adsbygoogle = window.adsbygoogle || []).push({});
+      return;
+    }
+    const s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1015529156935926';
+    s.crossOrigin = 'anonymous';
+    s.onload = function() {
+      document.getElementById('ad-slot-1').style.display = 'flex';
+      document.getElementById('ad-slot-2').style.display = 'flex';
+      (adsbygoogle = window.adsbygoogle || []).push({});
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    };
+    document.head.appendChild(s);
+  }
 </script>
 
 </body>

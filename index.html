@@ -329,7 +329,7 @@
   </section>
 
   <!-- AD: LEADERBOARD 1 — após KPIs -->
-  <div class="ad-leaderboard">
+  <div class="ad-leaderboard" id="ad-lb-1" style="display:none">
     <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-1015529156935926" data-ad-slot="5645404457" data-ad-format="auto" data-full-width-responsive="true"></ins>
     <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
   </div>
@@ -730,7 +730,7 @@
   </section>
 
   <!-- AD: LEADERBOARD 3 — antes do rodapé -->
-  <div class="ad-leaderboard" style="margin-top:10px;margin-bottom:0">
+  <div class="ad-leaderboard" id="ad-lb-3" style="display:none;margin-top:10px;margin-bottom:0">
     <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-1015529156935926" data-ad-slot="5645404457" data-ad-format="auto" data-full-width-responsive="true"></ins>
     <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
   </div>
@@ -3987,7 +3987,12 @@ function renderDashboard(data, fromCache) {
   }
 
   function loadAds() {
-    // Only load AdSense script after consent
+    // Show ad containers
+    ['ad-lb-1','ad-lb-3'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = '';
+    });
+    // Load AdSense script (only once)
     if (document.querySelector('script[src*="adsbygoogle"]')) return;
     const s = document.createElement('script');
     s.async = true;

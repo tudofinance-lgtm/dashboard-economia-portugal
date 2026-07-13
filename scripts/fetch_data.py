@@ -48,6 +48,8 @@ BPSTAT_SERIES = [
     12457924,  # Balança Corrente
     12645509,  # Saldo Orçamental AP % PIB
     88895,     # Saldo Seg. Social
+    88896,     # Receitas contribuições SS
+    88885,     # Despesas totais SS
     88873,     # Receita Estado
     88884,     # Despesa Estado
     12560943,  # Saldo mensal acumulado YTD

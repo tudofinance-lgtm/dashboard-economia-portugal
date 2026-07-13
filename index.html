@@ -2366,6 +2366,27 @@ function initSaldoChart(wrapId, allPts, pibAnnual) {
 /* ══════════════════════════════════════════════════════════
    SS COMBO CHART — receitas vs despesas + saldo eixo direito
 ══════════════════════════════════════════════════════════ */
+// Calcula min/max de dois eixos para que o zero fique alinhado visualmente
+function ssAlignAxes(leftVals, rightVals, pad = 0.08) {
+  const lMax = Math.max(0, ...leftVals.filter(v => v != null));
+  const lMin = Math.min(0, ...leftVals.filter(v => v != null));
+  const rMax = Math.max(0, ...rightVals.filter(v => v != null));
+  const rMin = Math.min(0, ...rightVals.filter(v => v != null));
+  let lMaxF = lMax + (lMax - lMin) * pad;
+  let lMinF = lMin - (lMax - lMin) * pad;
+  let rMaxF = rMax + (rMax - rMin) * pad;
+  let rMinF = rMin - (rMax - rMin) * pad;
+  // Alinha: zero deve estar na mesma fracção vertical nos dois eixos
+  const lFrac = Math.abs(lMinF) / (lMaxF - lMinF);
+  const rFrac = Math.abs(rMinF) / (rMaxF - rMinF);
+  if (lFrac > rFrac) {
+    rMinF = -(lFrac * rMaxF) / (1 - lFrac);
+  } else {
+    lMinF = -(rFrac * lMaxF) / (1 - rFrac);
+  }
+  return { lMin: lMinF, lMax: lMaxF, rMin: rMinF, rMax: rMaxF };
+}
+
 function initSSComboChart(wrapId, saldoPts, recPts, despPts, pibAnnual) {
   const wrap = document.getElementById(wrapId);
   if (!wrap) return;
@@ -2449,20 +2470,26 @@ function initSSComboChart(wrapId, saldoPts, recPts, despPts, pibAnnual) {
           },
         },
       },
-      scales: {
-        x: { grid: { color: '#f3f4f6' }, ticks: { font: { size: 10 }, color: '#9ca3af' } },
-        y: {
-          position: 'left', grid: { color: '#f3f4f6' },
-          ticks: { font: { size: 10 }, color: '#9ca3af',
-            callback: v => (v / 1000).toFixed(0) + 'k M€' },
-        },
-        y2: {
-          position: 'right', grid: { drawOnChartArea: false },
-          ticks: { font: { size: 10 }, color: '#9ca3af',
-            callback: v => v.toFixed(1) + '%' },
-          title: { display: true, text: '% PIB', font: { size: 10 }, color: '#9ca3af' },
-        },
-      },
+      scales: (() => {
+        const leftAll = [...recVals, ...despVals, ...saldoLinVals];
+        const { lMin, lMax, rMin, rMax } = ssAlignAxes(leftAll, saldoPctVals);
+        return {
+          x: { grid: { color: '#f3f4f6' }, ticks: { font: { size: 10 }, color: '#9ca3af' } },
+          y: {
+            position: 'left', grid: { color: '#f3f4f6' },
+            min: lMin, max: lMax,
+            ticks: { font: { size: 10 }, color: '#9ca3af',
+              callback: v => (v / 1000).toFixed(0) + 'k M€' },
+          },
+          y2: {
+            position: 'right', grid: { drawOnChartArea: false },
+            min: rMin, max: rMax,
+            ticks: { font: { size: 10 }, color: '#9ca3af',
+              callback: v => v.toFixed(1) + '%' },
+            title: { display: true, text: '% PIB', font: { size: 10 }, color: '#9ca3af' },
+          },
+        };
+      })(),
     },
   });
 
@@ -2958,9 +2985,19 @@ function applyFilterExtended(years) {
         const r = recMap[d], de = despMap[d];
         return (r != null && de != null) ? +(r - de).toFixed(0) : null;
       });
+      const saldoLinValsF = labels.map(d => {
+        const r = recMap[d], de = despMap[d];
+        return (r != null && de != null) ? +(r - de).toFixed(0) : null;
+      });
       reg.chart.data.datasets[3].data = saldoPctVals;
       reg.chart.data.datasets[3].backgroundColor = saldoPctVals.map(v => v >= 0 ? 'rgba(5,150,105,.55)' : 'rgba(220,38,38,.55)');
       reg.chart.data.datasets[3].borderColor = saldoPctVals.map(v => v >= 0 ? '#059669' : '#dc2626');
+      const leftAllF = [...labels.map(d => recMap[d] ?? null), ...labels.map(d => despMap[d] ?? null), ...saldoLinValsF];
+      const axF = ssAlignAxes(leftAllF, saldoPctVals);
+      reg.chart.options.scales.y.min  = axF.lMin;
+      reg.chart.options.scales.y.max  = axF.lMax;
+      reg.chart.options.scales.y2.min = axF.rMin;
+      reg.chart.options.scales.y2.max = axF.rMax;
       reg.chart.update();
       updateRangeLabel(wrapId, saldoSlice);
     } else if (reg.isSaldo) {

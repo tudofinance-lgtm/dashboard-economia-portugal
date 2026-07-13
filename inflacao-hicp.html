@@ -441,7 +441,7 @@ async function loadAll() {
         fetchSeries('PT', cat.code, 1),
         fetchSeries('U2', cat.code, 1),
       ]);
-      return { cat, ptVal: pt[0]?.value, eaVal: ea[0]?.value };
+      return { cat, ptVal: pt[0]?.value, eaVal: ea[0]?.value, date: pt[0]?.date };
     }));
 
     // Update "hottest category" KPI (excluding overall)
@@ -451,7 +451,9 @@ async function loadAll() {
     document.getElementById('kpi-top-cat').classList.remove('loading');
     document.getElementById('kpi-top-val').textContent = hottest.ptVal.toFixed(1) + '% var. anual';
 
-    document.getElementById('bar-subtitle').textContent = `Último mês disponível · % variação homóloga`;
+    const latestBarDate = catResults.find(r => r.date)?.date;
+    const latestBarLabel = latestBarDate ? fmtDate(latestBarDate) : 'último mês';
+    document.getElementById('bar-subtitle').textContent = `${latestBarLabel} · % variação homóloga`;
 
     // Bar chart — only non-overall cats for clarity
     const barCats = catResults.filter(r => r.cat.code !== '000000');

@@ -375,7 +375,7 @@
         <div class="chart-header">
           <div>
             <div class="chart-title">Segurança Social: Receitas vs Despesas</div>
-            <div class="chart-subtitle">M€ · anuais · receitas empilhadas: quotizações (verde) + outras correntes (azul) · despesas (linha vermelha) · saldo: eixo direito</div>
+            <div class="chart-subtitle">% PIB · anuais · receitas quotizações (verde) vs despesas totais (vermelho) · saldo SS: eixo direito</div>
           </div>
           <div style="text-align:right">
             <div class="chart-source">BPstat · 88896 / 88881 / 88885 / 88895</div>
@@ -2366,63 +2366,53 @@ function initSaldoChart(wrapId, allPts, pibAnnual) {
 /* ══════════════════════════════════════════════════════════
    SS COMBO CHART — receitas vs despesas + saldo eixo direito
 ══════════════════════════════════════════════════════════ */
-function initSSComboChart(wrapId, saldoPts, recPts, outrasPts, despPts) {
+function initSSComboChart(wrapId, saldoPts, recPts, despPts, pibAnnual) {
   const wrap = document.getElementById(wrapId);
   if (!wrap) return;
   wrap.innerHTML = '<canvas></canvas>';
   const ctx = wrap.querySelector('canvas');
 
+  const pibMap = {};
+  (pibAnnual || []).forEach(p => { pibMap[p.date] = p.value; });
+  const latestPib = pibAnnual?.length ? pibAnnual[pibAnnual.length - 1].value : null;
+  const toPct = (v, year) => {
+    const pib = pibMap[year] ?? latestPib;
+    return (v != null && pib) ? +(v / pib * 100).toFixed(2) : null;
+  };
+
   const yearsNum = activeYears === 'max' ? 'max' : parseInt(activeYears);
   const saldoSlice = sliceByYears(saldoPts, yearsNum, 'annual');
   const labels = saldoSlice.map(p => p.date);
 
-  const recMap    = Object.fromEntries(recPts.map(p => [p.date, p.value]));
-  const outrasMap = Object.fromEntries((outrasPts || []).map(p => [p.date, p.value]));
-  const despMap   = Object.fromEntries(despPts.map(p => [p.date, p.value]));
-  const saldoVals  = saldoSlice.map(p => p.value);
-  const recVals    = labels.map(d => recMap[d]    ?? null);
-  const outrasVals = labels.map(d => outrasMap[d] ?? null);
-  const despVals   = labels.map(d => despMap[d]   ?? null);
-  // Receitas totais = quotizações + outras (quando ambas disponíveis)
-  const totaisVals = labels.map(d => {
-    const r = recMap[d], o = outrasMap[d];
-    return (r != null && o != null) ? r + o : (r ?? null);
-  });
+  const recMap  = Object.fromEntries(recPts.map(p => [p.date, p.value]));
+  const despMap = Object.fromEntries(despPts.map(p => [p.date, p.value]));
+
+  const saldoPct = saldoSlice.map(p => toPct(p.value, p.date));
+  const recPct   = labels.map(d => toPct(recMap[d],  d));
+  const despPct  = labels.map(d => toPct(despMap[d], d));
 
   const chart = new Chart(ctx, {
     type: 'bar',
     data: {
       labels,
       datasets: [
-        // Barras empilhadas para receitas (eixo esquerdo)
         {
-          type: 'bar', label: 'Quotizações',
-          data: recVals,
-          backgroundColor: 'rgba(22,163,74,.75)',
-          borderColor: '#16a34a', borderWidth: 1,
-          yAxisID: 'y', stack: 'receitas', order: 3,
+          type: 'line', label: 'Quotizações % PIB',
+          data: recPct,
+          borderColor: '#16a34a', backgroundColor: 'rgba(22,163,74,.08)',
+          borderWidth: 2, pointRadius: 2, fill: false, yAxisID: 'y', tension: 0.2, order: 1,
         },
         {
-          type: 'bar', label: 'Outras receitas correntes',
-          data: outrasVals,
-          backgroundColor: 'rgba(37,99,235,.70)',
-          borderColor: '#2563eb', borderWidth: 1,
-          yAxisID: 'y', stack: 'receitas', order: 3,
+          type: 'line', label: 'Despesas totais % PIB',
+          data: despPct,
+          borderColor: '#dc2626', backgroundColor: 'rgba(220,38,38,.08)',
+          borderWidth: 2, pointRadius: 2, fill: false, yAxisID: 'y', tension: 0.2, order: 1,
         },
-        // Linha despesas (eixo esquerdo, mesma escala)
         {
-          type: 'line', label: 'Despesas totais',
-          data: despVals,
-          borderColor: '#dc2626', backgroundColor: 'transparent',
-          borderWidth: 2.5, pointRadius: 2, fill: false,
-          yAxisID: 'y', tension: 0.2, order: 1,
-        },
-        // Saldo em barras no eixo direito — cor neutra (laranja) para não confundir
-        {
-          type: 'bar', label: 'Saldo SS',
-          data: saldoVals,
-          backgroundColor: saldoVals.map(v => v >= 0 ? 'rgba(234,88,12,.65)' : 'rgba(124,58,237,.65)'),
-          borderColor:     saldoVals.map(v => v >= 0 ? '#ea580c' : '#7c3aed'),
+          type: 'bar', label: 'Saldo SS % PIB',
+          data: saldoPct,
+          backgroundColor: saldoPct.map(v => v >= 0 ? 'rgba(5,150,105,.65)' : 'rgba(220,38,38,.65)'),
+          borderColor:     saldoPct.map(v => v >= 0 ? '#059669' : '#dc2626'),
           borderWidth: 1, yAxisID: 'y2', order: 2,
         },
       ],
@@ -2439,48 +2429,42 @@ function initSSComboChart(wrapId, saldoPts, recPts, outrasPts, despPts) {
           callbacks: {
             label: ctx => {
               const v = ctx.raw;
-              if (v === null || v === undefined) return null;
+              if (v == null) return null;
               const lbl = ctx.dataset.label;
-              const num = Math.abs(v).toLocaleString('pt-PT', { maximumFractionDigits: 0 });
-              if (lbl === 'Saldo SS')
-                return ` Saldo: ${v >= 0 ? '+' : ''}${v.toLocaleString('pt-PT', { maximumFractionDigits: 0 })} M€`;
-              return ` ${lbl}: ${num} M€`;
-            },
-            afterBody: (items) => {
-              // Mostrar receitas totais no tooltip
-              const rec = items.find(i => i.dataset.label === 'Quotizações');
-              const out = items.find(i => i.dataset.label === 'Outras receitas correntes');
-              if (rec && out && rec.raw != null && out.raw != null) {
-                const tot = (rec.raw + out.raw).toLocaleString('pt-PT', { maximumFractionDigits: 0 });
-                return [` ─ Receitas totais: ${tot} M€`];
+              const year = ctx.label;
+              if (lbl === 'Saldo SS % PIB')
+                return ` Saldo: ${v >= 0 ? '+' : ''}${v.toFixed(2)}% PIB`;
+              if (lbl === 'Quotizações % PIB') {
+                const abs = recMap[year];
+                return ` Quotizações: ${v.toFixed(2)}% PIB${abs != null ? ' (' + abs.toLocaleString('pt-PT', { maximumFractionDigits: 0 }) + ' M€)' : ''}`;
               }
-              return [];
+              if (lbl === 'Despesas totais % PIB') {
+                const abs = despMap[year];
+                return ` Despesas: ${v.toFixed(2)}% PIB${abs != null ? ' (' + abs.toLocaleString('pt-PT', { maximumFractionDigits: 0 }) + ' M€)' : ''}`;
+              }
+              return ` ${lbl}: ${v.toFixed(2)}%`;
             },
           },
         },
       },
       scales: {
-        x: { grid: { color: '#f3f4f6' }, ticks: { font: { size: 10 }, color: '#9ca3af' },
-          stacked: true },
+        x: { grid: { color: '#f3f4f6' }, ticks: { font: { size: 10 }, color: '#9ca3af' } },
         y: {
-          position: 'left', grid: { color: '#f3f4f6' }, stacked: false,
-          ticks: { font: { size: 10 }, color: '#9ca3af',
-            callback: v => (v / 1000).toFixed(0) + 'k M€' },
-          title: { display: true, text: 'Receitas / Despesas (M€)', font: { size: 10 }, color: '#9ca3af' },
+          position: 'left', grid: { color: '#f3f4f6' },
+          ticks: { font: { size: 10 }, color: '#9ca3af', callback: v => v.toFixed(0) + '%' },
+          title: { display: true, text: '% PIB', font: { size: 10 }, color: '#9ca3af' },
         },
         y2: {
           position: 'right', grid: { drawOnChartArea: false },
-          ticks: { font: { size: 10 }, color: '#9ca3af',
-            callback: v => v.toLocaleString('pt-PT', { maximumFractionDigits: 0 }) + ' M€' },
-          title: { display: true, text: 'Saldo (M€)', font: { size: 10 }, color: '#9ca3af' },
+          ticks: { font: { size: 10 }, color: '#9ca3af', callback: v => v.toFixed(1) + '%' },
+          title: { display: true, text: 'Saldo % PIB', font: { size: 10 }, color: '#9ca3af' },
         },
       },
     },
   });
 
   REGISTRY[wrapId] = {
-    chart, allPts: saldoPts,
-    _recPts: recPts, _outrasPts: outrasPts || [], _despPts: despPts,
+    chart, allPts: saldoPts, _recPts: recPts, _despPts: despPts, _pibAnnual: pibAnnual || [],
     _isSSCombo: true, periodicity: 'annual',
   };
   updateRangeLabel(wrapId, saldoSlice);
@@ -2953,19 +2937,21 @@ function applyFilterExtended(years) {
 
   Object.entries(REGISTRY).forEach(([wrapId, reg]) => {
     if (reg._isSSCombo) {
+      const pibMap = {};
+      (reg._pibAnnual || []).forEach(p => { pibMap[p.date] = p.value; });
+      const latestPib = reg._pibAnnual?.length ? reg._pibAnnual[reg._pibAnnual.length - 1].value : null;
+      const toPct = (v, year) => { const pib = pibMap[year] ?? latestPib; return (v != null && pib) ? +(v / pib * 100).toFixed(2) : null; };
       const saldoSlice = sliceByYears(reg.allPts, yearsNum, 'annual');
       const labels = saldoSlice.map(p => p.date);
-      const recMap    = Object.fromEntries(reg._recPts.map(p => [p.date, p.value]));
-      const outrasMap = Object.fromEntries((reg._outrasPts || []).map(p => [p.date, p.value]));
-      const despMap   = Object.fromEntries(reg._despPts.map(p => [p.date, p.value]));
-      const saldoVals = saldoSlice.map(p => p.value);
+      const recMap  = Object.fromEntries(reg._recPts.map(p => [p.date, p.value]));
+      const despMap = Object.fromEntries(reg._despPts.map(p => [p.date, p.value]));
+      const saldoPct = saldoSlice.map(p => toPct(p.value, p.date));
       reg.chart.data.labels = labels;
-      reg.chart.data.datasets[0].data = labels.map(d => recMap[d]    ?? null); // quotizações
-      reg.chart.data.datasets[1].data = labels.map(d => outrasMap[d] ?? null); // outras
-      reg.chart.data.datasets[2].data = labels.map(d => despMap[d]   ?? null); // despesas
-      reg.chart.data.datasets[3].data = saldoVals;
-      reg.chart.data.datasets[3].backgroundColor = saldoVals.map(v => v >= 0 ? 'rgba(234,88,12,.65)' : 'rgba(124,58,237,.65)');
-      reg.chart.data.datasets[3].borderColor = saldoVals.map(v => v >= 0 ? '#ea580c' : '#7c3aed');
+      reg.chart.data.datasets[0].data = labels.map(d => toPct(recMap[d],  d));
+      reg.chart.data.datasets[1].data = labels.map(d => toPct(despMap[d], d));
+      reg.chart.data.datasets[2].data = saldoPct;
+      reg.chart.data.datasets[2].backgroundColor = saldoPct.map(v => v >= 0 ? 'rgba(5,150,105,.65)' : 'rgba(220,38,38,.65)');
+      reg.chart.data.datasets[2].borderColor = saldoPct.map(v => v >= 0 ? '#059669' : '#dc2626');
       reg.chart.update();
       updateRangeLabel(wrapId, saldoSlice);
     } else if (reg.isSaldo) {
@@ -3359,9 +3345,9 @@ function renderDashboard(data, fromCache) {
 
   /* ── SEGURANÇA SOCIAL: receitas / despesas / saldo ── */
   if (saldoEstadoR && saldoEstadoR.status === 'fulfilled') {
-    const { saldo, receita, outras, despesa } = saldoEstadoR.value;
+    const { saldo, receita, despesa } = saldoEstadoR.value;
     if (saldo.length) {
-      initSSComboChart('wrap-saldo-estado', saldo, receita, outras || [], despesa);
+      initSSComboChart('wrap-saldo-estado', saldo, receita, despesa, pibAnnual);
     } else {
       chartError('wrap-saldo-estado', 'Sem dados disponíveis');
     }

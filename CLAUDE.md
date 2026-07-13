@@ -22,7 +22,8 @@ Para séries ECB/Eurostat: atualizar as funções `fetch_ecb()` / `fetch_eurosta
 | 12457924 | Balança Corrente |
 | 12645509 | Saldo Orçamental AP % PIB |
 | 88895 | Saldo Seg. Social |
-| 88896 | Receitas contribuições SS |
+| 88896 | Receitas quotizações SS |
+| 88881 | Outras receitas correntes SS |
 | 88885 | Despesas totais SS |
 | 88873 | Receita Estado |
 | 88884 | Despesa Estado |

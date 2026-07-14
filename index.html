@@ -2404,8 +2404,8 @@ function initSSComboChart(wrapId, saldoPts, recPts, despPts, pibAnnual) {
   const recMap  = Object.fromEntries(recPts.map(p => [p.date, p.value]));
   const despMap = Object.fromEntries(despPts.map(p => [p.date, p.value]));
 
-  const recVals  = labels.map(d => recMap[d]  ?? null);
-  const despVals = labels.map(d => despMap[d] ?? null);
+  const recVals  = labels.map(d => recMap[d]  != null ? recMap[d]  : null);
+  const despVals = labels.map(d => despMap[d] != null ? -despMap[d] : null);
   const saldoLinVals = labels.map(d => {
     const r = recMap[d], de = despMap[d];
     return (r != null && de != null) ? +(r - de).toFixed(0) : null;
@@ -2454,7 +2454,16 @@ function initSSComboChart(wrapId, saldoPts, recPts, despPts, pibAnnual) {
       plugins: {
         legend: {
           display: true, position: 'top',
-          labels: { font: { size: 10 }, color: '#6b7280', boxWidth: 12, padding: 8 },
+          labels: {
+            font: { size: 10 }, color: '#6b7280', boxWidth: 12, padding: 8,
+            generateLabels: chart => Chart.defaults.plugins.legend.labels.generateLabels(chart).map(item => {
+              if (item.text === 'Saldo SS % PIB') {
+                item.fillStyle = 'rgba(5,150,105,.55)';
+                item.strokeStyle = '#059669';
+              }
+              return item;
+            }),
+          },
         },
         tooltip: {
           callbacks: {
@@ -2465,6 +2474,8 @@ function initSSComboChart(wrapId, saldoPts, recPts, despPts, pibAnnual) {
                 return ` Saldo: ${v >= 0 ? '+' : ''}${v.toFixed(2)}% PIB`;
               if (ctx.dataset.label === 'Saldo (quot. − desp.)')
                 return ` Saldo (quot.−desp.): ${v >= 0 ? '+' : ''}${v.toLocaleString('pt-PT', { maximumFractionDigits: 0 })} M€`;
+              if (ctx.dataset.label === 'Despesas totais')
+                return ` Despesas totais: ${Math.abs(v).toLocaleString('pt-PT', { maximumFractionDigits: 0 })} M€`;
               return ` ${ctx.dataset.label}: ${v.toLocaleString('pt-PT', { maximumFractionDigits: 0 })} M€`;
             },
           },
@@ -2979,8 +2990,8 @@ function applyFilterExtended(years) {
         return (pib && p.value != null) ? +(p.value / pib * 100).toFixed(2) : null;
       });
       reg.chart.data.labels = labels;
-      reg.chart.data.datasets[0].data = labels.map(d => recMap[d]  ?? null);
-      reg.chart.data.datasets[1].data = labels.map(d => despMap[d] ?? null);
+      reg.chart.data.datasets[0].data = labels.map(d => recMap[d]  != null ? recMap[d]  : null);
+      reg.chart.data.datasets[1].data = labels.map(d => despMap[d] != null ? -despMap[d] : null);
       reg.chart.data.datasets[2].data = labels.map(d => {
         const r = recMap[d], de = despMap[d];
         return (r != null && de != null) ? +(r - de).toFixed(0) : null;
@@ -2992,7 +3003,7 @@ function applyFilterExtended(years) {
       reg.chart.data.datasets[3].data = saldoPctVals;
       reg.chart.data.datasets[3].backgroundColor = saldoPctVals.map(v => v >= 0 ? 'rgba(5,150,105,.55)' : 'rgba(220,38,38,.55)');
       reg.chart.data.datasets[3].borderColor = saldoPctVals.map(v => v >= 0 ? '#059669' : '#dc2626');
-      const leftAllF = [...labels.map(d => recMap[d] ?? null), ...labels.map(d => despMap[d] ?? null), ...saldoLinValsF];
+      const leftAllF = [...labels.map(d => recMap[d] ?? null), ...labels.map(d => despMap[d] != null ? -despMap[d] : null), ...saldoLinValsF];
       const axF = ssAlignAxes(leftAllF, saldoPctVals);
       reg.chart.options.scales.y.min  = axF.lMin;
       reg.chart.options.scales.y.max  = axF.lMax;

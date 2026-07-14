@@ -841,11 +841,11 @@ function setIndexante(m) {
   document.getElementById('rb-12m').className = 'radio-btn' + (m==='12M' ? ' sel-12' : '');
 
   const data = allData[m];
-  if (data && data.length >= 2) {
-    const ref = data[data.length - 2].value; // previous month
-    document.getElementById('euribor-fill-val').textContent = ref.toFixed(3) + '%';
-    document.getElementById('euribor-fill').querySelector('span:first-child') && null;
-    document.getElementById('euribor-fill').innerHTML = `Euribor ${m}: <span>${ref.toFixed(3)}%</span> (média ${formatDate(data[data.length-2].date)})`;
+  if (data && data.length) {
+    const pt = getEuriborRefPt(m);
+    if (pt) {
+      document.getElementById('euribor-fill').innerHTML = `Euribor ${m}: <span>${pt.value.toFixed(3)}%</span> (média ${formatDate(pt.date)})`;
+    }
   }
 
   // update chart reference line visibility
@@ -860,10 +860,16 @@ function setIndexante(m) {
   calc();
 }
 
+/* Returns the data point for series m (last available) */
+function getEuriborRefPt(m) {
+  const data = allData[m || indexante];
+  if (!data || !data.length) return null;
+  return data[data.length - 1];
+}
+
 function getEuriborRef() {
-  const data = allData[indexante];
-  if (!data || data.length < 2) return 0;
-  return data[data.length - 2].value; // previous month average
+  const pt = getEuriborRefPt();
+  return pt ? pt.value : 0;
 }
 
 function fmt(n) {

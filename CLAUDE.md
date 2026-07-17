@@ -9,7 +9,7 @@
 
 Se não fizer o passo 2, o gráfico funciona mas todos os utilizadores fazem chamadas diretas à API do BPstat em vez de usar a cache — mais lento e mais carga.
 
-Para séries ECB/Eurostat: atualizar as funções `fetch_ecb()` / `fetch_eurostat()` no mesmo ficheiro.
+Para séries ECB/Eurostat: atualizar  as funções `fetch_ecb()` / `fetch_eurostat()` no mesmo ficheiro.
 
 ## Séries BPstat atualmente em cache (scripts/fetch_data.py)
 

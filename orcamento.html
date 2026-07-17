@@ -79,7 +79,7 @@
     thead th{
       background:#f8fafc;font-size:.65rem;font-weight:700;text-transform:uppercase;
       letter-spacing:.06em;color:var(--muted);padding:10px 14px;
-      border-bottom:2px solid var(--border);white-space:nowrap;text-align:right
+      border-bottom:2px solid var(--border);white-space:nowrap;text-align:center
     }
     thead th:first-child{text-align:left;min-width:230px}
     thead th.col-val{min-width:105px}
@@ -89,7 +89,7 @@
     tbody tr{border-bottom:1px solid #f3f4f6;transition:background .1s}
     tbody tr:hover{background:#f8fafc}
     tbody tr:last-child{border-bottom:none}
-    td{padding:9px 14px;color:var(--text);white-space:nowrap;text-align:right;vertical-align:middle}
+    td{padding:9px 14px;color:var(--text);white-space:nowrap;text-align:center;vertical-align:middle}
     td:first-child{text-align:left}
 
     /* section header row inside table */
@@ -101,13 +101,17 @@
 
     /* indentation levels */
     tr.level-0 td:first-child .row-label{font-weight:700;color:var(--text)}
-    tr.level-1 td:first-child .row-label{font-weight:500;color:#374151;padding-left:18px;display:inline-block}
-    tr.level-2 td:first-child .row-label{font-weight:400;color:var(--muted);padding-left:36px;display:inline-block}
+    tr.level-1 td:first-child .row-label{font-weight:500;color:#374151}
+    tr.level-2 td:first-child .row-label{font-weight:400;color:var(--muted)}
     tr.level-0{border-top:1px solid #e5e7eb}
 
     /* saldo highlight */
     tr.row-saldo td{background:#f0f9ff}
     tr.row-saldo:hover td{background:#e0f2fe}
+
+    /* totais highlight */
+    tr.row-totais td{background:#eff6ff}
+    tr.row-totais:hover td{background:#dbeafe}
 
     /* tipo badge */
     .tipo{display:inline-block;font-size:.58rem;font-weight:800;padding:1px 5px;border-radius:3px;margin-left:6px;vertical-align:middle;letter-spacing:.03em;flex-shrink:0}
@@ -314,13 +318,13 @@ const SECTIONS = [
     anchor: 12560943,   // série usada como referência de data
     rows: [
       { id: 12560943, label: 'Saldo',                       tipo: 'S', level: 0 },
-      { id: 12560947, label: 'Receitas totais',             tipo: 'R', level: 0 },
+      { id: 12560947, label: 'Receitas totais',             tipo: 'R', level: 0, highlight: true },
       { id: 12560951, label: 'Receitas correntes',          tipo: 'R', level: 1 },
       { id: 12560971, label: 'Impostos diretos',            tipo: 'R', level: 2 },
       { id: 12560975, label: 'Impostos indiretos',          tipo: 'R', level: 2 },
       { id: 12560979, label: 'Contribuições e cotizações',  tipo: 'R', level: 2 },
       { id: 12560983, label: 'Outras receitas correntes',   tipo: 'R', level: 2 },
-      { id: 12560959, label: 'Despesas totais',             tipo: 'D', level: 0 },
+      { id: 12560959, label: 'Despesas totais',             tipo: 'D', level: 0, highlight: true },
       { id: 12560963, label: 'Despesas correntes',          tipo: 'D', level: 1 },
       { id: 12560967, label: 'Despesas de capital',         tipo: 'D', level: 1 },
       { id: 12560987, label: 'Despesas com pessoal',        tipo: 'D', level: 2 },
@@ -332,12 +336,12 @@ const SECTIONS = [
     anchor: 88873,
     rows: [
       { id: 88894, label: 'Saldo',             tipo: 'S', level: 0 },
-      { id: 88873, label: 'Receitas totais',   tipo: 'R', level: 0 },
+      { id: 88873, label: 'Receitas totais',   tipo: 'R', level: 0, highlight: true },
       { id: 88875, label: 'Receitas correntes',tipo: 'R', level: 1 },
       { id: 88877, label: 'IVA',               tipo: 'R', level: 2 },
       { id: 88898, label: 'Impostos diretos',  tipo: 'R', level: 2 },
       { id: 88901, label: 'Impostos indiretos',tipo: 'R', level: 2 },
-      { id: 88884, label: 'Despesas totais',   tipo: 'D', level: 0 },
+      { id: 88884, label: 'Despesas totais',   tipo: 'D', level: 0, highlight: true },
       { id: 88886, label: 'Despesas correntes',tipo: 'D', level: 1 },
       { id: 88910, label: 'Juros e encargos',  tipo: 'D', level: 2 },
     ]
@@ -444,6 +448,7 @@ async function init() {
             <th class="col-val">${mLabel} ${y2} (M€)</th>
             <th class="col-var">Δ ${y0}/${y1}</th>
             <th class="col-var">Δ ${y1}/${y2}</th>
+            <th class="col-var">Δ ${y0}/${y2}</th>
           </tr>
         </thead>
         <tbody>`;
@@ -453,20 +458,24 @@ async function init() {
       const vN  = getObs(pts, refDate);
       const vN1 = getObs(pts, refDate1);
       const vN2 = getObs(pts, refDate2);
-      const p1  = pct(vN, vN1);
-      const p2  = pct(vN1, vN2);
+      const p1   = pct(vN, vN1);
+      const p2   = pct(vN1, vN2);
+      const pN2  = pct(vN, vN2);
 
-      const isSaldo = row.tipo === 'S';
+      const isSaldo   = row.tipo === 'S';
+      const isTotais  = !!row.highlight;
       const tipoBadge = `<span class="tipo tipo-${row.tipo}">${row.tipo}</span>`;
+      const rowCls    = `level-${row.level}${isSaldo ? ' row-saldo' : ''}${isTotais ? ' row-totais' : ''}`;
 
       html += `
-          <tr class="level-${row.level}${isSaldo ? ' row-saldo' : ''}">
+          <tr class="${rowCls}">
             <td><span class="row-label">${row.label}</span>${tipoBadge}</td>
             <td>${fmtVal(vN)}</td>
             <td>${fmtVal(vN1)}</td>
             <td>${fmtVal(vN2)}</td>
             <td>${fmtVar(p1, row.tipo)}</td>
             <td>${fmtVar(p2, row.tipo)}</td>
+            <td>${fmtVar(pN2, row.tipo)}</td>
           </tr>`;
     }
 

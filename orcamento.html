@@ -340,7 +340,7 @@ const SECTIONS = [
       { id: 12560983, label: 'Outras receitas correntes',   tipo: 'R', level: 2 },
       { id: 12560959, label: 'Despesas totais',             tipo: 'D', level: 0, highlight: true },
       { id: 12560963, label: 'Despesas correntes',          tipo: 'D', level: 1 },
-      { id: 12560967, label: 'Despesas de capital',         tipo: 'D', level: 1 },
+      { id: 12560967, label: 'Despesas de capital',         tipo: 'D', level: 1, greenIfUp: true },
       { id: 12560987, label: 'Despesas com pessoal',        tipo: 'D', level: 2 },
       { id: 12560991, label: 'Transferências correntes',    tipo: 'D', level: 2 },
     ]
@@ -417,13 +417,14 @@ function fmtVal(v, tipo, bold) {
   return `<span class="val"${style}>${num}</span>`;
 }
 
-function fmtVar(p, tipo) {
+function fmtVar(p, tipo, greenIfUp) {
   if (p == null) return '<span class="var-null">—</span>';
   const sign = p >= 0 ? '+' : '';
   const str  = `${sign}${p.toFixed(1)}%`;
   const arrow = p > 0 ? '▲' : '▼';
-  // D: green if falling; R/S: green if rising
-  const cls = tipo === 'D'
+  // D: green if falling; R/S: green if rising; greenIfUp overrides to green if rising
+  const effectiveTipo = (tipo === 'D' && greenIfUp) ? 'R' : tipo;
+  const cls = effectiveTipo === 'D'
     ? (p > 0 ? 'var-pos-bad' : 'var-neg-bad')
     : (p > 0 ? 'var-pos-good' : 'var-neg-good');
   return `<span class="var ${cls}"><span class="arr">${arrow}</span>${str}</span>`;
@@ -496,9 +497,9 @@ async function init() {
             <td>${fmtVal(vN, row.tipo, isTotais)}</td>
             <td>${fmtVal(vN1, row.tipo, isTotais)}</td>
             <td class="col-hide">${fmtVal(vN2, row.tipo, isTotais)}</td>
-            <td>${fmtVar(p1, row.tipo)}</td>
-            <td class="col-hide">${fmtVar(p2, row.tipo)}</td>
-            <td class="col-hide">${fmtVar(pN2, row.tipo)}</td>
+            <td>${fmtVar(p1, row.tipo, row.greenIfUp)}</td>
+            <td class="col-hide">${fmtVar(p2, row.tipo, row.greenIfUp)}</td>
+            <td class="col-hide">${fmtVar(pN2, row.tipo, row.greenIfUp)}</td>
           </tr>`;
     }
 

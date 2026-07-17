@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Execução Orçamental Portugal — Dashboard Económico</title>
+  <meta name="description" content="Execução orçamental acumulada das Administrações Públicas de Portugal: receitas, despesas e saldo com comparação inter-anual. Dados BPstat / Banco de Portugal."/>
+  <meta name="keywords" content="execução orçamental portugal, saldo orçamental, receitas estado, despesas administrações públicas, deficit público portugal"/>
+  <meta name="robots" content="index, follow"/>
+  <link rel="canonical" href="https://dashboardportugal.pt/orcamento.html"/>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:title" content="Execução Orçamental Portugal — Dashboard Económico"/>
+  <meta property="og:description" content="Execução orçamental acumulada YTD das AP de Portugal, com comparação inter-anual."/>
+  <meta property="og:url" content="https://dashboardportugal.pt/orcamento.html"/>
+  <meta property="og:locale" content="pt_PT"/>
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q1HGNHGTKK"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-Q1HGNHGTKK');
+  </script>
+
+  <style>
+    :root {
+      --bg:#f0f2f5; --card:#fff; --border:#e4e7ec;
+      --text:#111827; --muted:#6b7280; --muted2:#9ca3af;
+      --accent:#111827; --green:#059669; --red:#dc2626;
+      --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+
+    /* ── HEADER / NAV ── */
+    header{background:var(--bg);max-width:1440px;margin:0 auto;padding:20px 28px 0}
+    .header-inner{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 20px 18px;box-shadow:var(--shadow)}
+    .header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+    .header-left{}
+    .header-title{font-size:1.55rem;font-weight:900;letter-spacing:.03em;text-transform:uppercase;color:var(--text);line-height:1.1}
+    .header-subtitle{font-size:.72rem;color:var(--muted);margin-top:4px;letter-spacing:.01em}
+    .navbar-brand{font-weight:900;font-size:.95rem;letter-spacing:.03em;text-transform:uppercase;color:var(--text);text-decoration:none;white-space:nowrap}
+    .navbar-brand span{color:#2563eb}
+    .navbar-links{display:flex;gap:2px}
+    .navbar-link{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:7px;font-size:.78rem;font-weight:600;color:var(--muted);text-decoration:none;transition:background .15s,color .15s;white-space:nowrap}
+    .navbar-link:hover{background:var(--bg);color:var(--text)}
+    .navbar-link.active{background:rgba(37,99,235,.10);color:#2563eb}
+    .navbar-link .nav-icon{font-size:.9rem}
+    @media(max-width:680px){
+      .navbar-brand{font-size:.82rem}
+      .navbar-link{padding:5px 8px;font-size:.7rem}
+      .navbar-links{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;width:100%}
+      .navbar-links::-webkit-scrollbar{display:none}
+      .header-top{flex-direction:column;align-items:flex-start;gap:8px}
+      .header-title{font-size:1.1rem}
+    }
+
+    /* ── MAIN ── */
+    main{max-width:1440px;margin:0 auto;padding:24px 28px}
+
+    /* ── INFO BAR ── */
+    .info-bar{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 18px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;box-shadow:var(--shadow)}
+    .info-bar-title{font-size:.9rem;font-weight:800;color:var(--text)}
+    .info-bar-sub{font-size:.72rem;color:var(--muted);margin-top:2px}
+    .ref-badge{display:inline-flex;align-items:center;gap:6px;background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:6px;padding:5px 13px;font-size:.75rem;font-weight:700}
+    .legend{display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:.68rem;color:var(--muted)}
+    .legend-item{display:flex;align-items:center;gap:5px}
+    .legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+    /* ── SECTION LABEL ── */
+    .section-label{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:22px 0 8px;padding-left:2px}
+    .section-label:first-child{margin-top:0}
+
+    /* ── TABLE ── */
+    .table-wrap{overflow-x:auto;border-radius:10px;box-shadow:var(--shadow);border:1px solid var(--border);background:var(--card);margin-bottom:18px}
+    table{width:100%;border-collapse:collapse;font-size:.82rem}
+    thead th{
+      background:#f8fafc;font-size:.65rem;font-weight:700;text-transform:uppercase;
+      letter-spacing:.06em;color:var(--muted);padding:10px 14px;
+      border-bottom:2px solid var(--border);white-space:nowrap;text-align:right
+    }
+    thead th:first-child{text-align:left;min-width:230px}
+    thead th.col-val{min-width:105px}
+    thead th.col-var{min-width:78px}
+
+    /* data rows */
+    tbody tr{border-bottom:1px solid #f3f4f6;transition:background .1s}
+    tbody tr:hover{background:#f8fafc}
+    tbody tr:last-child{border-bottom:none}
+    td{padding:9px 14px;color:var(--text);white-space:nowrap;text-align:right;vertical-align:middle}
+    td:first-child{text-align:left}
+
+    /* section header row inside table */
+    tr.section-row td{
+      background:#f1f5f9;font-size:.68rem;font-weight:800;text-transform:uppercase;
+      letter-spacing:.07em;color:#475569;padding:7px 16px;
+      border-top:2px solid #e2e8f0;border-bottom:1px solid #e2e8f0
+    }
+
+    /* indentation levels */
+    tr.level-0 td:first-child .row-label{font-weight:700;color:var(--text)}
+    tr.level-1 td:first-child .row-label{font-weight:500;color:#374151;padding-left:18px;display:inline-block}
+    tr.level-2 td:first-child .row-label{font-weight:400;color:var(--muted);padding-left:36px;display:inline-block}
+    tr.level-0{border-top:1px solid #e5e7eb}
+
+    /* saldo highlight */
+    tr.row-saldo td{background:#f0f9ff}
+    tr.row-saldo:hover td{background:#e0f2fe}
+
+    /* tipo badge */
+    .tipo{display:inline-block;font-size:.58rem;font-weight:800;padding:1px 5px;border-radius:3px;margin-left:6px;vertical-align:middle;letter-spacing:.03em;flex-shrink:0}
+    .tipo-R{background:#dcfce7;color:#166534}
+    .tipo-D{background:#fee2e2;color:#991b1b}
+    .tipo-S{background:#e0f2fe;color:#075985}
+
+    /* value cells */
+    .val{font-variant-numeric:tabular-nums;color:#111827}
+    .val-null{color:var(--muted2);font-size:.75rem}
+
+    /* variation cells */
+    .var{font-variant-numeric:tabular-nums;font-weight:700;font-size:.78rem}
+    .var-pos-good{color:var(--green)}
+    .var-neg-good{color:var(--red)}
+    .var-pos-bad{color:var(--red)}
+    .var-neg-bad{color:var(--green)}
+    .var-null{color:var(--muted2);font-size:.72rem;font-weight:400}
+
+    /* arrows in variation */
+    .arr{font-size:.7rem;margin-right:1px}
+
+    /* loading */
+    .loading-wrap{text-align:center;padding:60px 20px;color:var(--muted);background:var(--card);border-radius:10px;border:1px solid var(--border);box-shadow:var(--shadow)}
+    .loading-wrap .spinner{display:inline-block;width:28px;height:28px;border:3px solid #e5e7eb;border-top-color:#2563eb;border-radius:50%;animation:spin .7s linear infinite;margin-bottom:12px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* footer */
+    footer{display:flex;justify-content:space-between;align-items:center;padding:14px 28px;font-size:.64rem;color:var(--muted2);border-top:1px solid var(--border);max-width:1440px;margin:8px auto 0;flex-wrap:wrap;gap:6px}
+    footer a{color:inherit;text-decoration:none}
+    footer a:hover{color:var(--muted)}
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-top">
+      <a class="navbar-brand" href="/">Dashboard<span>Portugal</span></a>
+      <div class="navbar-links">
+        <a class="navbar-link" href="/"><span class="nav-icon">📊</span> Macroeconómico</a>
+        <a class="navbar-link" href="inflacao-hicp.html"><span class="nav-icon">📈</span> Inflação IHPC</a>
+        <a class="navbar-link" href="euribor.html"><span class="nav-icon">💶</span> Euribor &amp; Crédito</a>
+        <a class="navbar-link active" href="orcamento.html"><span class="nav-icon">🏛️</span> Orçamento</a>
+      </div>
+    </div>
+    <div class="header-left">
+      <div class="header-title">🏛️ Execução Orçamental — Administrações Públicas</div>
+      <div class="header-subtitle">Execução acumulada YTD · comparação inter-anual · fonte: BPstat / Banco de Portugal</div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="info-bar">
+    <div>
+      <div class="info-bar-title">Execução Orçamental das Administrações Públicas</div>
+      <div class="info-bar-sub">Valores acumulados desde janeiro · em milhões de euros (M€) · actualizado automaticamente</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#166534"></div><span>Receita</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#991b1b"></div><span>Despesa</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#075985"></div><span>Saldo</span></div>
+      </div>
+      <span class="ref-badge" id="ref-badge">⏳ A carregar...</span>
+    </div>
+  </div>
+
+  <div id="loading" class="loading-wrap">
+    <div class="spinner"></div>
+    <div style="font-size:.85rem">A carregar dados do BPstat...</div>
+    <div style="font-size:.72rem;color:var(--muted2);margin-top:6px">Primeira visita pode demorar alguns segundos</div>
+  </div>
+
+  <div id="table-container" style="display:none"></div>
+</main>
+
+<footer>
+  <span>Fonte: BPstat / Banco de Portugal · execução orçamental acumulada YTD · dados de carácter informativo</span>
+  <span style="display:flex;gap:16px;flex-shrink:0">
+    <a href="politica-privacidade.html">Política de Privacidade</a>
+    <a href="contactos.html">Contactos</a>
+  </span>
+</footer>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   BPSTAT API CLIENT (same as index.html)
+══════════════════════════════════════════════════════════ */
+const API = 'https://bpstat.bportugal.pt/data/v1';
+const WORKER_URL = '/data/cache.json';
+let _workerData = null;
+
+async function _getWorkerData() {
+  if (_workerData) return _workerData;
+  const r = await fetch(WORKER_URL, { signal: AbortSignal.timeout(8000) });
+  if (!r.ok) throw new Error(`Worker HTTP ${r.status}`);
+  _workerData = await r.json();
+  return _workerData;
+}
+
+async function fetchDatasetPageFiltered(domainId, datasetId, seriesId) {
+  const url = `${API}/domains/${domainId}/datasets/${datasetId}/?lang=PT&series_ids=${seriesId}`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+async function fetchDatasetPage(domainId, datasetId, page = 1) {
+  const url = `${API}/domains/${domainId}/datasets/${datasetId}/?lang=PT&page=${page}`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+async function fetchSeriesMeta(seriesId) {
+  const r = await fetch(`${API}/series/?series_ids=${seriesId}&lang=PT`);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return (await r.json())[0];
+}
+
+function extractFromDatasetPage(ds, targetSeriesId) {
+  const series = ds.extension?.series || [];
+  const thisSeries = series.find(s => s.id === targetSeriesId);
+  if (!thisSeries) return null;
+
+  const dimIds   = ds.id;
+  const dimSizes = ds.size;
+  const dims     = ds.dimension;
+  const values   = ds.value;
+  const timeRole = (ds.role?.time || ['reference_date'])[0];
+  const timeIdx  = dimIds.indexOf(timeRole);
+
+  const strides = new Array(dimIds.length);
+  strides[dimIds.length - 1] = 1;
+  for (let i = dimIds.length - 2; i >= 0; i--) {
+    strides[i] = strides[i + 1] * dimSizes[i + 1];
+  }
+
+  const dimCat = {};
+  thisSeries.dimension_category.forEach(dc => {
+    dimCat[String(dc.dimension_id)] = dc.category_id;
+  });
+
+  let base = 0;
+  for (let i = 0; i < dimIds.length; i++) {
+    const dimId = dimIds[i];
+    if (dimId === timeRole) continue;
+    const catId  = dimCat[dimId];
+    const catArr = dims[dimId]?.category?.index || [];
+    const catIdx = catArr.map(String).indexOf(String(catId));
+    if (catIdx >= 0) base += catIdx * strides[i];
+  }
+
+  const dates = dims[timeRole]?.category?.index || [];
+  const timeStride = strides[timeIdx];
+  const result = [];
+  for (let t = 0; t < dates.length; t++) {
+    const key = base + t * timeStride;
+    const v = Array.isArray(values) ? values[key] : values[String(key)];
+    if (v != null) result.push({ date: dates[t], value: v });
+  }
+  return result;
+}
+
+async function getSeriesData(seriesId) {
+  if (WORKER_URL) {
+    try {
+      const wd = await _getWorkerData();
+      const pts = wd?.bpstat?.[String(seriesId)];
+      if (pts && pts.length) return pts;
+    } catch(e) { /* fall through to direct API */ }
+  }
+  const meta = await fetchSeriesMeta(seriesId);
+  const { dataset_id, domain_ids } = meta;
+  const domainId = domain_ids[0];
+
+  try {
+    const ds = await fetchDatasetPageFiltered(domainId, dataset_id, seriesId);
+    const pts = extractFromDatasetPage(ds, seriesId);
+    if (pts !== null && pts.length > 0) return pts;
+  } catch (e) { }
+
+  let page = 1;
+  while (page <= 100) {
+    const ds = await fetchDatasetPage(domainId, dataset_id, page);
+    const pts = extractFromDatasetPage(ds, seriesId);
+    if (pts !== null) return pts;
+    if (!ds.extension?.next_page) break;
+    page++;
+  }
+  throw new Error(`Series ${seriesId} not found`);
+}
+
+/* ══════════════════════════════════════════════════════════
+   TABLE CONFIG
+   tipo: R=receita (verde se sobe), D=despesa (verde se desce), S=saldo (verde se sobe)
+   level: 0=total/saldo, 1=sub-agregado, 2=detalhe
+══════════════════════════════════════════════════════════ */
+const SECTIONS = [
+  {
+    title: 'Administrações Públicas — Consolidado',
+    anchor: 12560943,   // série usada como referência de data
+    rows: [
+      { id: 12560943, label: 'Saldo',                       tipo: 'S', level: 0 },
+      { id: 12560947, label: 'Receitas totais',             tipo: 'R', level: 0 },
+      { id: 12560951, label: 'Receitas correntes',          tipo: 'R', level: 1 },
+      { id: 12560971, label: 'Impostos diretos',            tipo: 'R', level: 2 },
+      { id: 12560975, label: 'Impostos indiretos',          tipo: 'R', level: 2 },
+      { id: 12560979, label: 'Contribuições e cotizações',  tipo: 'R', level: 2 },
+      { id: 12560983, label: 'Outras receitas correntes',   tipo: 'R', level: 2 },
+      { id: 12560959, label: 'Despesas totais',             tipo: 'D', level: 0 },
+      { id: 12560963, label: 'Despesas correntes',          tipo: 'D', level: 1 },
+      { id: 12560967, label: 'Despesas de capital',         tipo: 'D', level: 1 },
+      { id: 12560987, label: 'Despesas com pessoal',        tipo: 'D', level: 2 },
+      { id: 12560991, label: 'Transferências correntes',    tipo: 'D', level: 2 },
+    ]
+  },
+  {
+    title: 'Estado',
+    anchor: 88873,
+    rows: [
+      { id: 88894, label: 'Saldo',             tipo: 'S', level: 0 },
+      { id: 88873, label: 'Receitas totais',   tipo: 'R', level: 0 },
+      { id: 88875, label: 'Receitas correntes',tipo: 'R', level: 1 },
+      { id: 88877, label: 'IVA',               tipo: 'R', level: 2 },
+      { id: 88898, label: 'Impostos diretos',  tipo: 'R', level: 2 },
+      { id: 88901, label: 'Impostos indiretos',tipo: 'R', level: 2 },
+      { id: 88884, label: 'Despesas totais',   tipo: 'D', level: 0 },
+      { id: 88886, label: 'Despesas correntes',tipo: 'D', level: 1 },
+      { id: 88910, label: 'Juros e encargos',  tipo: 'D', level: 2 },
+    ]
+  },
+  {
+    title: 'Segurança Social',
+    anchor: 88895,
+    rows: [
+      { id: 88895, label: 'Saldo', tipo: 'S', level: 0 },
+    ]
+  },
+];
+
+/* ══════════════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════════════ */
+const MONTHS_PT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+function monthLabel(dateKey) {
+  if (!dateKey) return '—';
+  const [, m] = dateKey.split('-');
+  return MONTHS_PT[parseInt(m, 10) - 1] + '.';
+}
+
+function prevYear(dateKey) {
+  if (!dateKey) return null;
+  const [y, m] = dateKey.split('-');
+  return `${+y - 1}-${m}`;
+}
+
+function getLastDate(pts) {
+  if (!pts || !pts.length) return null;
+  // normalise to YYYY-MM regardless of whether stored as YYYY-MM-DD or YYYY-MM
+  return pts[pts.length - 1].date.slice(0, 7);
+}
+
+function getObs(pts, dateKey) {
+  if (!pts || !dateKey) return null;
+  // dateKey is YYYY-MM; pts dates may be YYYY-MM or YYYY-MM-DD
+  const p = pts.find(x => x.date === dateKey || x.date.startsWith(dateKey));
+  return p != null ? p.value : null;
+}
+
+function pct(newV, oldV) {
+  if (newV == null || oldV == null || oldV === 0) return null;
+  return (newV - oldV) / Math.abs(oldV) * 100;
+}
+
+function fmtVal(v) {
+  if (v == null) return '<span class="val-null">—</span>';
+  return `<span class="val">${v.toLocaleString('pt-PT', {maximumFractionDigits: 0})}</span>`;
+}
+
+function fmtVar(p, tipo) {
+  if (p == null) return '<span class="var-null">—</span>';
+  const sign = p >= 0 ? '+' : '';
+  const str  = `${sign}${p.toFixed(1)}%`;
+  const arrow = p > 0 ? '▲' : '▼';
+  // D: green if falling; R/S: green if rising
+  const cls = tipo === 'D'
+    ? (p > 0 ? 'var-pos-bad' : 'var-neg-bad')
+    : (p > 0 ? 'var-pos-good' : 'var-neg-good');
+  return `<span class="var ${cls}"><span class="arr">${arrow}</span>${str}</span>`;
+}
+
+/* ══════════════════════════════════════════════════════════
+   RENDER
+══════════════════════════════════════════════════════════ */
+async function init() {
+  const allIds = [...new Set(SECTIONS.flatMap(s => s.rows.map(r => r.id)))];
+  const results = await Promise.allSettled(allIds.map(id => getSeriesData(id)));
+  const dm = {};   // data map: id → [{date,value}]
+  allIds.forEach((id, i) => { dm[id] = results[i].status === 'fulfilled' ? results[i].value : null; });
+
+  // Reference date for the badge = AP anchor
+  const apRef = getLastDate(dm[12560943]) || getLastDate(dm[12560947]);
+  if (apRef) {
+    const [y, m] = apRef.split('-');
+    document.getElementById('ref-badge').innerHTML = `📅 Acumulado até ${monthLabel(apRef)} ${y}`;
+  }
+
+  let html = '';
+
+  for (const sec of SECTIONS) {
+    // Find reference date for this section (anchor series)
+    const refDate = getLastDate(dm[sec.anchor]);
+    if (!refDate) continue;
+    const refDate1 = prevYear(refDate);
+    const refDate2 = prevYear(refDate1);
+    const [y0] = refDate.split('-');
+    const [y1] = refDate1.split('-');
+    const [y2] = refDate2.split('-');
+    const mLabel = monthLabel(refDate);
+
+    html += `
+    <div class="section-label">${sec.title}</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="text-align:left">Indicador</th>
+            <th class="col-val">${mLabel} ${y0} (M€)</th>
+            <th class="col-val">${mLabel} ${y1} (M€)</th>
+            <th class="col-val">${mLabel} ${y2} (M€)</th>
+            <th class="col-var">Δ ${y0}/${y1}</th>
+            <th class="col-var">Δ ${y1}/${y2}</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+    for (const row of sec.rows) {
+      const pts = dm[row.id];
+      const vN  = getObs(pts, refDate);
+      const vN1 = getObs(pts, refDate1);
+      const vN2 = getObs(pts, refDate2);
+      const p1  = pct(vN, vN1);
+      const p2  = pct(vN1, vN2);
+
+      const isSaldo = row.tipo === 'S';
+      const tipoBadge = `<span class="tipo tipo-${row.tipo}">${row.tipo}</span>`;
+
+      html += `
+          <tr class="level-${row.level}${isSaldo ? ' row-saldo' : ''}">
+            <td><span class="row-label">${row.label}</span>${tipoBadge}</td>
+            <td>${fmtVal(vN)}</td>
+            <td>${fmtVal(vN1)}</td>
+            <td>${fmtVal(vN2)}</td>
+            <td>${fmtVar(p1, row.tipo)}</td>
+            <td>${fmtVar(p2, row.tipo)}</td>
+          </tr>`;
+    }
+
+    html += `
+        </tbody>
+      </table>
+    </div>`;
+  }
+
+  if (!html) {
+    html = '<div style="text-align:center;padding:40px;color:#dc2626">Sem dados disponíveis de momento.</div>';
+  }
+
+  document.getElementById('table-container').innerHTML = html;
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('table-container').style.display = 'block';
+}
+
+init().catch(err => {
+  console.error('orcamento init error:', err);
+  document.getElementById('loading').innerHTML =
+    `<div style="padding:40px;text-align:center">
+       <div style="color:#dc2626;font-weight:700;margin-bottom:8px">Erro ao carregar dados</div>
+       <div style="font-size:.8rem;color:var(--muted)">${err.message}</div>
+       <div style="margin-top:12px"><button onclick="location.reload()" style="padding:6px 16px;border:1px solid #d1d5db;border-radius:6px;background:#fff;cursor:pointer;font-size:.8rem">Tentar novamente</button></div>
+     </div>`;
+});
+</script>
+</body>
+</html>

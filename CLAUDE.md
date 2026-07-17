@@ -32,7 +32,19 @@ Para séries ECB/Eurostat: atualizar as funções `fetch_ecb()` / `fetch_eurosta
 | 12099459 | OT 10Y daily (spread) |
 | 12561507 | Dívida AP % PIB (Eurostat/EDP) |
 | 12414395–12456320 | Capacidade/Necessidade Financiamento por setor |
-| 12560971–12560967 | Receitas/Despesas AP por categoria |
+| 12560947 | Receitas totais AP (execução orçamental) |
+| 12560951 | Receitas correntes AP |
+| 12560959 | Despesas totais AP |
+| 12560963 | Despesas correntes AP |
+| 12560971–12560983 | Receitas AP por categoria (impostos diretos, indiretos, contribuições, outras) |
+| 12560967, 12560987–12560992 | Despesas AP por categoria (capital, pessoal, transferências, etc.) |
+| 88875 | Receitas correntes Estado |
+| 88877 | Receitas IVA Estado |
+| 88886 | Despesas correntes Estado |
+| 88894 | Saldo Estado |
+| 88898 | Impostos diretos Estado |
+| 88901 | Impostos indiretos Estado |
+| 88910 | Juros e encargos Estado |
 | 12561508–12561512 | Confiança |
 
 ## Arquitetura geral

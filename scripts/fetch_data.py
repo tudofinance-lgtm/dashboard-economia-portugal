@@ -59,10 +59,23 @@ BPSTAT_SERIES = [
     12561507,  # Dívida AP % PIB — Eurostat/EDP (mais actualizado)
     # Capacidade/Necessidade Financiamento por setor
     12414395, 12427901, 12439580, 12445096, 12456320,
+    # Execução orçamental AP — totais e correntes/capital
+    12560947,  # Receitas totais AP
+    12560951,  # Receitas correntes AP
+    12560959,  # Despesas totais AP
+    12560963,  # Despesas correntes AP
     # Receitas AP por categoria
     12560971, 12560975, 12560979, 12560983, 12560955,
     # Despesas AP por categoria
     12560987, 12560988, 12560989, 12560990, 12560991, 12560992, 12560967,
+    # Execução orçamental Estado — detalhes adicionais
+    88875,  # Receitas correntes Estado
+    88877,  # Receitas IVA Estado
+    88886,  # Despesas correntes Estado
+    88894,  # Saldo Estado
+    88898,  # Impostos diretos Estado
+    88901,  # Impostos indiretos Estado
+    88910,  # Juros e encargos Estado
     # Confiança
     12561508, 12561511, 12561512,
 ]

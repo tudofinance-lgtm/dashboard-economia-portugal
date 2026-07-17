@@ -74,6 +74,8 @@ BPSTAT_SERIES = [
     88886,  # Despesas correntes Estado
     88894,  # Saldo Estado
     88898,  # Impostos diretos Estado
+    88899,  # IRS Estado
+    88900,  # IRC Estado
     88901,  # Impostos indiretos Estado
     88910,  # Juros e encargos Estado
     # Confiança

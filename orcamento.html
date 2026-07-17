@@ -173,7 +173,7 @@
       </div>
     </div>
     <div class="header-left">
-      <div class="header-title">🏛️ Execução Orçamental — Administrações Públicas</div>
+      <div class="header-title">🏛️ Execução Orçamental <span id="hdr-year"></span> — Administrações Públicas</div>
       <div class="header-subtitle">Execução acumulada YTD · comparação inter-anual · fonte: BPstat / Banco de Portugal</div>
     </div>
   </div>
@@ -354,6 +354,8 @@ const SECTIONS = [
       { id: 88875, label: 'Receitas correntes',tipo: 'R', level: 1 },
       { id: 88877, label: 'IVA',               tipo: 'R', level: 2 },
       { id: 88898, label: 'Impostos diretos',  tipo: 'R', level: 2 },
+      { id: 88899, label: 'IRS',               tipo: 'R', level: 2 },
+      { id: 88900, label: 'IRC',               tipo: 'R', level: 2 },
       { id: 88901, label: 'Impostos indiretos',tipo: 'R', level: 2 },
       { id: 88884, label: 'Despesas totais',   tipo: 'D', level: 0, highlight: true },
       { id: 88886, label: 'Despesas correntes',tipo: 'D', level: 1 },
@@ -441,6 +443,7 @@ async function init() {
   if (apRef) {
     const [y, m] = apRef.split('-');
     document.getElementById('ref-badge').innerHTML = `📅 Acumulado até ${monthLabel(apRef)} ${y}`;
+    document.getElementById('hdr-year').textContent = y;
   }
 
   let html = '';

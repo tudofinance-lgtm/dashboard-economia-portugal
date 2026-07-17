@@ -43,6 +43,8 @@ Para séries ECB/Eurostat: atualizar  as funções `fetch_ecb()` / `fetch_eurost
 | 88886 | Despesas correntes Estado |
 | 88894 | Saldo Estado |
 | 88898 | Impostos diretos Estado |
+| 88899 | IRS Estado |
+| 88900 | IRC Estado |
 | 88901 | Impostos indiretos Estado |
 | 88910 | Juros e encargos Estado |
 | 12561508–12561512 | Confiança |

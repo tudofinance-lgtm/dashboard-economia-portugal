@@ -466,7 +466,7 @@ async function init() {
             <th class="col-val col-hide">${mLabel} ${y2} (M€)</th>
             <th class="col-var">Δ ${y0}/${y1}</th>
             <th class="col-var col-hide">Δ ${y1}/${y2}</th>
-            <th class="col-var">Δ ${y0}/${y2}</th>
+            <th class="col-var col-hide">Δ ${y0}/${y2}</th>
           </tr>
         </thead>
         <tbody>`;
@@ -493,7 +493,7 @@ async function init() {
             <td class="col-hide">${fmtVal(vN2, row.tipo, isTotais)}</td>
             <td>${fmtVar(p1, row.tipo)}</td>
             <td class="col-hide">${fmtVar(p2, row.tipo)}</td>
-            <td>${fmtVar(pN2, row.tipo)}</td>
+            <td class="col-hide">${fmtVar(pN2, row.tipo)}</td>
           </tr>`;
     }
 

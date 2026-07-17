@@ -75,15 +75,16 @@
 
     /* ── TABLE ── */
     .table-wrap{overflow-x:auto;border-radius:10px;box-shadow:var(--shadow);border:1px solid var(--border);background:var(--card);margin-bottom:18px}
-    table{width:100%;border-collapse:collapse;font-size:.78rem}
+    table{width:100%;border-collapse:collapse;font-size:.78rem;table-layout:fixed}
     thead th{
       background:#f8fafc;font-size:.6rem;font-weight:700;text-transform:uppercase;
       letter-spacing:.05em;color:var(--muted);padding:7px 10px;
-      border-bottom:2px solid var(--border);white-space:nowrap;text-align:center
+      border-bottom:2px solid var(--border);white-space:nowrap;text-align:center;
+      overflow:hidden
     }
-    thead th:first-child{text-align:left;min-width:160px}
-    thead th.col-val{min-width:80px}
-    thead th.col-var{min-width:62px}
+    thead th:first-child{text-align:left;width:32%}
+    thead th.col-val{width:13%}
+    thead th.col-var{width:9%}
 
     /* data rows */
     tbody tr{border-bottom:1px solid #f3f4f6;transition:background .1s}
@@ -95,9 +96,10 @@
     /* mobile: hide less important columns */
     @media(max-width:600px){
       thead th.col-hide,td.col-hide{display:none}
-      thead th:first-child{min-width:120px}
-      thead th.col-val{min-width:68px}
-      thead th.col-var{min-width:52px}
+      /* with col-hide removed, redistribute widths: indicador 40%, 2 vals 22% each, 1 var 16% */
+      thead th:first-child{width:40%}
+      thead th.col-val{width:22%}
+      thead th.col-var{width:16%}
       table{font-size:.72rem}
       td,thead th{padding:5px 7px}
     }
@@ -165,9 +167,9 @@
       <a class="navbar-brand" href="/">Dashboard<span>Portugal</span></a>
       <div class="navbar-links">
         <a class="navbar-link" href="/"><span class="nav-icon">📊</span> Macroeconómico</a>
+        <a class="navbar-link active" href="orcamento.html"><span class="nav-icon">🏛️</span> Orçamento</a>
         <a class="navbar-link" href="inflacao-hicp.html"><span class="nav-icon">📈</span> Inflação IHPC</a>
         <a class="navbar-link" href="euribor.html"><span class="nav-icon">💶</span> Euribor &amp; Crédito</a>
-        <a class="navbar-link active" href="orcamento.html"><span class="nav-icon">🏛️</span> Orçamento</a>
       </div>
     </div>
     <div class="header-left">

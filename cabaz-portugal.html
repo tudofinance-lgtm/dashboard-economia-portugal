@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Cabaz Portugal — Comparador de Preços Supermercados</title>
+  <style>
+    :root{
+      --bg:#f0f2f5;--card:#fff;--border:#e4e7ec;
+      --text:#111827;--muted:#6b7280;--muted2:#9ca3af;
+      --green:#059669;--red:#dc2626;--amber:#d97706;
+      --blue:#2563eb;--shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+
+    /* HEADER */
+    header{background:var(--bg);max-width:1200px;margin:0 auto;padding:20px 24px 0}
+    .header-inner{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 20px 16px;box-shadow:var(--shadow)}
+    .header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+    .brand{font-weight:900;font-size:.95rem;letter-spacing:.03em;text-transform:uppercase;color:var(--text);text-decoration:none}
+    .brand span{color:var(--blue)}
+    .header-title{font-size:1.4rem;font-weight:900;letter-spacing:.02em;text-transform:uppercase;color:var(--text)}
+    .header-sub{font-size:.72rem;color:var(--muted);margin-top:3px}
+
+    /* NAV */
+    .nav-links{display:flex;gap:2px}
+    .nav-link{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:7px;font-size:.78rem;font-weight:600;color:var(--muted);text-decoration:none;transition:background .15s,color .15s;white-space:nowrap}
+    .nav-link:hover{background:var(--bg);color:var(--text)}
+    .nav-link.active{background:rgba(37,99,235,.10);color:var(--blue)}
+
+    /* MAIN */
+    main{max-width:1200px;margin:0 auto;padding:20px 24px 40px}
+
+    /* CARLI BOX */
+    .carli-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 22px;margin-bottom:18px;box-shadow:var(--shadow)}
+    .carli-title{font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:14px}
+    .carli-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .carli-card{text-align:center;border-radius:8px;padding:14px 10px;border:1px solid var(--border)}
+    .carli-store{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:6px}
+    .carli-index{font-size:2rem;font-weight:900;line-height:1}
+    .carli-label{font-size:.68rem;color:var(--muted);margin-top:5px}
+    .carli-green{background:#f0fdf4;border-color:#bbf7d0;color:var(--green)}
+    .carli-amber{background:#fffbeb;border-color:#fde68a;color:var(--amber)}
+    .carli-red{background:#fef2f2;border-color:#fecaca;color:var(--red)}
+    .carli-gray{background:#f8fafc;border-color:#e2e8f0;color:var(--muted)}
+
+    /* INFO BAR */
+    .info-bar{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;box-shadow:var(--shadow);font-size:.75rem;color:var(--muted)}
+    .info-bar strong{color:var(--text)}
+    .badge{display:inline-flex;align-items:center;gap:5px;background:#eff6ff;border:1px solid #bfdbfe;color:var(--blue);border-radius:6px;padding:4px 10px;font-size:.72rem;font-weight:700}
+    .badge-warn{background:#fffbeb;border-color:#fde68a;color:var(--amber)}
+
+    /* FILTERS */
+    .filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+    .filter-btn{padding:5px 13px;border-radius:20px;font-size:.74rem;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--muted);transition:all .15s}
+    .filter-btn:hover{border-color:#93c5fd;color:var(--blue)}
+    .filter-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+    /* TABLE */
+    .table-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow-x:auto;box-shadow:var(--shadow)}
+    table{width:100%;border-collapse:collapse;font-size:.81rem;table-layout:fixed}
+    thead th{background:#f8fafc;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:9px 12px;border-bottom:2px solid var(--border);white-space:nowrap;text-align:center}
+    thead th:first-child{text-align:left;width:34%}
+    thead th.th-store{width:15%}
+    thead th.th-var{width:12%}
+    thead th.th-cheaper{width:12%}
+    tbody tr{border-bottom:1px solid #f3f4f6;transition:background .1s}
+    tbody tr:hover{background:#f8fafc}
+    tbody tr:last-child{border-bottom:none}
+    tr.cat-header td{background:#f1f5f9;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#475569;padding:7px 14px;border-top:2px solid #e2e8f0}
+    td{padding:8px 12px;color:var(--text);white-space:nowrap;text-align:center;vertical-align:middle}
+    td:first-child{text-align:left}
+    .prod-name{font-weight:600;color:var(--text);display:block}
+    .prod-detail{font-size:.68rem;color:var(--muted);margin-top:1px}
+    .price{font-variant-numeric:tabular-nums;font-weight:600}
+    .price-null{color:var(--muted2);font-size:.75rem}
+    .price-low{color:var(--green);font-weight:700}
+    .cheaper-badge{display:inline-block;font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:10px}
+    .cb-cont{background:#dbeafe;color:#1e40af}
+    .cb-pd{background:#dcfce7;color:#166534}
+    .cb-auch{background:#fef9c3;color:#854d0e}
+    .cb-null{color:var(--muted2);font-size:.72rem}
+
+    /* FOOTER */
+    footer{text-align:center;padding:16px;font-size:.65rem;color:var(--muted2)}
+
+    @media(max-width:640px){
+      .carli-grid{grid-template-columns:repeat(3,1fr);gap:8px}
+      .carli-index{font-size:1.5rem}
+      thead th.th-var{display:none}
+      td.td-var{display:none}
+      header{padding:12px 14px 0}
+      main{padding:14px 14px 30px}
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-top">
+      <a class="brand" href="/">Dashboard<span>Portugal</span></a>
+      <div class="nav-links">
+        <a class="nav-link" href="/">📊 Macroeconómico</a>
+        <a class="nav-link" href="orcamento.html">🏛️ Orçamento</a>
+        <a class="nav-link" href="inflacao-hicp.html">📈 Inflação IHPC</a>
+        <a class="nav-link" href="euribor.html">💶 Euribor</a>
+        <a class="nav-link active" href="cabaz-portugal.html">🛒 Cabaz</a>
+      </div>
+    </div>
+    <div>
+      <div class="header-title">🛒 Cabaz Portugal</div>
+      <div class="header-sub">Comparação de preços em Continente · Pingo Doce · Auchan — 87 produtos · actualizado mensalmente</div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ÍNDICE DE CARLI -->
+  <div class="carli-box">
+    <div class="carli-title">Índice de Carli — Custo Relativo (Continente = 100)</div>
+    <div class="carli-grid" id="carli-grid">
+      <div class="carli-card carli-gray">
+        <div class="carli-store">Continente</div>
+        <div class="carli-index" id="idx-cont">—</div>
+        <div class="carli-label">base de referência</div>
+      </div>
+      <div class="carli-card carli-gray">
+        <div class="carli-store">Pingo Doce</div>
+        <div class="carli-index" id="idx-pd">—</div>
+        <div class="carli-label">vs Continente</div>
+      </div>
+      <div class="carli-card carli-gray">
+        <div class="carli-store">Auchan</div>
+        <div class="carli-index" id="idx-auch">—</div>
+        <div class="carli-label">vs Continente</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INFO BAR -->
+  <div class="info-bar">
+    <span><strong id="prod-count">87</strong> produtos · <strong id="cat-label">Todas as categorias</strong></span>
+    <span id="update-badge" class="badge badge-warn">⚠️ Sem preços — corre o scraper</span>
+  </div>
+
+  <!-- FILTROS -->
+  <div class="filters" id="filters"></div>
+
+  <!-- TABELA -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Produto</th>
+          <th class="th-store">Continente</th>
+          <th class="th-store">Pingo Doce</th>
+          <th class="th-store">Auchan</th>
+          <th class="th-var td-var">Δ PD/Cont</th>
+          <th class="th-var td-var">Δ Auch/Cont</th>
+          <th class="th-cheaper">+ Barato</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+</main>
+
+<footer>
+  Dados recolhidos por scraping — preços podem variar por localização · <a href="/">DashboardPortugal.pt</a>
+</footer>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   CATÁLOGO — 87 produtos, 7 categorias
+══════════════════════════════════════════════════════════ */
+const CATEGORIES = [
+  { id:'seca',     label:'Mercearia Seca',           emoji:'🛒' },
+  { id:'frescos',  label:'Frescos',                  emoji:'🥩' },
+  { id:'laticinios', label:'Laticínios & Charcutaria', emoji:'🧀' },
+  { id:'congelados', label:'Congelados',             emoji:'🧊' },
+  { id:'bebidas',  label:'Bebidas',                  emoji:'🥤' },
+  { id:'higiene',  label:'Higiene Pessoal',          emoji:'🧴' },
+  { id:'limpeza',  label:'Limpeza do Lar',           emoji:'🧹' },
+];
+
+const PRODUCTS = [
+  // ── Mercearia Seca (15)
+  { id:'arroz_cigala',    cat:'seca',      name:'Arroz Agulha',          brand:'Cigala',       pkg:'1 kg',    prices:{cont:null,pd:null,auch:null} },
+  { id:'arroz_carolino',  cat:'seca',      name:'Arroz Carolino',        brand:'Nacional',     pkg:'1 kg',    prices:{cont:null,pd:null,auch:null} },
+  { id:'massa_esp',       cat:'seca',      name:'Esparguete',            brand:'Milaneza',     pkg:'500 g',   prices:{cont:null,pd:null,auch:null} },
+  { id:'massa_cot',       cat:'seca',      name:'Massa Cotovelos',       brand:'Milaneza',     pkg:'500 g',   prices:{cont:null,pd:null,auch:null} },
+  { id:'feijao',          cat:'seca',      name:'Feijão Vermelho',       brand:'Vipor',        pkg:'500 g',   prices:{cont:null,pd:null,auch:null} },
+  { id:'grao',            cat:'seca',      name:'Grão-de-Bico',         brand:'Vipor',        pkg:'500 g',   prices:{cont:null,pd:null,auch:null} },
+  { id:'lentilhas',       cat:'seca',      name:'Lentilhas',             brand:'Vipor',        pkg:'500 g',   prices:{cont:null,pd:null,auch:null} },
+  { id:'acucar',          cat:'seca',      name:'Açúcar Branco',        brand:'Sidul',        pkg:'1 kg',    prices:{cont:null,pd:null,auch:null} },
+  { id:'farinha',         cat:'seca',      name:'Farinha de Trigo',      brand:'Branca de Neve',pkg:'1 kg',  prices:{cont:null,pd:null,auch:null} },
+  { id:'sal',             cat:'seca',      name:'Sal Refinado',          brand:'Mares',        pkg:'1 kg',    prices:{cont:null,pd:null,auch:null} },
+  { id:'azeite_gallo',    cat:'seca',      name:'Azeite Extra Virgem',   brand:'Gallo',        pkg:'750 ml',  prices:{cont:null,pd:null,auch:null} },
+  { id:'oleo',            cat:'seca',      name:'Óleo Girassol',        brand:'Fula',         pkg:'1 L',     prices:{cont:null,pd:null,auch:null} },
+  { id:'atum',            cat:'seca',      name:'Atum em Água',          brand:'Bom Petisco',  pkg:'120 g',   prices:{cont:null,pd:null,auch:null} },
+  { id:'sardinha',        cat:'seca',      name:'Sardinha em Tomate',    brand:'Ramirez',      pkg:'125 g',   prices:{cont:null,pd:null,auch:null} },
+  { id:'vinagre',         cat:'seca',      name:'Vinagre Vinho Branco',  brand:'Borges',       pkg:'750 ml',  prices:{cont:null,pd:null,auch:null} },
+
+  // ── Frescos (15)
+  { id:'frango_int',      cat:'frescos',   name:'Frango Inteiro',        brand:'—',            pkg:'~1.5 kg', prices:{cont:null,pd:null,auch:null} },
+  { id:'peito_frango',    cat:'frescos',   name:'Peito de Frango',       brand:'—',            pkg:'1 kg',    prices:{cont:null,pd:null,auch:null} },
+  { id:'entremeada',      cat:'frescos',   name:'Entremeada de Porco',   brand:'—',            pkg:'500 g',   prices:{cont:null,pd:null,auch:null} },
+  { id:'picada_vaca',     cat:'frescos',   name:'Carne Picada de Vaca',  brand:'—',            pkg:'500 g',   prices:{cont:null,pd:null,auch:null} },
+  { id:'pescada',         cat:'frescos',   name:'Pescada Filetes',       brand:'—',            pkg:'400 g',   prices:{cont:null,pd:null,auch:null} },
+  { id:'ovos',            cat:'frescos',   name:'Ovos M',                brand:'—',            pkg:'12 un',   prices:{cont:null,pd:null,auch:null} },
+  { id:'tomate',          cat:'frescos',   name:'Tomate Redondo',        brand:'—',            pkg:'1 kg',    prices:{cont:null,pd:null,auch:null} },
+  { id:'batata',          cat:'frescos',   name:'Batata',                brand:'—',            pkg:'2 kg',    prices:{cont:null,pd:null,auch:null} },
+  { id:'cebola',          cat:'frescos',   name:'Cebola',                brand:'—',            pkg:'1 kg',    prices:{cont:null,pd:null,auch:null} },
+  { id:'cenoura',         cat:'frescos',   name:'Cenoura',               brand:'—',            pkg:'1 kg',    prices:{cont:null,pd:null,auch:null} },
+  { id:'maca',            cat:'frescos',   name:'Maçã Golden',          brand:'—',            pkg:'1 kg',    prices:{cont:null,pd:null,auch:null} },
+  { id:'banana',          cat:'frescos',   name:'Banana',                brand:'—',            pkg:'1 kg',    prices:{cont:null,pd:null,auch:null} },
+  { id:'laranja',         cat:'frescos',   name:'Laranja',               brand:'—',            pkg:'1.5 kg',  prices:{cont:null,pd:null,auch:null} },
+  { id:'alface',          cat:'frescos',   name:'Alface Iceberg',        brand:'—',            pkg:'1 un',    prices:{cont:null,pd:null,auch:null} },
+  { id:'brocolo',         cat:'frescos',   name:'Brócolo',              brand:'—',            pkg:'1 un',    prices:{cont:null,pd:null,auch:null} },
+
+  // ── Laticínios & Charcutaria (12)
+  { id:'leite_mg',        cat:'laticinios',name:'Leite UHT M/G',         brand:'Mimosa',       pkg:'1 L',     prices:{cont:null,pd:null,auch:null} },
+  { id:'leite_magro',     cat:'laticinios',name:'Leite UHT Magro',       brand:'Mimosa',       pkg:'1 L',     prices:{cont:null,pd:null,auch:null} },
+  { id:'iogurte',         cat:'laticinios',name:'Iogurte Natural',       brand:'Danone',       pkg:'4×125 g', prices:{cont:null,pd:null,auch:null} },
+  { id:'queijo_flam',     cat:'laticinios',name:'Queijo Flamengo Fatiado',brand:'Serra Cangalha',pkg:'200 g', prices:{cont:null,pd:null,auch:null} },
+  { id:'manteiga',        cat:'laticinios',name:'Manteiga',              brand:'Lurpak',       pkg:'200 g',   prices:{cont:null,pd:null,auch:null} },
+  { id:'natas',           cat:'laticinios',name:'Natas',                 brand:'Mimosa',       pkg:'200 ml',  prices:{cont:null,pd:null,auch:null} },
+  { id:'fiambre',         cat:'laticinios',name:'Fiambre da Casa',       brand:'Nobre',        pkg:'200 g',   prices:{cont:null,pd:null,auch:null} },
+  { id:'presunto',        cat:'laticinios',name:'Presunto',              brand:'Nobre',        pkg:'100 g',   prices:{cont:null,pd:null,auch:null} },
+  { id:'chourico',        cat:'laticinios',name:'Chouriço Corrente',     brand:'—',            pkg:'200 g',   prices:{cont:null,pd:null,auch:null} },
+  { id:'bacon',           cat:'laticinios',name:'Bacon Fatiado',         brand:'Raporal',      pkg:'200 g',   prices:{cont:null,pd:null,auch:null} },
+  { id:'mozzarella',      cat:'laticinios',name:'Queijo Mozzarella',     brand:'Galbani',      pkg:'125 g',   prices:{cont:null,pd:null,auch:null} },
+  { id:'parmesao',        cat:'laticinios',name:'Queijo Parmesão',      brand:'Galbani',      pkg:'80 g',    prices:{cont:null,pd:null,auch:null} },
+
+  // ── Congelados (12)
+  { id:'pescada_iglo',    cat:'congelados',name:'Pescada Filetes',       brand:'Iglo',         pkg:'400 g',   prices:{cont:null,pd:null,auch:null} },
+  { id:'bacalhau_demolh', cat:'congelados',name:'Bacalhau Demolhado',    brand:'Riberalves',   pkg:'400 g',   prices:{cont:null,pd:null,auch:null} },
+  { id:'camarao',         cat:'congelados',name:'Camarão Cozido',        brand:'Pescanova',    pkg:'600 g',   prices:{cont:null,pd:null,auch:null} },
+  { id:'batata_frita',    cat:'congelados',name:'Batata Frita Palito',   brand:'McCain',       pkg:'750 g',   prices:{cont:null,pd:null,auch:null} },
+  { id:'pizza',           cat:'congelados',name:'Pizza Margherita',      brand:'Dr. Oetker',   pkg:'335 g',   prices:{cont:null,pd:null,auch:null} },
+  { id:'legumes',         cat:'congelados',name:'Legumes Salteados',     brand:'Bonduelle',    pkg:'600 g',   prices:{cont:null,pd:null,auch:null} },
+  { id:'frango_cong',     cat:'congelados',name:'Frango Pré-frito',     brand:'—',            pkg:'1 kg',    prices:{cont:null,pd:null,auch:null} },
+  { id:'hamburgueres',    cat:'congelados',name:'Hambúrgueres de Vaca', brand:'Campofrio',    pkg:'4 un',    prices:{cont:null,pd:null,auch:null} },
+  { id:'rissois',         cat:'congelados',name:'Rissóis de Camarão',  brand:'Pescanova',    pkg:'400 g',   prices:{cont:null,pd:null,auch:null} },
+  { id:'croquetes',       cat:'congelados',name:'Croquetes de Carne',   brand:'Campofrio',    pkg:'500 g',   prices:{cont:null,pd:null,auch:null} },
+  { id:'pasteis_bacal',   cat:'congelados',name:'Pastéis de Bacalhau',  brand:'—',            pkg:'400 g',   prices:{cont:null,pd:null,auch:null} },
+  { id:'croissants',      cat:'congelados',name:'Croissants',            brand:'Brioche Pasquier',pkg:'6 un',prices:{cont:null,pd:null,auch:null} },
+
+  // ── Bebidas (9)
+  { id:'agua_luso',       cat:'bebidas',   name:'Água',                  brand:'Luso',         pkg:'1.5 L',   prices:{cont:null,pd:null,auch:null} },
+  { id:'agua_pack',       cat:'bebidas',   name:'Água (pack)',           brand:'Serra da Estrela',pkg:'6×1.5 L',prices:{cont:null,pd:null,auch:null} },
+  { id:'sumo_compal',     cat:'bebidas',   name:'Sumo de Laranja',       brand:'Compal',       pkg:'1 L',     prices:{cont:null,pd:null,auch:null} },
+  { id:'cocacola',        cat:'bebidas',   name:'Coca-Cola',             brand:'Coca-Cola',    pkg:'1.5 L',   prices:{cont:null,pd:null,auch:null} },
+  { id:'cerveja',         cat:'bebidas',   name:'Cerveja',               brand:'Super Bock',   pkg:'6×33 cl', prices:{cont:null,pd:null,auch:null} },
+  { id:'vinho',           cat:'bebidas',   name:'Vinho Verde',           brand:'Casal Garcia', pkg:'75 cl',   prices:{cont:null,pd:null,auch:null} },
+  { id:'leite_achoc',     cat:'bebidas',   name:'Leite Achocolatado',    brand:'Nestlé',       pkg:'3×200 ml',prices:{cont:null,pd:null,auch:null} },
+  { id:'cafe_delta',      cat:'bebidas',   name:'Café Cápsulas',         brand:'Delta',        pkg:'10 un',   prices:{cont:null,pd:null,auch:null} },
+  { id:'cha',             cat:'bebidas',   name:'Chá',                   brand:'Lipton',       pkg:'25 saq',  prices:{cont:null,pd:null,auch:null} },
+
+  // ── Higiene Pessoal (12)
+  { id:'champo',          cat:'higiene',   name:'Champô',               brand:'Pantene',      pkg:'400 ml',  prices:{cont:null,pd:null,auch:null} },
+  { id:'gel_banho',       cat:'higiene',   name:'Gel de Banho',          brand:'Dove',         pkg:'400 ml',  prices:{cont:null,pd:null,auch:null} },
+  { id:'pasta_dentes',    cat:'higiene',   name:'Pasta Dentes',          brand:'Colgate Total',pkg:'75 ml',   prices:{cont:null,pd:null,auch:null} },
+  { id:'desodorizante',   cat:'higiene',   name:'Desodorizante Roll-on', brand:'Rexona',       pkg:'50 ml',   prices:{cont:null,pd:null,auch:null} },
+  { id:'papel_hig',       cat:'higiene',   name:'Papel Higiénico',      brand:'Renova',       pkg:'9 rolos', prices:{cont:null,pd:null,auch:null} },
+  { id:'toalhitas',       cat:'higiene',   name:'Toalhitas Húmidas',    brand:'Dodot',        pkg:'56 un',   prices:{cont:null,pd:null,auch:null} },
+  { id:'creme_rosto',     cat:'higiene',   name:'Creme de Rosto',        brand:'Nivea',        pkg:'50 ml',   prices:{cont:null,pd:null,auch:null} },
+  { id:'condicionador',   cat:'higiene',   name:'Condicionador',         brand:'Pantene',      pkg:'200 ml',  prices:{cont:null,pd:null,auch:null} },
+  { id:'sabonete',        cat:'higiene',   name:'Sabonete',              brand:'Dove',         pkg:'100 g',   prices:{cont:null,pd:null,auch:null} },
+  { id:'prot_solar',      cat:'higiene',   name:'Protetor Solar FPS50',  brand:'Nivea',        pkg:'200 ml',  prices:{cont:null,pd:null,auch:null} },
+  { id:'pensos',          cat:'higiene',   name:'Pensos',                brand:'Sempre',       pkg:'24 un',   prices:{cont:null,pd:null,auch:null} },
+  { id:'laminas',         cat:'higiene',   name:'Lâminas',              brand:'Gillette Mach3',pkg:'8 un',   prices:{cont:null,pd:null,auch:null} },
+
+  // ── Limpeza do Lar (12)
+  { id:'det_roupa',       cat:'limpeza',   name:'Detergente Roupa Líq.', brand:'Skip',         pkg:'25 doses',prices:{cont:null,pd:null,auch:null} },
+  { id:'past_maq',        cat:'limpeza',   name:'Pastilhas Máq. Loiça',  brand:'Finish',       pkg:'30 un',   prices:{cont:null,pd:null,auch:null} },
+  { id:'det_mao',         cat:'limpeza',   name:'Deterg. Loiça à Mão',  brand:'Fairy',        pkg:'500 ml',  prices:{cont:null,pd:null,auch:null} },
+  { id:'limpa_wc',        cat:'limpeza',   name:'Limpa WC',              brand:'Bref Blue',    pkg:'2×50 g',  prices:{cont:null,pd:null,auch:null} },
+  { id:'limpa_vidros',    cat:'limpeza',   name:'Limpa Vidros',          brand:'CIF',          pkg:'500 ml',  prices:{cont:null,pd:null,auch:null} },
+  { id:'esfregona',       cat:'limpeza',   name:'Esfregona MOP',         brand:'—',            pkg:'120 g',   prices:{cont:null,pd:null,auch:null} },
+  { id:'panos',           cat:'limpeza',   name:'Panos de Limpeza',      brand:'Vileda',       pkg:'3 un',    prices:{cont:null,pd:null,auch:null} },
+  { id:'sacos_lixo',      cat:'limpeza',   name:'Sacos de Lixo 20L',     brand:'Swirl',        pkg:'20 un',   prices:{cont:null,pd:null,auch:null} },
+  { id:'amaciador',       cat:'limpeza',   name:'Amaciador',             brand:'Comfort',      pkg:'1.5 L',   prices:{cont:null,pd:null,auch:null} },
+  { id:'lixivia',         cat:'limpeza',   name:'Lixívia',              brand:'Domestos',     pkg:'750 ml',  prices:{cont:null,pd:null,auch:null} },
+  { id:'spray_multi',     cat:'limpeza',   name:'Spray Multiusos',       brand:'CIF',          pkg:'500 ml',  prices:{cont:null,pd:null,auch:null} },
+  { id:'esponja',         cat:'limpeza',   name:'Esponja',               brand:'Scotch-Brite', pkg:'3 un',    prices:{cont:null,pd:null,auch:null} },
+];
+
+/* ── DATA DE ATUALIZAÇÃO (atualizar após scraping) ── */
+const LAST_UPDATE = null; // ex: '2026-07-15'
+
+/* ══════════════════════════════════════════════════════════
+   RENDER
+══════════════════════════════════════════════════════════ */
+let activeFilter = 'all';
+
+function fmt(v) {
+  if (v == null) return '<span class="price-null">—</span>';
+  return `<span class="price">${v.toFixed(2).replace('.',',')}€</span>`;
+}
+
+function fmtDelta(cont, other) {
+  if (cont == null || other == null) return '<span class="price-null">—</span>';
+  const d = (other - cont) / cont * 100;
+  const sign = d >= 0 ? '+' : '';
+  const cls = d > 0 ? 'style="color:var(--red)"' : 'style="color:var(--green)"';
+  return `<span ${cls}>${sign}${d.toFixed(1)}%</span>`;
+}
+
+function cheaperBadge(p) {
+  const { cont, pd, auch } = p;
+  const vals = [
+    { key:'cont', v:cont, label:'Continente', cls:'cb-cont' },
+    { key:'pd',   v:pd,   label:'Pingo Doce', cls:'cb-pd'   },
+    { key:'auch', v:auch, label:'Auchan',      cls:'cb-auch' },
+  ].filter(x => x.v != null);
+  if (!vals.length) return '<span class="cb-null">—</span>';
+  vals.sort((a,b) => a.v - b.v);
+  const w = vals[0];
+  return `<span class="cheaper-badge ${w.cls}">${w.label}</span>`;
+}
+
+function computeCarli(products) {
+  let sumPD = 0, sumAuch = 0, n = 0;
+  for (const p of products) {
+    const { cont, pd, auch } = p.prices;
+    if (cont != null && pd != null && auch != null) {
+      sumPD   += pd   / cont;
+      sumAuch += auch / cont;
+      n++;
+    }
+  }
+  return n > 0 ? { pd: sumPD/n*100, auch: sumAuch/n*100, n } : null;
+}
+
+function carliClass(idx) {
+  if (idx == null) return 'carli-gray';
+  if (idx <= 103)  return 'carli-green';
+  if (idx <= 112)  return 'carli-amber';
+  return 'carli-red';
+}
+
+function renderCarli(products) {
+  const c = computeCarli(products);
+  const idxCont = document.getElementById('idx-cont');
+  const idxPD   = document.getElementById('idx-pd');
+  const idxAuch = document.getElementById('idx-auch');
+  const cards   = document.querySelectorAll('.carli-card');
+
+  idxCont.textContent = '100';
+  cards[0].className  = 'carli-card carli-green';
+
+  if (!c) {
+    idxPD.textContent   = '—';
+    idxAuch.textContent = '—';
+    cards[1].className  = 'carli-card carli-gray';
+    cards[2].className  = 'carli-card carli-gray';
+    return;
+  }
+  idxPD.textContent   = c.pd.toFixed(1);
+  idxAuch.textContent = c.auch.toFixed(1);
+  cards[1].className  = `carli-card ${carliClass(c.pd)}`;
+  cards[2].className  = `carli-card ${carliClass(c.auch)}`;
+
+  // update badge
+  const badge = document.getElementById('update-badge');
+  badge.textContent = `✓ ${c.n} produtos com preços confirmados`;
+  badge.className = 'badge';
+  if (LAST_UPDATE) badge.textContent += ` · ${LAST_UPDATE}`;
+}
+
+function renderFilters() {
+  const f = document.getElementById('filters');
+  f.innerHTML = '';
+  const all = document.createElement('button');
+  all.className = 'filter-btn active';
+  all.textContent = '🔍 Todas';
+  all.onclick = () => setFilter('all', all);
+  f.appendChild(all);
+  for (const cat of CATEGORIES) {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn';
+    btn.textContent = `${cat.emoji} ${cat.label}`;
+    btn.onclick = () => setFilter(cat.id, btn);
+    f.appendChild(btn);
+  }
+}
+
+function setFilter(id, btn) {
+  activeFilter = id;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+
+function renderTable() {
+  const filtered = activeFilter === 'all'
+    ? PRODUCTS
+    : PRODUCTS.filter(p => p.cat === activeFilter);
+
+  document.getElementById('prod-count').textContent = filtered.length;
+  const catLabel = activeFilter === 'all'
+    ? 'Todas as categorias'
+    : CATEGORIES.find(c => c.id === activeFilter)?.label || '';
+  document.getElementById('cat-label').textContent = catLabel;
+
+  let html = '';
+  let lastCat = null;
+
+  for (const p of filtered) {
+    if (p.cat !== lastCat) {
+      const cat = CATEGORIES.find(c => c.id === p.cat);
+      if (cat) {
+        html += `<tr class="cat-header"><td colspan="7">${cat.emoji} ${cat.label}</td></tr>`;
+      }
+      lastCat = p.cat;
+    }
+    const pr = p.prices;
+    const isLow = (store, val) => {
+      if (val == null) return false;
+      const others = Object.values(pr).filter(v => v != null);
+      return others.length > 1 && Math.min(...others) === val;
+    };
+    const contCls = isLow('cont', pr.cont) ? ' price-low' : '';
+    const pdCls   = isLow('pd',   pr.pd)   ? ' price-low' : '';
+    const auchCls = isLow('auch', pr.auch) ? ' price-low' : '';
+
+    html += `<tr>
+      <td>
+        <span class="prod-name">${p.name}</span>
+        <span class="prod-detail">${p.brand !== '—' ? p.brand + ' · ' : ''}${p.pkg}</span>
+      </td>
+      <td class="${contCls}">${fmt(pr.cont)}</td>
+      <td class="${pdCls}">${fmt(pr.pd)}</td>
+      <td class="${auchCls}">${fmt(pr.auch)}</td>
+      <td class="td-var">${fmtDelta(pr.cont, pr.pd)}</td>
+      <td class="td-var">${fmtDelta(pr.cont, pr.auch)}</td>
+      <td>${cheaperBadge(pr)}</td>
+    </tr>`;
+  }
+
+  document.getElementById('tbody').innerHTML = html;
+  renderCarli(filtered);
+}
+
+renderFilters();
+renderTable();
+</script>
+</body>
+</html>

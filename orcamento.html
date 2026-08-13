@@ -574,6 +574,29 @@ async function init() {
 }
 
 /* ══════════════════════════════════════════════════════════
+   HICP ANNUAL RATE — Eurostat (PT, CP00, RCH_A_AVG)
+══════════════════════════════════════════════════════════ */
+async function fetchHICP() {
+  try {
+    const url = 'https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_aind?geo=PT&coicop=CP00&unit=RCH_A_AVG&lang=EN';
+    const r = await fetch(url, { signal: AbortSignal.timeout(10000) });
+    if (!r.ok) return {};
+    const ds = await r.json();
+    const timeIdx = ds.dimension?.time?.category?.index || {};
+    const vals = ds.value || [];
+    const m = {};
+    Object.entries(timeIdx).forEach(([yr, i]) => {
+      const v = Array.isArray(vals) ? vals[i] : vals[String(i)];
+      if (v != null) m[yr] = v;
+    });
+    return m;
+  } catch(e) {
+    console.warn('HICP fetch failed:', e.message);
+    return {};
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
    HISTORICAL TABLE — Contas Nacionais das AP (1990–present)
    Series used:
      12645509 = Saldo AP anual (M€)
@@ -586,12 +609,14 @@ async function init() {
 async function initHistorico() {
   document.getElementById('hist-loading').style.display = 'block';
   try {
-    const [saldoPts, pibPts, despTotPts, despCapPts, pibRealPts] = await Promise.all([
-      getSeriesData(12645509),
-      getSeriesData(12518356),
-      getSeriesData(12645530),
-      getSeriesData(12645516),
-      getSeriesData(12518283),   // PIB trimestral volume (vcsc) — para PIB real e deflator
+    const [[saldoPts, pibPts, despTotPts, despCapPts], hicp] = await Promise.all([
+      Promise.all([
+        getSeriesData(12645509),
+        getSeriesData(12518356),
+        getSeriesData(12645530),
+        getSeriesData(12645516),
+      ]),
+      fetchHICP(),
     ]);
 
     function toYrMap(pts) {
@@ -611,23 +636,13 @@ async function initHistorico() {
       return (d != null && s != null) ? d + s : null;
     }
 
-    // PIB real: usar série trimestral (vcsc), comparar Q4 com Q4 do ano anterior
-    const pibRealQ4 = {};
-    (pibRealPts || []).forEach(p => {
-      if (p.date.slice(5,7) === '12') pibRealQ4[p.date.slice(0,4)] = p.value;
-    });
+    // PIB real ≈ crescimento nominal − inflação IHPC
     function getRealGrowth(y) {
       const py = String(+y - 1);
-      if (!pibRealQ4[y] || !pibRealQ4[py]) return null;
-      return (pibRealQ4[y] / pibRealQ4[py] - 1) * 100;
-    }
-    // Inflação implícita = deflator PIB (crescimento nominal vs real)
-    function getDeflator(y) {
-      const py = String(+y - 1);
       const nomG = (pib[y] && pib[py]) ? (pib[y] / pib[py] - 1) * 100 : null;
-      const realG = getRealGrowth(y);
-      if (nomG == null || realG == null) return null;
-      return ((1 + nomG / 100) / (1 + realG / 100) - 1) * 100;
+      const inf = hicp[y];
+      if (nomG == null || inf == null) return null;
+      return nomG - inf;
     }
 
     const years = [...new Set([...Object.keys(sal), ...Object.keys(pib)])]
@@ -668,6 +683,14 @@ async function initHistorico() {
       const arrow = p > 0 ? '▲' : '▼';
       const cls = goodUp ? (p > 0 ? 'hvg' : 'hvb') : (p > 0 ? 'hvb' : 'hvg');
       return `<span class="${cls}">${arrow}${sign}${p.toFixed(1)}%</span>`;
+    }
+    function hInflacao(v) {
+      if (v == null) return '<span class="hnull">—</span>';
+      const cls = v > 3 ? 'hneg' : (v > 2 ? '' : 'hpos');
+      const style = cls ? '' : ' style="font-variant-numeric:tabular-nums"';
+      return cls
+        ? `<span class="${cls}">${v.toFixed(1)}%</span>`
+        : `<span${style}>${v.toFixed(1)}%</span>`;
     }
 
     let tbl = `
@@ -724,7 +747,7 @@ async function initHistorico() {
         <td class="hist-hide">${hDelta(dc, despCap[py], true)}</td>
         <td>${hDelta(pv, pib[py], true)}</td>
         <td class="hist-hide">${hGr(getRealGrowth(y), true)}</td>
-        <td class="hist-hide">${hGr(getDeflator(y), false)}</td>
+        <td class="hist-hide">${hInflacao(hicp[y])}</td>
       </tr>`;
     }
 
@@ -733,7 +756,7 @@ async function initHistorico() {
   </table>
 </div>
 <div style="font-size:.65rem;color:var(--muted2);margin-top:-10px;margin-bottom:20px;padding-left:4px">
-  Fonte: INE / Banco de Portugal — Contas Nacionais das AP (ESA 2010, base 2016). Rec. Totais = Desp. Totais + Saldo. Investimento = Despesas de capital AP. Δ pp = variação em pontos percentuais do PIB. PIB Real = crescimento volume Q4/Q4. *Inflação = deflator implícito do PIB (nominal/real − 1); difere do IHPC.
+  Fonte: INE / Banco de Portugal — Contas Nacionais AP (ESA 2010, base 2016) · Inflação: Eurostat IHPC (média anual, PT) · Rec. Totais = Desp. Totais + Saldo · Investimento = Despesas de capital AP · PIB Real ≈ PIB Nominal Δ% − IHPC · Vermelho se inflação > 3%.
 </div>`;
 
     document.getElementById('hist-label').style.display = '';

@@ -191,9 +191,9 @@
     .hist-tbl .hs.hdesp{background:#fff5f5;color:#ef4444}
     .hist-tbl .hs.hinv{background:#fffef0;color:#ca8a04}
     .hist-tbl .hs.hpib{background:#f8fafc;color:var(--muted)}
-    .hist-tbl tbody td{padding:4px 7px;text-align:right;border-bottom:1px solid #f3f4f6;vertical-align:middle;white-space:nowrap}
+    .hist-tbl tbody td{padding:4px 7px;text-align:center;border-bottom:1px solid #f3f4f6;vertical-align:middle;white-space:nowrap}
     .hist-tbl tbody td:first-child{text-align:center;font-weight:700;font-size:.76rem;color:var(--text);background:#f8fafc;position:sticky;left:0;z-index:1;padding:4px 8px}
-    .hist-tbl tbody td.hgov-td{text-align:center!important;padding:3px 6px;background:#fafbfc}
+    .hist-tbl tbody td.hgov-td{text-align:center!important;padding:3px 6px;background:#fafbfc;vertical-align:middle;line-height:1.3}
     .hist-tbl tbody tr:hover td{background:#f1f5f9}
     .hist-tbl tbody tr:hover td:first-child,.hist-tbl tbody tr:hover td.hgov-td{background:#e8edf4}
     .hist-tbl tbody tr:last-child td{border-bottom:none}
@@ -202,7 +202,9 @@
     .hbadge-psd{background:#ffedd5;color:#c2410c}
     .hbadge-cds{background:#dbeafe;color:#1e40af}
     .hist-tbl tbody td.hcen{text-align:center}
-    .hgov-name{display:block;font-size:.6rem;color:var(--muted);margin-top:1px;white-space:nowrap;text-align:center}
+    .hgov-block{display:inline-block;text-align:center;vertical-align:middle}
+    .hgov-sep{display:inline-block;font-size:.55rem;color:var(--muted2);margin:0 2px;vertical-align:middle}
+    .hgov-name{display:block;font-size:.58rem;color:var(--muted);margin-top:1px;white-space:nowrap;text-align:center}
     .hn{font-variant-numeric:tabular-nums}
     .hpos{color:var(--green);font-weight:700;font-variant-numeric:tabular-nums}
     .hneg{color:var(--red);font-weight:700;font-variant-numeric:tabular-nums}
@@ -603,34 +605,56 @@ async function init() {
    Fórmula: Rec. Totais = Desp. Totais + Saldo
 ══════════════════════════════════════════════════════════ */
 
-// Governos: PM em funções a 1 de janeiro de cada ano orçamental
+// Governos por ano. Array = dois governos no mesmo ano (transição a meio do ano).
+// Coligação num único governo → p:'PSD/CDS'
 const GOVS = {
-  '1990':{pm:'Cavaco Silva',p:'PSD'},'1991':{pm:'Cavaco Silva',p:'PSD'},
-  '1992':{pm:'Cavaco Silva',p:'PSD'},'1993':{pm:'Cavaco Silva',p:'PSD'},
-  '1994':{pm:'Cavaco Silva',p:'PSD'},'1995':{pm:'Cavaco Silva',p:'PSD'},
-  '1996':{pm:'Guterres',p:'PS'},'1997':{pm:'Guterres',p:'PS'},
-  '1998':{pm:'Guterres',p:'PS'},'1999':{pm:'Guterres',p:'PS'},
-  '2000':{pm:'Guterres',p:'PS'},'2001':{pm:'Guterres',p:'PS'},
-  '2002':{pm:'Guterres',p:'PS'},'2003':{pm:'Barroso',p:'PSD'},
-  '2004':{pm:'Barroso',p:'PSD'},'2005':{pm:'Santana Lopes',p:'PSD'},
-  '2006':{pm:'Sócrates',p:'PS'},'2007':{pm:'Sócrates',p:'PS'},
-  '2008':{pm:'Sócrates',p:'PS'},'2009':{pm:'Sócrates',p:'PS'},
-  '2010':{pm:'Sócrates',p:'PS'},'2011':{pm:'Sócrates',p:'PS'},
-  '2012':{pm:'Passos Coelho',p:'PSD/CDS'},'2013':{pm:'Passos Coelho',p:'PSD/CDS'},
-  '2014':{pm:'Passos Coelho',p:'PSD/CDS'},'2015':{pm:'Passos Coelho',p:'PSD/CDS'},
-  '2016':{pm:'Costa',p:'PS'},'2017':{pm:'Costa',p:'PS'},
-  '2018':{pm:'Costa',p:'PS'},'2019':{pm:'Costa',p:'PS'},
-  '2020':{pm:'Costa',p:'PS'},'2021':{pm:'Costa',p:'PS'},
-  '2022':{pm:'Costa',p:'PS'},'2023':{pm:'Costa',p:'PS'},
-  '2024':{pm:'Costa',p:'PS'},'2025':{pm:'Montenegro',p:'PSD'},
-  '2026':{pm:'Montenegro',p:'PSD'},
+  '1990':[{pm:'Cavaco Silva',p:'PSD'}],
+  '1991':[{pm:'Cavaco Silva',p:'PSD'}],
+  '1992':[{pm:'Cavaco Silva',p:'PSD'}],
+  '1993':[{pm:'Cavaco Silva',p:'PSD'}],
+  '1994':[{pm:'Cavaco Silva',p:'PSD'}],
+  '1995':[{pm:'Cavaco Silva',p:'PSD'}],
+  '1996':[{pm:'Guterres',p:'PS'}],
+  '1997':[{pm:'Guterres',p:'PS'}],
+  '1998':[{pm:'Guterres',p:'PS'}],
+  '1999':[{pm:'Guterres',p:'PS'}],
+  '2000':[{pm:'Guterres',p:'PS'}],
+  '2001':[{pm:'Guterres',p:'PS'}],
+  '2002':[{pm:'Guterres',p:'PS'},{pm:'Barroso',p:'PSD'}],       // Barroso em abr.
+  '2003':[{pm:'Barroso',p:'PSD'}],
+  '2004':[{pm:'Barroso',p:'PSD'},{pm:'Santana Lopes',p:'PSD'}], // Santana Lopes em jul.
+  '2005':[{pm:'Santana Lopes',p:'PSD'},{pm:'Sócrates',p:'PS'}], // Sócrates em mar.
+  '2006':[{pm:'Sócrates',p:'PS'}],
+  '2007':[{pm:'Sócrates',p:'PS'}],
+  '2008':[{pm:'Sócrates',p:'PS'}],
+  '2009':[{pm:'Sócrates',p:'PS'}],
+  '2010':[{pm:'Sócrates',p:'PS'}],
+  '2011':[{pm:'Sócrates',p:'PS'},{pm:'Passos Coelho',p:'PSD/CDS'}], // Passos em jun.
+  '2012':[{pm:'Passos Coelho',p:'PSD/CDS'}],
+  '2013':[{pm:'Passos Coelho',p:'PSD/CDS'}],
+  '2014':[{pm:'Passos Coelho',p:'PSD/CDS'}],
+  '2015':[{pm:'Passos Coelho',p:'PSD/CDS'},{pm:'Costa',p:'PS'}], // Costa em nov.
+  '2016':[{pm:'Costa',p:'PS'}],
+  '2017':[{pm:'Costa',p:'PS'}],
+  '2018':[{pm:'Costa',p:'PS'}],
+  '2019':[{pm:'Costa',p:'PS'}],
+  '2020':[{pm:'Costa',p:'PS'}],
+  '2021':[{pm:'Costa',p:'PS'}],
+  '2022':[{pm:'Costa',p:'PS'}],
+  '2023':[{pm:'Costa',p:'PS'}],
+  '2024':[{pm:'Costa',p:'PS'},{pm:'Montenegro',p:'PSD'}],        // Montenegro em abr.
+  '2025':[{pm:'Montenegro',p:'PSD'}],
+  '2026':[{pm:'Montenegro',p:'PSD'}],
 };
 function hGov(y) {
-  const g = GOVS[y];
-  if (!g) return '<span class="hnull">—</span>';
+  const govs = GOVS[y];
+  if (!govs) return '<span class="hnull">—</span>';
   const partyClass = p => p === 'PS' ? 'hbadge-ps' : p === 'CDS' ? 'hbadge-cds' : 'hbadge-psd';
-  const badges = g.p.split('/').map(p => `<span class="hbadge ${partyClass(p)}">${p}</span>`).join(' ');
-  return `${badges}<span class="hgov-name">${g.pm}</span>`;
+  const renderGov = g => {
+    const badges = g.p.split('/').map(p => `<span class="hbadge ${partyClass(p)}">${p}</span>`).join(' ');
+    return `<span class="hgov-block">${badges}<span class="hgov-name">${g.pm}</span></span>`;
+  };
+  return govs.map(renderGov).join('<span class="hgov-sep">→</span>');
 }
 
 async function initHistorico() {

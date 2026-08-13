@@ -586,11 +586,12 @@ async function init() {
 async function initHistorico() {
   document.getElementById('hist-loading').style.display = 'block';
   try {
-    const [saldoPts, pibPts, despTotPts, despCapPts] = await Promise.all([
+    const [saldoPts, pibPts, despTotPts, despCapPts, pibRealPts] = await Promise.all([
       getSeriesData(12645509),
       getSeriesData(12518356),
       getSeriesData(12645530),
       getSeriesData(12645516),
+      getSeriesData(12518283),   // PIB trimestral volume (vcsc) — para PIB real e deflator
     ]);
 
     function toYrMap(pts) {
@@ -608,6 +609,25 @@ async function initHistorico() {
     function getRT(y) {
       const d = despTot[y], s = sal[y];
       return (d != null && s != null) ? d + s : null;
+    }
+
+    // PIB real: usar série trimestral (vcsc), comparar Q4 com Q4 do ano anterior
+    const pibRealQ4 = {};
+    (pibRealPts || []).forEach(p => {
+      if (p.date.slice(5,7) === '12') pibRealQ4[p.date.slice(0,4)] = p.value;
+    });
+    function getRealGrowth(y) {
+      const py = String(+y - 1);
+      if (!pibRealQ4[y] || !pibRealQ4[py]) return null;
+      return (pibRealQ4[y] / pibRealQ4[py] - 1) * 100;
+    }
+    // Inflação implícita = deflator PIB (crescimento nominal vs real)
+    function getDeflator(y) {
+      const py = String(+y - 1);
+      const nomG = (pib[y] && pib[py]) ? (pib[y] / pib[py] - 1) * 100 : null;
+      const realG = getRealGrowth(y);
+      if (nomG == null || realG == null) return null;
+      return ((1 + nomG / 100) / (1 + realG / 100) - 1) * 100;
     }
 
     const years = [...new Set([...Object.keys(sal), ...Object.keys(pib)])]
@@ -640,6 +660,10 @@ async function initHistorico() {
     function hDelta(nv, ov, goodUp) {
       if (nv == null || ov == null || ov === 0) return '<span class="hnull">—</span>';
       const p = (nv - ov) / Math.abs(ov) * 100;
+      return hGr(p, goodUp);
+    }
+    function hGr(p, goodUp) {
+      if (p == null) return '<span class="hnull">—</span>';
       const sign = p >= 0 ? '+' : '';
       const arrow = p > 0 ? '▲' : '▼';
       const cls = goodUp ? (p > 0 ? 'hvg' : 'hvb') : (p > 0 ? 'hvb' : 'hvg');
@@ -656,7 +680,7 @@ async function initHistorico() {
         <th class="hg hrec hist-hide" colspan="3">Receitas Totais AP</th>
         <th class="hg hdesp hist-hide" colspan="3">Despesas Totais AP</th>
         <th class="hg hinv hist-hide" colspan="3">Investimento Público</th>
-        <th class="hg hpib" rowspan="2">PIB&nbsp;Δ%</th>
+        <th class="hg hpib" colspan="3">PIB</th>
       </tr>
       <tr>
         <th class="hs hsal">M€</th>
@@ -671,6 +695,9 @@ async function initHistorico() {
         <th class="hs hinv hist-hide">M€</th>
         <th class="hs hinv hist-hide">% PIB</th>
         <th class="hs hinv hist-hide">Δ%</th>
+        <th class="hs hpib">Nominal</th>
+        <th class="hs hpib hist-hide">Real</th>
+        <th class="hs hpib hist-hide">Inflação*</th>
       </tr>
     </thead>
     <tbody>`;
@@ -696,6 +723,8 @@ async function initHistorico() {
         <td class="hist-hide">${hPct(dc, pv, false)}</td>
         <td class="hist-hide">${hDelta(dc, despCap[py], true)}</td>
         <td>${hDelta(pv, pib[py], true)}</td>
+        <td class="hist-hide">${hGr(getRealGrowth(y), true)}</td>
+        <td class="hist-hide">${hGr(getDeflator(y), false)}</td>
       </tr>`;
     }
 
@@ -704,7 +733,7 @@ async function initHistorico() {
   </table>
 </div>
 <div style="font-size:.65rem;color:var(--muted2);margin-top:-10px;margin-bottom:20px;padding-left:4px">
-  Fonte: INE / Banco de Portugal — Contas Nacionais das AP (ESA 2010, base 2016). Rec. Totais = Desp. Totais + Saldo. Investimento = Despesas de capital AP. Δ pp = variação em pontos percentuais do PIB.
+  Fonte: INE / Banco de Portugal — Contas Nacionais das AP (ESA 2010, base 2016). Rec. Totais = Desp. Totais + Saldo. Investimento = Despesas de capital AP. Δ pp = variação em pontos percentuais do PIB. PIB Real = crescimento volume Q4/Q4. *Inflação = deflator implícito do PIB (nominal/real − 1); difere do IHPC.
 </div>`;
 
     document.getElementById('hist-label').style.display = '';

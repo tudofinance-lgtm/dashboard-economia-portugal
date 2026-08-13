@@ -176,11 +176,11 @@
 
     /* ── HISTORICAL TABLE ── */
     .hist-wrap{overflow-x:auto;border-radius:10px;box-shadow:var(--shadow);border:1px solid var(--border);background:var(--card);margin-bottom:6px}
-    .hist-tbl{width:100%;border-collapse:collapse;font-size:.73rem;white-space:nowrap}
+    .hist-tbl{width:100%;border-collapse:collapse;font-size:.72rem;white-space:nowrap}
     .hist-tbl th{text-align:center}
-    .hist-tbl .hg{font-size:.59rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:7px 9px;border-bottom:0;text-align:center}
-    .hist-tbl .hs{font-size:.56rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);padding:4px 9px;border-top:1px solid #e5e7eb;border-bottom:2px solid var(--border)}
-    .hist-tbl .hg.hy,.hist-tbl .hs.hy{background:#f8fafc;color:#374151;text-align:left}
+    .hist-tbl .hg{font-size:.57rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:6px 7px;border-bottom:0;text-align:center}
+    .hist-tbl .hs{font-size:.54rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);padding:3px 7px;border-top:1px solid #e5e7eb;border-bottom:2px solid var(--border)}
+    .hist-tbl .hg.hy,.hist-tbl .hs.hy{background:#f8fafc;color:#374151}
     .hist-tbl .hg.hsal{background:#eff6ff;color:#1d4ed8}
     .hist-tbl .hg.hrec{background:#f0fdf4;color:#166534}
     .hist-tbl .hg.hdesp{background:#fff1f2;color:#991b1b}
@@ -191,24 +191,33 @@
     .hist-tbl .hs.hdesp{background:#fff5f5;color:#ef4444}
     .hist-tbl .hs.hinv{background:#fffef0;color:#ca8a04}
     .hist-tbl .hs.hpib{background:#f8fafc;color:var(--muted)}
-    .hist-tbl tbody td{padding:5px 9px;text-align:right;border-bottom:1px solid #f3f4f6;vertical-align:middle;white-space:nowrap}
-    .hist-tbl tbody td:first-child{text-align:left;font-weight:700;font-size:.78rem;color:var(--text);background:#f8fafc;position:sticky;left:0;z-index:1}
-    .hist-tbl tbody td.hgov-td{text-align:left!important;padding:4px 8px}
-    .hbadge{display:inline-block;border-radius:3px;padding:1px 5px;font-size:.53rem;font-weight:800;letter-spacing:.03em;line-height:1.6;vertical-align:middle}
+    .hist-tbl tbody td{padding:4px 7px;text-align:right;border-bottom:1px solid #f3f4f6;vertical-align:middle;white-space:nowrap}
+    .hist-tbl tbody td:first-child{text-align:center;font-weight:700;font-size:.76rem;color:var(--text);background:#f8fafc;position:sticky;left:0;z-index:1;padding:4px 8px}
+    .hist-tbl tbody td.hgov-td{text-align:center!important;padding:3px 6px;background:#fafbfc}
+    .hist-tbl tbody tr:hover td{background:#f1f5f9}
+    .hist-tbl tbody tr:hover td:first-child,.hist-tbl tbody tr:hover td.hgov-td{background:#e8edf4}
+    .hist-tbl tbody tr:last-child td{border-bottom:none}
+    .hbadge{display:inline-block;border-radius:3px;padding:1px 5px;font-size:.52rem;font-weight:800;letter-spacing:.03em;line-height:1.7;vertical-align:middle}
     .hbadge-ps{background:#fce7f3;color:#9d174d}
     .hbadge-psd{background:#ffedd5;color:#c2410c}
-    .hgov-name{display:block;font-size:.62rem;color:var(--text);margin-top:1px;white-space:nowrap}
-    .hist-tbl tbody tr:hover td{background:#f1f5f9}
-    .hist-tbl tbody tr:hover td:first-child{background:#e8edf4}
-    .hist-tbl tbody tr:last-child td{border-bottom:none}
+    .hgov-name{display:block;font-size:.6rem;color:var(--muted);margin-top:1px;white-space:nowrap;text-align:center}
     .hn{font-variant-numeric:tabular-nums}
     .hpos{color:var(--green);font-weight:700;font-variant-numeric:tabular-nums}
     .hneg{color:var(--red);font-weight:700;font-variant-numeric:tabular-nums}
-    .hvg{color:var(--green);font-weight:700;font-size:.72rem;white-space:nowrap}
-    .hvb{color:var(--red);font-weight:700;font-size:.72rem;white-space:nowrap}
-    .hpct{font-variant-numeric:tabular-nums;font-size:.74rem}
-    .hnull{color:var(--muted2);font-size:.7rem}
-    @media(max-width:600px){.hist-hide{display:none}}
+    .hvg{color:var(--green);font-weight:700;font-size:.7rem;white-space:nowrap}
+    .hvb{color:var(--red);font-weight:700;font-size:.7rem;white-space:nowrap}
+    .hpct{font-variant-numeric:tabular-nums;font-size:.72rem}
+    .hnull{color:var(--muted2);font-size:.68rem}
+    @media(max-width:600px){
+      .hist-hide{display:none}
+      .hist-tbl{font-size:.68rem}
+      .hist-tbl .hg{padding:5px 5px;font-size:.53rem}
+      .hist-tbl .hs{padding:3px 5px;font-size:.5rem}
+      .hist-tbl tbody td{padding:4px 5px}
+      .hist-tbl tbody td:first-child{padding:4px 6px;font-size:.72rem}
+      .hist-tbl tbody td.hgov-td{padding:3px 4px;min-width:40px}
+      .hgov-name{display:none}
+    }
   </style>
 </head>
 <body>
@@ -649,6 +658,7 @@ function hGov(y) {
   if (!g) return '<span class="hnull">—</span>';
   const bc = g.p === 'PS' ? 'hbadge-ps' : 'hbadge-psd';
   return `<span class="hbadge ${bc}">${g.p}</span><span class="hgov-name">${g.pm}</span>`;
+  // mobile: hgov-name hidden via CSS, só badge visível
 }
 
 async function initHistorico() {
@@ -744,7 +754,7 @@ async function initHistorico() {
     <thead>
       <tr>
         <th class="hg hy" rowspan="2">Ano</th>
-        <th class="hg hy" rowspan="2" style="min-width:95px">Governo</th>
+        <th class="hg hy" rowspan="2">Governo</th>
         <th class="hg hsal" colspan="3">Saldo Orçamental</th>
         <th class="hg hrec hist-hide" colspan="3">Receitas Totais AP</th>
         <th class="hg hdesp hist-hide" colspan="3">Despesas Totais AP</th>

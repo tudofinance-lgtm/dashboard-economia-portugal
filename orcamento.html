@@ -183,10 +183,12 @@
     .hist-tbl .hg.hy,.hist-tbl .hs.hy{background:#f8fafc;color:#374151;text-align:left}
     .hist-tbl .hg.hsal{background:#eff6ff;color:#1d4ed8}
     .hist-tbl .hg.hrec{background:#f0fdf4;color:#166534}
+    .hist-tbl .hg.hdesp{background:#fff1f2;color:#991b1b}
     .hist-tbl .hg.hinv{background:#fffbeb;color:#92400e}
     .hist-tbl .hg.hpib{background:#f8fafc;color:#374151}
     .hist-tbl .hs.hsal{background:#f5f9ff;color:#3b82f6}
     .hist-tbl .hs.hrec{background:#f7fdf9;color:#22c55e}
+    .hist-tbl .hs.hdesp{background:#fff5f5;color:#ef4444}
     .hist-tbl .hs.hinv{background:#fffef0;color:#ca8a04}
     .hist-tbl .hs.hpib{background:#f8fafc;color:var(--muted)}
     .hist-tbl tbody td{padding:5px 9px;text-align:right;border-bottom:1px solid #f3f4f6;vertical-align:middle;white-space:nowrap}
@@ -584,11 +586,10 @@ async function init() {
 async function initHistorico() {
   document.getElementById('hist-loading').style.display = 'block';
   try {
-    const [saldoPts, pibPts, despTotPts, recCapPts, despCapPts] = await Promise.all([
+    const [saldoPts, pibPts, despTotPts, despCapPts] = await Promise.all([
       getSeriesData(12645509),
       getSeriesData(12518356),
       getSeriesData(12645530),
-      getSeriesData(12645533),
       getSeriesData(12645516),
     ]);
 
@@ -601,13 +602,12 @@ async function initHistorico() {
     const sal = toYrMap(saldoPts);
     const pib = toYrMap(pibPts);
     const despTot = toYrMap(despTotPts);
-    const recCap = toYrMap(recCapPts);
     const despCap = toYrMap(despCapPts);
 
-    // Receitas correntes = Despesas totais + Saldo − Receitas de capital
-    function getRC(y) {
-      const d = despTot[y], s = sal[y], r = recCap[y];
-      return (d != null && s != null && r != null) ? d + s - r : null;
+    // Receitas totais = Despesas totais + Saldo (identidade orçamental)
+    function getRT(y) {
+      const d = despTot[y], s = sal[y];
+      return (d != null && s != null) ? d + s : null;
     }
 
     const years = [...new Set([...Object.keys(sal), ...Object.keys(pib)])]
@@ -653,7 +653,8 @@ async function initHistorico() {
       <tr>
         <th class="hg hy" rowspan="2">Ano</th>
         <th class="hg hsal" colspan="3">Saldo Orçamental</th>
-        <th class="hg hrec hist-hide" colspan="3">Receitas Correntes AP</th>
+        <th class="hg hrec hist-hide" colspan="3">Receitas Totais AP</th>
+        <th class="hg hdesp hist-hide" colspan="3">Despesas Totais AP</th>
         <th class="hg hinv hist-hide" colspan="3">Investimento Público</th>
         <th class="hg hpib" rowspan="2">PIB&nbsp;Δ%</th>
       </tr>
@@ -664,6 +665,9 @@ async function initHistorico() {
         <th class="hs hrec hist-hide">M€</th>
         <th class="hs hrec hist-hide">% PIB</th>
         <th class="hs hrec hist-hide">Δ%</th>
+        <th class="hs hdesp hist-hide">M€</th>
+        <th class="hs hdesp hist-hide">% PIB</th>
+        <th class="hs hdesp hist-hide">Δ%</th>
         <th class="hs hinv hist-hide">M€</th>
         <th class="hs hinv hist-hide">% PIB</th>
         <th class="hs hinv hist-hide">Δ%</th>
@@ -674,7 +678,7 @@ async function initHistorico() {
     for (const y of years) {
       const py = String(+y - 1);
       const sv = sal[y], pv = pib[y];
-      const rc = getRC(y), dc = despCap[y];
+      const rt = getRT(y), dt = despTot[y], dc = despCap[y];
 
       tbl += `
       <tr>
@@ -682,9 +686,12 @@ async function initHistorico() {
         <td>${hM(sv, true)}</td>
         <td>${hPct(sv, pv, true)}</td>
         <td>${hSaldoDelta(sv, pv, sal[py], pib[py])}</td>
-        <td class="hist-hide">${hM(rc, false)}</td>
-        <td class="hist-hide">${hPct(rc, pv, false)}</td>
-        <td class="hist-hide">${hDelta(rc, getRC(py), true)}</td>
+        <td class="hist-hide">${hM(rt, false)}</td>
+        <td class="hist-hide">${hPct(rt, pv, false)}</td>
+        <td class="hist-hide">${hDelta(rt, getRT(py), true)}</td>
+        <td class="hist-hide">${hM(dt, false)}</td>
+        <td class="hist-hide">${hPct(dt, pv, false)}</td>
+        <td class="hist-hide">${hDelta(dt, despTot[py], false)}</td>
         <td class="hist-hide">${hM(dc, false)}</td>
         <td class="hist-hide">${hPct(dc, pv, false)}</td>
         <td class="hist-hide">${hDelta(dc, despCap[py], true)}</td>
@@ -697,7 +704,7 @@ async function initHistorico() {
   </table>
 </div>
 <div style="font-size:.65rem;color:var(--muted2);margin-top:-10px;margin-bottom:20px;padding-left:4px">
-  Fonte: INE / Banco de Portugal — Contas Nacionais das AP (ESA 2010, base 2016). Rec. Correntes = Desp. Totais + Saldo − Rec. Capital. Investimento = Despesas de capital AP. Δ pp = variação em pontos percentuais do PIB.
+  Fonte: INE / Banco de Portugal — Contas Nacionais das AP (ESA 2010, base 2016). Rec. Totais = Desp. Totais + Saldo. Investimento = Despesas de capital AP. Δ pp = variação em pontos percentuais do PIB.
 </div>`;
 
     document.getElementById('hist-label').style.display = '';

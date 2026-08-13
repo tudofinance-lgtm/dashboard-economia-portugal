@@ -1556,33 +1556,46 @@ async function loadCapacidadeFinanciamento() {
    INDICATOR LOADERS — AP CONSOLIDADAS (SEC 2010)
 ══════════════════════════════════════════════════════════ */
 
-function loadReceitaDespesaAP() {
-  // Administrações Públicas consolidadas — ótica SEC 2010
-  // Fonte: INE Contas Nacionais / DGO / AMECO · valores em M€
-  // Défice/Superávit: 2019 +0.2%, 2020 -5.8%, 2021 -2.9%, 2022 -0.3%, 2023 +1.2%, 2024 +0.4%
-  const receita = [
+async function loadReceitaDespesaAP() {
+  // Administrações Públicas consolidadas — ótica SEC 2010 / Contas Nacionais
+  // Fonte: BPstat 12645530 (despesas totais AP anual) + 12645509 (saldo AP anual)
+  // Fallback histórico (2000-2012): dados aproximados INE/AMECO para anos pré-BPstat
+  const fallbackReceita = [
     {date:'2000',value:43000},{date:'2001',value:46000},{date:'2002',value:48000},
     {date:'2003',value:50000},{date:'2004',value:52000},{date:'2005',value:55000},
     {date:'2006',value:59000},{date:'2007',value:66000},{date:'2008',value:70000},
     {date:'2009',value:64000},{date:'2010',value:68000},{date:'2011',value:78000},
-    {date:'2012',value:73000},{date:'2013',value:75000},{date:'2014',value:77000},
-    {date:'2015',value:78000},{date:'2016',value:80000},{date:'2017',value:84000},
-    {date:'2018',value:89000},{date:'2019',value:92000},{date:'2020',value:89000},
-    {date:'2021',value:100000},{date:'2022',value:114000},{date:'2023',value:126000},
-    {date:'2024',value:132000},
+    {date:'2012',value:73000},
   ];
-  const despesa = [
+  const fallbackDespesa = [
     {date:'2000',value:47000},{date:'2001',value:51000},{date:'2002',value:52000},
     {date:'2003',value:54000},{date:'2004',value:57000},{date:'2005',value:64000},
     {date:'2006',value:66000},{date:'2007',value:71000},{date:'2008',value:76000},
     {date:'2009',value:80000},{date:'2010',value:87000},{date:'2011',value:91000},
-    {date:'2012',value:83000},{date:'2013',value:83000},{date:'2014',value:84000},
-    {date:'2015',value:86000},{date:'2016',value:84000},{date:'2017',value:90000},
-    {date:'2018',value:90000},{date:'2019',value:92000},{date:'2020',value:101000},
-    {date:'2021',value:106000},{date:'2022',value:115000},{date:'2023',value:123000},
-    {date:'2024',value:131000},
+    {date:'2012',value:83000},
   ];
-  return { receita, despesa };
+  try {
+    const [despPts, salPts] = await Promise.all([
+      getSeriesData(12645530),  // Despesas totais AP anual (Contas Nacionais)
+      getSeriesData(12645509),  // Saldo AP anual (Contas Nacionais)
+    ]);
+    if (!despPts?.length || !salPts?.length) return { receita: fallbackReceita, despesa: fallbackDespesa };
+    const despMap = {}, salMap = {};
+    despPts.forEach(p => { despMap[p.date.slice(0,4)] = p.value; });
+    salPts.forEach(p => { salMap[p.date.slice(0,4)] = p.value; });
+    const bpYears = Object.keys(despMap).filter(y => salMap[y] != null && +y >= 2013).sort();
+    const receita = [...fallbackReceita];
+    const despesa = [...fallbackDespesa];
+    bpYears.forEach(y => {
+      const d = despMap[y], s = salMap[y];
+      despesa.push({ date: y, value: d });
+      receita.push({ date: y, value: d + s });
+    });
+    return { receita, despesa };
+  } catch(e) {
+    console.warn('AP series load failed, using fallback:', e.message);
+    return { receita: fallbackReceita, despesa: fallbackDespesa };
+  }
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -3429,7 +3442,7 @@ function renderDashboard(data, fromCache) {
   if (recDepR.status === 'fulfilled') {
     const { receita, despesa } = recDepR.value;
     if (receita.length && despesa.length) {
-      const apData = loadReceitaDespesaAP();
+      const apData = await loadReceitaDespesaAP();
       initChartMulti('wrap-recdep', [
         { pts: receita,       colour: 'green', label: 'Receita Estado', fill: false, points: false },
         { pts: despesa,       colour: 'red',   label: 'Despesa Estado', fill: false, points: false },

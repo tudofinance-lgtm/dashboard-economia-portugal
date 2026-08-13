@@ -173,6 +173,35 @@
     footer{display:flex;justify-content:space-between;align-items:center;padding:14px 28px;font-size:.64rem;color:var(--muted2);border-top:1px solid var(--border);max-width:1440px;margin:8px auto 0;flex-wrap:wrap;gap:6px}
     footer a{color:inherit;text-decoration:none}
     footer a:hover{color:var(--muted)}
+
+    /* ── HISTORICAL TABLE ── */
+    .hist-wrap{overflow-x:auto;border-radius:10px;box-shadow:var(--shadow);border:1px solid var(--border);background:var(--card);margin-bottom:6px}
+    .hist-tbl{width:100%;border-collapse:collapse;font-size:.73rem;white-space:nowrap}
+    .hist-tbl th{text-align:center}
+    .hist-tbl .hg{font-size:.59rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:7px 9px;border-bottom:0;text-align:center}
+    .hist-tbl .hs{font-size:.56rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);padding:4px 9px;border-top:1px solid #e5e7eb;border-bottom:2px solid var(--border)}
+    .hist-tbl .hg.hy,.hist-tbl .hs.hy{background:#f8fafc;color:#374151;text-align:left}
+    .hist-tbl .hg.hsal{background:#eff6ff;color:#1d4ed8}
+    .hist-tbl .hg.hrec{background:#f0fdf4;color:#166534}
+    .hist-tbl .hg.hinv{background:#fffbeb;color:#92400e}
+    .hist-tbl .hg.hpib{background:#f8fafc;color:#374151}
+    .hist-tbl .hs.hsal{background:#f5f9ff;color:#3b82f6}
+    .hist-tbl .hs.hrec{background:#f7fdf9;color:#22c55e}
+    .hist-tbl .hs.hinv{background:#fffef0;color:#ca8a04}
+    .hist-tbl .hs.hpib{background:#f8fafc;color:var(--muted)}
+    .hist-tbl tbody td{padding:5px 9px;text-align:right;border-bottom:1px solid #f3f4f6;vertical-align:middle;white-space:nowrap}
+    .hist-tbl tbody td:first-child{text-align:left;font-weight:700;font-size:.78rem;color:var(--text);background:#f8fafc;position:sticky;left:0;z-index:1}
+    .hist-tbl tbody tr:hover td{background:#f1f5f9}
+    .hist-tbl tbody tr:hover td:first-child{background:#e8edf4}
+    .hist-tbl tbody tr:last-child td{border-bottom:none}
+    .hn{font-variant-numeric:tabular-nums}
+    .hpos{color:var(--green);font-weight:700;font-variant-numeric:tabular-nums}
+    .hneg{color:var(--red);font-weight:700;font-variant-numeric:tabular-nums}
+    .hvg{color:var(--green);font-weight:700;font-size:.72rem;white-space:nowrap}
+    .hvb{color:var(--red);font-weight:700;font-size:.72rem;white-space:nowrap}
+    .hpct{font-variant-numeric:tabular-nums;font-size:.74rem}
+    .hnull{color:var(--muted2);font-size:.7rem}
+    @media(max-width:600px){.hist-hide{display:none}}
   </style>
 </head>
 <body>
@@ -218,6 +247,14 @@
   </div>
 
   <div id="table-container" style="display:none"></div>
+
+  <div class="section-label" id="hist-label" style="display:none">Séries Históricas — Contas Nacionais (1990–presente)</div>
+  <div id="hist-loading" class="loading-wrap" style="display:none;margin-top:0">
+    <div class="spinner"></div>
+    <div style="font-size:.85rem">A carregar séries históricas...</div>
+    <div style="font-size:.72rem;color:var(--muted2);margin-top:6px">Contas Nacionais das Administrações Públicas</div>
+  </div>
+  <div id="hist-container" style="display:none"></div>
 </main>
 
 <footer>
@@ -534,6 +571,147 @@ async function init() {
   document.getElementById('table-container').style.display = 'block';
 }
 
+/* ══════════════════════════════════════════════════════════
+   HISTORICAL TABLE — Contas Nacionais das AP (1990–present)
+   Series used:
+     12645509 = Saldo AP anual (M€)
+     12518356 = PIB anual preços correntes (M€)
+     12645530 = Despesas totais AP anual (M€)
+     12645533 = Receitas de capital AP anual (M€)
+     12645516 = Despesas de capital AP anual / investimento (M€)
+   Fórmula: Rec. Correntes = Desp. Totais + Saldo − Rec. Capital
+══════════════════════════════════════════════════════════ */
+async function initHistorico() {
+  document.getElementById('hist-loading').style.display = 'block';
+  try {
+    const [saldoPts, pibPts, despTotPts, recCapPts, despCapPts] = await Promise.all([
+      getSeriesData(12645509),
+      getSeriesData(12518356),
+      getSeriesData(12645530),
+      getSeriesData(12645533),
+      getSeriesData(12645516),
+    ]);
+
+    function toYrMap(pts) {
+      const m = {};
+      (pts || []).forEach(p => { m[p.date.slice(0,4)] = p.value; });
+      return m;
+    }
+
+    const sal = toYrMap(saldoPts);
+    const pib = toYrMap(pibPts);
+    const despTot = toYrMap(despTotPts);
+    const recCap = toYrMap(recCapPts);
+    const despCap = toYrMap(despCapPts);
+
+    // Receitas correntes = Despesas totais + Saldo − Receitas de capital
+    function getRC(y) {
+      const d = despTot[y], s = sal[y], r = recCap[y];
+      return (d != null && s != null && r != null) ? d + s - r : null;
+    }
+
+    const years = [...new Set([...Object.keys(sal), ...Object.keys(pib)])]
+      .filter(y => +y >= 1990).sort((a,b) => +b - +a);
+
+    // Format helpers
+    function hM(v, isSaldo) {
+      if (v == null) return '<span class="hnull">—</span>';
+      const n = v.toLocaleString('pt-PT', {maximumFractionDigits:0});
+      if (isSaldo) return `<span class="${v >= 0 ? 'hpos' : 'hneg'}">${n}</span>`;
+      return `<span class="hn">${n}</span>`;
+    }
+    function hPct(v, pv, isSaldo) {
+      if (v == null || !pv) return '<span class="hnull">—</span>';
+      const p = (v / pv * 100);
+      const s = (p >= 0 ? '+' : '') + p.toFixed(1) + '%';
+      if (isSaldo) return `<span class="${v >= 0 ? 'hpos' : 'hneg'}">${s}</span>`;
+      return `<span class="hpct">${p.toFixed(1)}%</span>`;
+    }
+    // Saldo delta: pp of PIB (avoids ÷zero when saldo crosses zero)
+    function hSaldoDelta(sv, pv, sv_prev, pv_prev) {
+      if (sv == null || pv == null || sv_prev == null || pv_prev == null) return '<span class="hnull">—</span>';
+      const pp = (sv/pv - sv_prev/pv_prev) * 100;
+      const sign = pp >= 0 ? '+' : '';
+      const arrow = pp > 0 ? '▲' : '▼';
+      const cls = pp > 0 ? 'hvg' : 'hvb';
+      return `<span class="${cls}">${arrow}${sign}${pp.toFixed(1)}pp</span>`;
+    }
+    // Generic delta %
+    function hDelta(nv, ov, goodUp) {
+      if (nv == null || ov == null || ov === 0) return '<span class="hnull">—</span>';
+      const p = (nv - ov) / Math.abs(ov) * 100;
+      const sign = p >= 0 ? '+' : '';
+      const arrow = p > 0 ? '▲' : '▼';
+      const cls = goodUp ? (p > 0 ? 'hvg' : 'hvb') : (p > 0 ? 'hvb' : 'hvg');
+      return `<span class="${cls}">${arrow}${sign}${p.toFixed(1)}%</span>`;
+    }
+
+    let tbl = `
+<div class="hist-wrap">
+  <table class="hist-tbl">
+    <thead>
+      <tr>
+        <th class="hg hy" rowspan="2">Ano</th>
+        <th class="hg hsal" colspan="3">Saldo Orçamental</th>
+        <th class="hg hrec hist-hide" colspan="3">Receitas Correntes AP</th>
+        <th class="hg hinv hist-hide" colspan="3">Investimento Público</th>
+        <th class="hg hpib" rowspan="2">PIB&nbsp;Δ%</th>
+      </tr>
+      <tr>
+        <th class="hs hsal">M€</th>
+        <th class="hs hsal">% PIB</th>
+        <th class="hs hsal">Δ pp</th>
+        <th class="hs hrec hist-hide">M€</th>
+        <th class="hs hrec hist-hide">% PIB</th>
+        <th class="hs hrec hist-hide">Δ%</th>
+        <th class="hs hinv hist-hide">M€</th>
+        <th class="hs hinv hist-hide">% PIB</th>
+        <th class="hs hinv hist-hide">Δ%</th>
+      </tr>
+    </thead>
+    <tbody>`;
+
+    for (const y of years) {
+      const py = String(+y - 1);
+      const sv = sal[y], pv = pib[y];
+      const rc = getRC(y), dc = despCap[y];
+
+      tbl += `
+      <tr>
+        <td>${y}</td>
+        <td>${hM(sv, true)}</td>
+        <td>${hPct(sv, pv, true)}</td>
+        <td>${hSaldoDelta(sv, pv, sal[py], pib[py])}</td>
+        <td class="hist-hide">${hM(rc, false)}</td>
+        <td class="hist-hide">${hPct(rc, pv, false)}</td>
+        <td class="hist-hide">${hDelta(rc, getRC(py), true)}</td>
+        <td class="hist-hide">${hM(dc, false)}</td>
+        <td class="hist-hide">${hPct(dc, pv, false)}</td>
+        <td class="hist-hide">${hDelta(dc, despCap[py], true)}</td>
+        <td>${hDelta(pv, pib[py], true)}</td>
+      </tr>`;
+    }
+
+    tbl += `
+    </tbody>
+  </table>
+</div>
+<div style="font-size:.65rem;color:var(--muted2);margin-top:-10px;margin-bottom:20px;padding-left:4px">
+  Fonte: INE / Banco de Portugal — Contas Nacionais das AP (ESA 2010, base 2016). Rec. Correntes = Desp. Totais + Saldo − Rec. Capital. Investimento = Despesas de capital AP. Δ pp = variação em pontos percentuais do PIB.
+</div>`;
+
+    document.getElementById('hist-label').style.display = '';
+    document.getElementById('hist-loading').style.display = 'none';
+    document.getElementById('hist-container').innerHTML = tbl;
+    document.getElementById('hist-container').style.display = 'block';
+
+  } catch(e) {
+    console.error('hist error', e);
+    document.getElementById('hist-loading').innerHTML =
+      `<div style="padding:20px;text-align:center;color:#dc2626;font-size:.8rem">Erro a carregar dados históricos: ${e.message}</div>`;
+  }
+}
+
 init().catch(err => {
   console.error('orcamento init error:', err);
   document.getElementById('loading').innerHTML =
@@ -543,6 +721,8 @@ init().catch(err => {
        <div style="margin-top:12px"><button onclick="location.reload()" style="padding:6px 16px;border:1px solid #d1d5db;border-radius:6px;background:#fff;cursor:pointer;font-size:.8rem">Tentar novamente</button></div>
      </div>`;
 });
+
+initHistorico();
 </script>
 </body>
 </html>

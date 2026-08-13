@@ -20,7 +20,10 @@ Para séries ECB/Eurostat: atualizar  as funções `fetch_ecb()` / `fetch_eurost
 | 12512877 | Endividamento Particulares |
 | 12710744 | Prestação Habitação mediana |
 | 12457924 | Balança Corrente |
-| 12645509 | Saldo Orçamental AP % PIB |
+| 12645509 | Saldo AP anual M€ (Contas Nacionais) |
+| 12645516 | Despesas de capital AP anual (investimento público) |
+| 12645530 | Despesas totais AP anual |
+| 12645533 | Receitas de capital AP anual |
 | 88895 | Saldo Seg. Social |
 | 88896 | Receitas quotizações SS |
 | 88881 | Outras receitas correntes SS |

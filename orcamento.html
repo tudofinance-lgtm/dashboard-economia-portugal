@@ -193,6 +193,11 @@
     .hist-tbl .hs.hpib{background:#f8fafc;color:var(--muted)}
     .hist-tbl tbody td{padding:5px 9px;text-align:right;border-bottom:1px solid #f3f4f6;vertical-align:middle;white-space:nowrap}
     .hist-tbl tbody td:first-child{text-align:left;font-weight:700;font-size:.78rem;color:var(--text);background:#f8fafc;position:sticky;left:0;z-index:1}
+    .hist-tbl tbody td.hgov-td{text-align:left!important;padding:4px 8px}
+    .hbadge{display:inline-block;border-radius:3px;padding:1px 5px;font-size:.53rem;font-weight:800;letter-spacing:.03em;line-height:1.6;vertical-align:middle}
+    .hbadge-ps{background:#fce7f3;color:#9d174d}
+    .hbadge-psd{background:#ffedd5;color:#c2410c}
+    .hgov-name{display:block;font-size:.62rem;color:var(--text);margin-top:1px;white-space:nowrap}
     .hist-tbl tbody tr:hover td{background:#f1f5f9}
     .hist-tbl tbody tr:hover td:first-child{background:#e8edf4}
     .hist-tbl tbody tr:last-child td{border-bottom:none}
@@ -616,6 +621,36 @@ async function fetchHICP() {
      12645516 = Despesas de capital AP anual / investimento (M€)
    Fórmula: Rec. Correntes = Desp. Totais + Saldo − Rec. Capital
 ══════════════════════════════════════════════════════════ */
+
+// Governos: PM em funções a 1 de janeiro de cada ano orçamental
+const GOVS = {
+  '1990':{pm:'Cavaco Silva',p:'PSD'},'1991':{pm:'Cavaco Silva',p:'PSD'},
+  '1992':{pm:'Cavaco Silva',p:'PSD'},'1993':{pm:'Cavaco Silva',p:'PSD'},
+  '1994':{pm:'Cavaco Silva',p:'PSD'},'1995':{pm:'Cavaco Silva',p:'PSD'},
+  '1996':{pm:'Guterres',p:'PS'},'1997':{pm:'Guterres',p:'PS'},
+  '1998':{pm:'Guterres',p:'PS'},'1999':{pm:'Guterres',p:'PS'},
+  '2000':{pm:'Guterres',p:'PS'},'2001':{pm:'Guterres',p:'PS'},
+  '2002':{pm:'Guterres',p:'PS'},'2003':{pm:'Barroso',p:'PSD'},
+  '2004':{pm:'Barroso',p:'PSD'},'2005':{pm:'Santana Lopes',p:'PSD'},
+  '2006':{pm:'Sócrates',p:'PS'},'2007':{pm:'Sócrates',p:'PS'},
+  '2008':{pm:'Sócrates',p:'PS'},'2009':{pm:'Sócrates',p:'PS'},
+  '2010':{pm:'Sócrates',p:'PS'},'2011':{pm:'Sócrates',p:'PS'},
+  '2012':{pm:'Passos Coelho',p:'PSD/CDS'},'2013':{pm:'Passos Coelho',p:'PSD/CDS'},
+  '2014':{pm:'Passos Coelho',p:'PSD/CDS'},'2015':{pm:'Passos Coelho',p:'PSD/CDS'},
+  '2016':{pm:'Costa',p:'PS'},'2017':{pm:'Costa',p:'PS'},
+  '2018':{pm:'Costa',p:'PS'},'2019':{pm:'Costa',p:'PS'},
+  '2020':{pm:'Costa',p:'PS'},'2021':{pm:'Costa',p:'PS'},
+  '2022':{pm:'Costa',p:'PS'},'2023':{pm:'Costa',p:'PS'},
+  '2024':{pm:'Costa',p:'PS'},'2025':{pm:'Montenegro',p:'PSD'},
+  '2026':{pm:'Montenegro',p:'PSD'},
+};
+function hGov(y) {
+  const g = GOVS[y];
+  if (!g) return '<span class="hnull">—</span>';
+  const bc = g.p === 'PS' ? 'hbadge-ps' : 'hbadge-psd';
+  return `<span class="hbadge ${bc}">${g.p}</span><span class="hgov-name">${g.pm}</span>`;
+}
+
 async function initHistorico() {
   document.getElementById('hist-loading').style.display = 'block';
   try {
@@ -709,6 +744,7 @@ async function initHistorico() {
     <thead>
       <tr>
         <th class="hg hy" rowspan="2">Ano</th>
+        <th class="hg hy" rowspan="2" style="min-width:95px">Governo</th>
         <th class="hg hsal" colspan="3">Saldo Orçamental</th>
         <th class="hg hrec hist-hide" colspan="3">Receitas Totais AP</th>
         <th class="hg hdesp hist-hide" colspan="3">Despesas Totais AP</th>
@@ -743,6 +779,7 @@ async function initHistorico() {
       tbl += `
       <tr>
         <td>${y}</td>
+        <td class="hgov-td">${hGov(y)}</td>
         <td>${hM(sv, true)}</td>
         <td>${hPct(sv, pv, true)}</td>
         <td>${hSaldoDelta(sv, pv, sal[py], pib[py])}</td>

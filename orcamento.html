@@ -588,35 +588,20 @@ async function init() {
 }
 
 /* ══════════════════════════════════════════════════════════
-   HICP ANNUAL RATE — Eurostat (PT, CP00, RCH_A_AVG)
+   GDP DEFLATOR — World Bank (NY.GDP.DEFL.KD.ZG)
 ══════════════════════════════════════════════════════════ */
-async function fetchHICP() {
+async function fetchGDPDeflator() {
+  // World Bank GDP Deflator (NY.GDP.DEFL.KD.ZG) — Portugal, desde 1960
+  // Mede a variação de preços implícita no PIB (mais abrangente que o IPC)
   const m = {};
-  // 1) World Bank CPI (FP.CPI.TOTL.ZG) — cobre Portugal desde 1960
   try {
-    const url = 'https://api.worldbank.org/v2/country/PT/indicator/FP.CPI.TOTL.ZG?format=json&per_page=100&mrv=60';
+    const url = 'https://api.worldbank.org/v2/country/PT/indicator/NY.GDP.DEFL.KD.ZG?format=json&per_page=100&mrv=80';
     const r = await fetch(url, { signal: AbortSignal.timeout(10000) });
     if (r.ok) {
       const [, rows] = await r.json();
       (rows || []).forEach(row => { if (row.value != null) m[row.date] = row.value; });
     }
-  } catch(e) { console.warn('WB CPI fetch failed:', e.message); }
-
-  // 2) Eurostat HICP (RCH_A_AVG) — sobrepõe World Bank onde disponível (série harmonizada EU)
-  try {
-    const url = 'https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_aind?geo=PT&coicop=CP00&unit=RCH_A_AVG&lang=EN';
-    const r = await fetch(url, { signal: AbortSignal.timeout(10000) });
-    if (r.ok) {
-      const ds = await r.json();
-      const timeIdx = ds.dimension?.time?.category?.index || {};
-      const vals = ds.value || [];
-      Object.entries(timeIdx).forEach(([yr, i]) => {
-        const v = Array.isArray(vals) ? vals[i] : vals[String(i)];
-        if (v != null) m[yr] = v;   // sobrepõe WB com HICP harmonizado
-      });
-    }
-  } catch(e) { console.warn('HICP fetch failed:', e.message); }
-
+  } catch(e) { console.warn('WB GDP Deflator fetch failed:', e.message); }
   return m;
 }
 
@@ -664,14 +649,14 @@ function hGov(y) {
 async function initHistorico() {
   document.getElementById('hist-loading').style.display = 'block';
   try {
-    const [[saldoPts, pibPts, despTotPts, despCapPts], hicp] = await Promise.all([
+    const [[saldoPts, pibPts, despTotPts, despCapPts], deflator] = await Promise.all([
       Promise.all([
         getSeriesData(12645509),
         getSeriesData(12518356),
         getSeriesData(12645530),
         getSeriesData(12645516),
       ]),
-      fetchHICP(),
+      fetchGDPDeflator(),
     ]);
 
     function toYrMap(pts) {
@@ -691,13 +676,13 @@ async function initHistorico() {
       return (d != null && s != null) ? d + s : null;
     }
 
-    // PIB real ≈ crescimento nominal − inflação IHPC
+    // PIB real = crescimento nominal − deflator PIB
     function getRealGrowth(y) {
       const py = String(+y - 1);
       const nomG = (pib[y] && pib[py]) ? (pib[y] / pib[py] - 1) * 100 : null;
-      const inf = hicp[y];
-      if (nomG == null || inf == null) return null;
-      return nomG - inf;
+      const defl = deflator[y];
+      if (nomG == null || defl == null) return null;
+      return nomG - defl;
     }
 
     const years = [...new Set([...Object.keys(sal), ...Object.keys(pib)])]
@@ -739,7 +724,7 @@ async function initHistorico() {
       const cls = goodUp ? (p > 0 ? 'hvg' : 'hvb') : (p > 0 ? 'hvb' : 'hvg');
       return `<span class="${cls}">${arrow}${sign}${p.toFixed(1)}%</span>`;
     }
-    function hInflacao(v) {
+    function hDeflator(v) {
       if (v == null) return '<span class="hnull">—</span>';
       const cls = v > 3 ? 'hneg' : (v > 2 ? '' : 'hpos');
       const style = cls ? '' : ' style="font-variant-numeric:tabular-nums"';
@@ -776,7 +761,7 @@ async function initHistorico() {
         <th class="hs hinv hist-hide">Δ%</th>
         <th class="hs hpib">Nominal</th>
         <th class="hs hpib hist-hide">Real</th>
-        <th class="hs hpib hist-hide">Inflação*</th>
+        <th class="hs hpib hist-hide">Deflator PIB</th>
       </tr>
     </thead>
     <tbody>`;
@@ -804,7 +789,7 @@ async function initHistorico() {
         <td class="hist-hide">${hDelta(dc, despCap[py], true)}</td>
         <td>${hDelta(pv, pib[py], true)}</td>
         <td class="hist-hide">${hGr(getRealGrowth(y), true)}</td>
-        <td class="hist-hide">${hInflacao(hicp[y])}</td>
+        <td class="hist-hide">${hDeflator(deflator[y])}</td>
       </tr>`;
     }
 
@@ -813,7 +798,7 @@ async function initHistorico() {
   </table>
 </div>
 <div style="font-size:.65rem;color:var(--muted2);margin-top:-10px;margin-bottom:20px;padding-left:4px">
-  Fonte: INE / Banco de Portugal — Contas Nacionais AP (ESA 2010, base 2016) · Inflação: World Bank CPI (1990–1995) + Eurostat IHPC (1996–presente) · Rec. Totais = Desp. Totais + Saldo · Investimento = Despesas de capital AP · PIB Real ≈ PIB Nominal Δ% − Inflação · Vermelho se inflação > 3%.
+  Fonte: INE / Banco de Portugal — Contas Nacionais AP (ESA 2010, base 2016) · Deflator PIB: World Bank (NY.GDP.DEFL.KD.ZG) · Rec. Totais = Desp. Totais + Saldo · Investimento = Despesas de capital AP · PIB Real = PIB Nominal Δ% − Deflator PIB · Vermelho se deflator > 3%.
 </div>`;
 
     document.getElementById('hist-label').style.display = '';

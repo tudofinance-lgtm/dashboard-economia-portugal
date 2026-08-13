@@ -178,8 +178,8 @@
     .hist-wrap{overflow-x:auto;border-radius:10px;box-shadow:var(--shadow);border:1px solid var(--border);background:var(--card);margin-bottom:6px}
     .hist-tbl{width:max-content;min-width:100%;border-collapse:collapse;font-size:.72rem;white-space:nowrap}
     .hist-tbl th{text-align:center}
-    .hist-tbl .hg{font-size:.57rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:6px 7px;border-bottom:0;text-align:center}
-    .hist-tbl .hs{font-size:.54rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);padding:3px 7px;border-top:1px solid #e5e7eb;border-bottom:2px solid var(--border)}
+    .hist-tbl .hg{font-size:.57rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:6px 7px;border-bottom:0;text-align:center;position:sticky;top:0;z-index:3}
+    .hist-tbl .hs{font-size:.54rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);padding:3px 7px;border-top:1px solid #e5e7eb;border-bottom:2px solid var(--border);position:sticky;top:29px;z-index:3}
     .hist-tbl .hg.hy,.hist-tbl .hs.hy{background:#f8fafc;color:#374151}
     .hist-tbl .hg.hsal{background:#eff6ff;color:#1d4ed8}
     .hist-tbl .hg.hrec{background:#f0fdf4;color:#166534}
@@ -767,7 +767,7 @@ async function initHistorico() {
         <th class="hg hpib" colspan="4">PIB</th>
       </tr>
       <tr>
-        <th class="hs hsal">M€</th>
+        <th class="hs hsal" style="text-align:center">Milhões €</th>
         <th class="hs hsal">% PIB</th>
         <th class="hs hsal">Δ pp</th>
         <th class="hs hrec hist-hide">M€</th>

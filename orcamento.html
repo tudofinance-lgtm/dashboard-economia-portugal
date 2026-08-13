@@ -200,6 +200,8 @@
     .hbadge{display:inline-block;border-radius:3px;padding:1px 5px;font-size:.52rem;font-weight:800;letter-spacing:.03em;line-height:1.7;vertical-align:middle}
     .hbadge-ps{background:#fce7f3;color:#9d174d}
     .hbadge-psd{background:#ffedd5;color:#c2410c}
+    .hbadge-cds{background:#dbeafe;color:#1e40af}
+    .hist-tbl tbody td.hcen{text-align:center}
     .hgov-name{display:block;font-size:.6rem;color:var(--muted);margin-top:1px;white-space:nowrap;text-align:center}
     .hn{font-variant-numeric:tabular-nums}
     .hpos{color:var(--green);font-weight:700;font-variant-numeric:tabular-nums}
@@ -626,9 +628,9 @@ const GOVS = {
 function hGov(y) {
   const g = GOVS[y];
   if (!g) return '<span class="hnull">—</span>';
-  const bc = g.p === 'PS' ? 'hbadge-ps' : 'hbadge-psd';
-  return `<span class="hbadge ${bc}">${g.p}</span><span class="hgov-name">${g.pm}</span>`;
-  // mobile: hgov-name hidden via CSS, só badge visível
+  const partyClass = p => p === 'PS' ? 'hbadge-ps' : p === 'CDS' ? 'hbadge-cds' : 'hbadge-psd';
+  const badges = g.p.split('/').map(p => `<span class="hbadge ${partyClass(p)}">${p}</span>`).join(' ');
+  return `${badges}<span class="hgov-name">${g.pm}</span>`;
 }
 
 async function initHistorico() {
@@ -770,7 +772,7 @@ async function initHistorico() {
       <tr>
         <td>${y}</td>
         <td class="hgov-td">${hGov(y)}</td>
-        <td>${hM(sv, true)}</td>
+        <td class="hcen">${hM(sv, true)}</td>
         <td>${hPct(sv, pv, true)}</td>
         <td>${hSaldoDelta(sv, pv, sal[py], pib[py])}</td>
         <td class="hist-hide">${hM(rt, false)}</td>

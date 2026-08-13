@@ -194,7 +194,17 @@
     .hist-tbl tbody td{padding:4px 7px;text-align:center;border-bottom:1px solid #f3f4f6;vertical-align:middle;white-space:nowrap}
     .hist-tbl tbody td:first-child{text-align:center;font-weight:700;font-size:.76rem;color:var(--text);background:#f8fafc;position:sticky;left:0;z-index:1;padding:4px 8px}
     .hist-tbl tbody td.hgov-td{text-align:center!important;padding:3px 6px;background:#fafbfc;vertical-align:middle;line-height:1.3}
-    .hist-tbl tbody tr:hover td{background:#f1f5f9}
+    .hist-tbl tbody td.gc-sal{background:#eff6ff}
+    .hist-tbl tbody td.gc-rec{background:#f0fdf4}
+    .hist-tbl tbody td.gc-desp{background:#fff1f2}
+    .hist-tbl tbody td.gc-inv{background:#fffbeb}
+    .hist-tbl tbody td.gc-pib{background:#f8fafc}
+    .hist-tbl tbody tr:hover td{background:#e8edf4}
+    .hist-tbl tbody tr:hover td.gc-sal{background:#dbeafe}
+    .hist-tbl tbody tr:hover td.gc-rec{background:#dcfce7}
+    .hist-tbl tbody tr:hover td.gc-desp{background:#ffe4e6}
+    .hist-tbl tbody tr:hover td.gc-inv{background:#fef9c3}
+    .hist-tbl tbody tr:hover td.gc-pib{background:#e2e8f0}
     .hist-tbl tbody tr:hover td:first-child,.hist-tbl tbody tr:hover td.hgov-td{background:#e8edf4}
     .hist-tbl tbody tr:last-child td{border-bottom:none}
     .hbadge{display:inline-block;border-radius:3px;padding:1px 5px;font-size:.52rem;font-weight:800;letter-spacing:.03em;line-height:1.7;vertical-align:middle}
@@ -796,22 +806,22 @@ async function initHistorico() {
       <tr>
         <td>${y}</td>
         <td class="hgov-td">${hGov(y)}</td>
-        <td class="hcen">${hM(sv, true)}</td>
-        <td>${hPct(sv, pv, true)}</td>
-        <td>${hSaldoDelta(sv, pv, sal[py], pib[py])}</td>
-        <td class="hist-hide">${hM(rt, false)}</td>
-        <td class="hist-hide">${hPct(rt, pv, false)}</td>
-        <td class="hist-hide">${hDelta(rt, getRT(py), true)}</td>
-        <td class="hist-hide">${hM(dt, false)}</td>
-        <td class="hist-hide">${hPct(dt, pv, false)}</td>
-        <td class="hist-hide">${hDelta(dt, despTot[py], false)}</td>
-        <td class="hist-hide">${hM(dc, false)}</td>
-        <td class="hist-hide">${hPct(dc, pv, false)}</td>
-        <td class="hist-hide">${hDelta(dc, despCap[py], true)}</td>
-        <td>${hDelta(pv, pib[py], true)}</td>
-        <td class="hist-hide">${hGr(getRealGrowth(y), true)}</td>
-        <td class="hist-hide">${hDeflator(deflator[y])}</td>
-        <td class="hist-hide">${hInflacao(hicp[y])}</td>
+        <td class="hcen gc-sal">${hM(sv, true)}</td>
+        <td class="gc-sal">${hPct(sv, pv, true)}</td>
+        <td class="gc-sal">${hSaldoDelta(sv, pv, sal[py], pib[py])}</td>
+        <td class="hist-hide gc-rec">${hM(rt, false)}</td>
+        <td class="hist-hide gc-rec">${hPct(rt, pv, false)}</td>
+        <td class="hist-hide gc-rec">${hDelta(rt, getRT(py), true)}</td>
+        <td class="hist-hide gc-desp">${hM(dt, false)}</td>
+        <td class="hist-hide gc-desp">${hPct(dt, pv, false)}</td>
+        <td class="hist-hide gc-desp">${hDelta(dt, despTot[py], false)}</td>
+        <td class="hist-hide gc-inv">${hM(dc, false)}</td>
+        <td class="hist-hide gc-inv">${hPct(dc, pv, false)}</td>
+        <td class="hist-hide gc-inv">${hDelta(dc, despCap[py], true)}</td>
+        <td class="gc-pib">${hDelta(pv, pib[py], true)}</td>
+        <td class="hist-hide gc-pib">${hGr(getRealGrowth(y), true)}</td>
+        <td class="hist-hide gc-pib">${hDeflator(deflator[y])}</td>
+        <td class="hist-hide gc-pib">${hInflacao(hicp[y])}</td>
       </tr>`;
     }
 

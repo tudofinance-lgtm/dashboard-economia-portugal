@@ -587,40 +587,7 @@ async function init() {
   document.getElementById('table-container').style.display = 'block';
 }
 
-/* ══════════════════════════════════════════════════════════
-   GDP DEFLATOR — World Bank (NY.GDP.DEFL.KD.ZG)
-══════════════════════════════════════════════════════════ */
-async function fetchGDPDeflator() {
-  // World Bank GDP Deflator (NY.GDP.DEFL.KD.ZG) — Portugal, desde 1960
-  // Mede a variação de preços implícita no PIB (mais abrangente que o IPC)
-  const m = {};
-  try {
-    const url = 'https://api.worldbank.org/v2/country/PT/indicator/NY.GDP.DEFL.KD.ZG?format=json&per_page=100&mrv=80';
-    const r = await fetch(url, { signal: AbortSignal.timeout(10000) });
-    if (r.ok) {
-      const [, rows] = await r.json();
-      (rows || []).forEach(row => { if (row.value != null) m[row.date] = row.value; });
-    }
-  } catch(e) { console.warn('WB GDP Deflator fetch failed:', e.message); }
-  return m;
-}
-
-/* ══════════════════════════════════════════════════════════
-   CPI INFLATION — World Bank (FP.CPI.TOTL.ZG)
-══════════════════════════════════════════════════════════ */
-async function fetchHICP() {
-  // World Bank CPI — variação anual (%), Portugal, para referência visual
-  const m = {};
-  try {
-    const url = 'https://api.worldbank.org/v2/country/PT/indicator/FP.CPI.TOTL.ZG?format=json&per_page=100&mrv=80';
-    const r = await fetch(url, { signal: AbortSignal.timeout(10000) });
-    if (r.ok) {
-      const [, rows] = await r.json();
-      (rows || []).forEach(row => { if (row.value != null) m[row.date] = row.value; });
-    }
-  } catch(e) { console.warn('WB CPI fetch failed:', e.message); }
-  return m;
-}
+/* (deflator PIB e consumo privado carregados via getSeriesData — BPstat série 12706759 e 12706772) */
 
 /* ══════════════════════════════════════════════════════════
    HISTORICAL TABLE — Contas Nacionais das AP (1990–present)
@@ -628,9 +595,10 @@ async function fetchHICP() {
      12645509 = Saldo AP anual (M€)
      12518356 = PIB anual preços correntes (M€)
      12645530 = Despesas totais AP anual (M€)
-     12645533 = Receitas de capital AP anual (M€)
      12645516 = Despesas de capital AP anual / investimento (M€)
-   Fórmula: Rec. Correntes = Desp. Totais + Saldo − Rec. Capital
+     12706759 = Deflator PIB — taxa variação anual (INE/BPstat)
+     12706772 = Deflator consumo privado — proxy inflação (INE/BPstat)
+   Fórmula: Rec. Totais = Desp. Totais + Saldo
 ══════════════════════════════════════════════════════════ */
 
 // Governos: PM em funções a 1 de janeiro de cada ano orçamental
@@ -666,15 +634,13 @@ function hGov(y) {
 async function initHistorico() {
   document.getElementById('hist-loading').style.display = 'block';
   try {
-    const [[saldoPts, pibPts, despTotPts, despCapPts], deflator, hicp] = await Promise.all([
-      Promise.all([
-        getSeriesData(12645509),
-        getSeriesData(12518356),
-        getSeriesData(12645530),
-        getSeriesData(12645516),
-      ]),
-      fetchGDPDeflator(),
-      fetchHICP(),
+    const [saldoPts, pibPts, despTotPts, despCapPts, deflPts, hicpPts] = await Promise.all([
+      getSeriesData(12645509),   // Saldo AP anual (M€)
+      getSeriesData(12518356),   // PIB anual preços correntes (M€)
+      getSeriesData(12645530),   // Despesas totais AP anual (M€)
+      getSeriesData(12645516),   // Despesas de capital AP anual (M€)
+      getSeriesData(12706759),   // Deflator PIB — taxa variação anual (INE/BPstat)
+      getSeriesData(12706772),   // Deflator consumo privado — proxy inflação (INE/BPstat)
     ]);
 
     function toYrMap(pts) {
@@ -687,6 +653,8 @@ async function initHistorico() {
     const pib = toYrMap(pibPts);
     const despTot = toYrMap(despTotPts);
     const despCap = toYrMap(despCapPts);
+    const deflator = toYrMap(deflPts);
+    const hicp = toYrMap(hicpPts);
 
     // Receitas totais = Despesas totais + Saldo (identidade orçamental)
     function getRT(y) {
@@ -788,7 +756,7 @@ async function initHistorico() {
         <th class="hs hpib">Nominal</th>
         <th class="hs hpib hist-hide">Real</th>
         <th class="hs hpib hist-hide">Deflator PIB</th>
-        <th class="hs hpib hist-hide">Inflação IPC</th>
+        <th class="hs hpib hist-hide">Defl. Consumo</th>
       </tr>
     </thead>
     <tbody>`;
@@ -826,7 +794,7 @@ async function initHistorico() {
   </table>
 </div>
 <div style="font-size:.65rem;color:var(--muted2);margin-top:-10px;margin-bottom:20px;padding-left:4px">
-  Fonte: INE / Banco de Portugal — Contas Nacionais AP (ESA 2010, base 2016) · Deflator PIB e Inflação IPC: World Bank (NY.GDP.DEFL.KD.ZG, FP.CPI.TOTL.ZG) · Rec. Totais = Desp. Totais + Saldo · PIB Real = PIB Nominal Δ% − Deflator PIB · Inflação IPC apresentada apenas para referência · Vermelho se > 3%.
+  Fonte: INE / Banco de Portugal — Contas Nacionais AP (ESA 2010, base 2016) · Deflator PIB e Defl. Consumo: INE via BPstat (séries 12706759 e 12706772) · Rec. Totais = Desp. Totais + Saldo · PIB Real = PIB Nominal Δ% − Deflator PIB · Defl. Consumo apresentado para referência · Vermelho se > 3%.
 </div>`;
 
     document.getElementById('hist-label').style.display = '';

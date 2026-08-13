@@ -591,7 +591,7 @@ async function init() {
   document.getElementById('table-container').style.display = 'block';
 }
 
-/* (deflator PIB e consumo privado carregados via getSeriesData — BPstat série 12706759 e 12706772) */
+/* (deflator PIB e IPC carregados via getSeriesData — BPstat séries 12706759 e 12704650) */
 
 /* ══════════════════════════════════════════════════════════
    HISTORICAL TABLE — Contas Nacionais das AP (1990–present)
@@ -601,7 +601,7 @@ async function init() {
      12645530 = Despesas totais AP anual (M€)
      12645516 = Despesas de capital AP anual / investimento (M€)
      12706759 = Deflator PIB — taxa variação anual (INE/BPstat)
-     12706772 = Deflator consumo privado — proxy inflação (INE/BPstat)
+     12704650 = Taxa inflação IPC total anual (INE/BPstat)
    Fórmula: Rec. Totais = Desp. Totais + Saldo
 ══════════════════════════════════════════════════════════ */
 
@@ -666,7 +666,7 @@ async function initHistorico() {
       getSeriesData(12645530),   // Despesas totais AP anual (M€)
       getSeriesData(12645516),   // Despesas de capital AP anual (M€)
       getSeriesData(12706759),   // Deflator PIB — taxa variação anual (INE/BPstat)
-      getSeriesData(12706772),   // Deflator consumo privado — proxy inflação (INE/BPstat)
+      getSeriesData(12704650),   // Taxa inflação IPC total anual (INE/BPstat)
     ]);
 
     function toYrMap(pts) {
@@ -782,7 +782,7 @@ async function initHistorico() {
         <th class="hs hpib">Nominal</th>
         <th class="hs hpib hist-hide">Real</th>
         <th class="hs hpib hist-hide">Deflator PIB</th>
-        <th class="hs hpib hist-hide">Defl. Consumo</th>
+        <th class="hs hpib hist-hide">Inflação IPC</th>
       </tr>
     </thead>
     <tbody>`;
@@ -820,7 +820,7 @@ async function initHistorico() {
   </table>
 </div>
 <div style="font-size:.65rem;color:var(--muted2);margin-top:-10px;margin-bottom:20px;padding-left:4px">
-  Fonte: INE / Banco de Portugal — Contas Nacionais AP (ESA 2010, base 2016) · Deflator PIB e Defl. Consumo: INE via BPstat (séries 12706759 e 12706772) · Rec. Totais = Desp. Totais + Saldo · PIB Real = PIB Nominal Δ% − Deflator PIB · Defl. Consumo apresentado para referência · Vermelho se > 3%.
+  Fonte: INE / Banco de Portugal — Contas Nacionais AP (ESA 2010, base 2016) · Deflator PIB: INE via BPstat (12706759) · Inflação IPC: INE via BPstat (12704650) · Rec. Totais = Desp. Totais + Saldo · PIB Real = PIB Nominal Δ% − Deflator PIB · Vermelho se > 3%.
 </div>`;
 
     document.getElementById('hist-label').style.display = '';

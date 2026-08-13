@@ -25,7 +25,7 @@ Para séries ECB/Eurostat: atualizar  as funções `fetch_ecb()` / `fetch_eurost
 | 12645530 | Despesas totais AP anual |
 | 12645533 | Receitas de capital AP anual |
 | 12706759 | Deflator PIB — taxa variação anual (INE) |
-| 12706772 | Deflator consumo privado — proxy inflação (INE) |
+| 12704650 | Taxa inflação IPC total anual (INE) |
 | 88895 | Saldo Seg. Social |
 | 88896 | Receitas quotizações SS |
 | 88881 | Outras receitas correntes SS |

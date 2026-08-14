@@ -232,7 +232,30 @@
       .hist-tbl tbody td.hgov-td{padding:3px 4px;min-width:40px}
       .hgov-name{display:none}
     }
+
+    /* ── EXEC ORC ROW (table + chart side-by-side) ── */
+    .exec-orc-row{display:flex;gap:16px;align-items:flex-start}
+    .exec-orc-row .table-side{flex:1;min-width:0}
+    .exec-orc-row .chart-side{flex:0 0 400px;min-width:0}
+    @media(max-width:900px){
+      .exec-orc-row{flex-direction:column}
+      .exec-orc-row .chart-side{flex:none;width:100%}
+    }
+
+    /* ── CHART CARD ── */
+    .orc-chart-card{background:var(--card);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);padding:14px 16px 10px}
+    .orc-chart-header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px}
+    .orc-chart-title{font-size:.78rem;font-weight:800;letter-spacing:.02em;text-transform:uppercase;color:var(--text)}
+    .orc-chart-sub{font-size:.65rem;color:var(--muted);margin-top:2px}
+    .orc-chart-source{font-size:.6rem;color:var(--muted2);text-align:right}
+    .orc-chart-range{font-size:.65rem;font-weight:700;color:var(--muted);text-align:right;margin-top:2px}
+    .orc-chart-legend{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 4px;font-size:.65rem}
+    .orc-chart-legend .legend-item{display:flex;align-items:center;gap:4px;color:var(--muted)}
+    .orc-chart-legend .legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .orc-chart-wrap{position:relative;height:240px}
+    .orc-chart-loading{text-align:center;padding:40px 0;color:var(--muted);font-size:.8rem}
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -276,7 +299,29 @@
     <div style="font-size:.72rem;color:var(--muted2);margin-top:6px">Primeira visita pode demorar alguns segundos</div>
   </div>
 
-  <div id="table-container" style="display:none"></div>
+  <div id="exec-orc-row" class="exec-orc-row" style="display:none">
+    <div class="table-side">
+      <div id="table-container"></div>
+    </div>
+    <div class="chart-side">
+      <div class="orc-chart-card">
+        <div class="orc-chart-header">
+          <div>
+            <div class="orc-chart-title">Saldo Mensal Acumulado</div>
+            <div class="orc-chart-sub">YTD · M€ · comparação anual (últimos 4 anos)</div>
+          </div>
+          <div>
+            <div class="orc-chart-source">BPstat · Série 12560943</div>
+            <div class="orc-chart-range" id="range-saldo-mensal">–</div>
+          </div>
+        </div>
+        <div class="orc-chart-legend" id="legend-saldo-mensal"></div>
+        <div class="orc-chart-wrap" id="wrap-saldo-mensal">
+          <div class="orc-chart-loading">A carregar…</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="section-label" id="hist-label" style="display:none">Séries Históricas — Contas Nacionais (1990–presente)</div>
   <div id="hist-loading" class="loading-wrap" style="display:none;margin-top:0">
@@ -514,6 +559,110 @@ function fmtVar(p, tipo, greenIfUp) {
 }
 
 /* ══════════════════════════════════════════════════════════
+   SALDO MENSAL ACUMULADO — gráfico seasonal (série 12560943)
+══════════════════════════════════════════════════════════ */
+const MONTHS_PT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const SEASONAL_PALETTE = [
+  { line:'#94a3b8' },
+  { line:'#60a5fa' },
+  { line:'#f59e0b' },
+  { line:'#10b981' },
+  { line:'#f87171' },
+];
+
+function buildSeasonalDatasets(byYear, numYears) {
+  const allYears = Object.keys(byYear).sort();
+  const visible  = allYears.slice(-numYears);
+  const palStart = Math.max(0, SEASONAL_PALETTE.length - visible.length);
+  return visible.map((yr, i) => {
+    const c = SEASONAL_PALETTE[palStart + i] || SEASONAL_PALETTE[SEASONAL_PALETTE.length - 1];
+    return {
+      label: yr,
+      data:  Array.from({length: 12}, (_, m) => byYear[yr][m + 1] ?? null),
+      borderColor:      c.line,
+      backgroundColor: 'transparent',
+      borderWidth:      i === visible.length - 1 ? 2.5 : 1.5,
+      pointRadius:      3,
+      pointHoverRadius: 5,
+      tension:          0.3,
+      spanGaps:         true,
+      fill:             false,
+    };
+  });
+}
+
+async function loadSaldoMensalChart() {
+  try {
+    const pts = await getSeriesData(12560943);
+    const byYear = {};
+    pts.forEach(({ date, value }) => {
+      const yr = date.slice(0, 4);
+      const mo = parseInt(date.slice(5, 7), 10);
+      if (!byYear[yr]) byYear[yr] = {};
+      byYear[yr][mo] = value;
+    });
+    if (!Object.keys(byYear).length) return;
+
+    const numYears = 4;
+    const datasets = buildSeasonalDatasets(byYear, numYears);
+    const allYears = Object.keys(byYear).sort();
+    const visible  = allYears.slice(-numYears);
+
+    // Legend
+    const legendEl = document.getElementById('legend-saldo-mensal');
+    if (legendEl) legendEl.innerHTML = datasets.map(ds =>
+      `<span class="legend-item"><span class="legend-dot" style="background:${ds.borderColor}"></span>${ds.label}</span>`
+    ).join('');
+
+    // Range label
+    const rangeEl = document.getElementById('range-saldo-mensal');
+    if (rangeEl) rangeEl.textContent = visible[0] + ' — ' + visible[visible.length - 1];
+
+    // Chart
+    const wrap = document.getElementById('wrap-saldo-mensal');
+    wrap.innerHTML = '<canvas></canvas>';
+    const ctx = wrap.querySelector('canvas');
+    new Chart(ctx, {
+      type: 'line',
+      data: { labels: MONTHS_PT, datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        animation: { duration: 300 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1e293b',
+            titleColor: '#94a3b8',
+            bodyColor: '#f8fafc',
+            borderColor: '#334155',
+            borderWidth: 1,
+            padding: 10,
+            callbacks: {
+              label: ctx => {
+                const v = ctx.raw;
+                if (v == null) return '';
+                return ` ${ctx.dataset.label}: ${v.toLocaleString('pt-PT')} M€`;
+              },
+            },
+          },
+        },
+        scales: {
+          x: { grid: { display: false } },
+          y: {
+            grid: { color: '#f1f5f9' },
+            ticks: { callback: v => v >= 1000 || v <= -1000 ? (v/1000).toFixed(0)+'k' : v },
+          },
+        },
+      },
+    });
+  } catch(e) {
+    console.warn('Saldo mensal chart failed:', e.message);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
    RENDER
 ══════════════════════════════════════════════════════════ */
 async function init() {
@@ -598,7 +747,8 @@ async function init() {
 
   document.getElementById('table-container').innerHTML = html;
   document.getElementById('loading').style.display = 'none';
-  document.getElementById('table-container').style.display = 'block';
+  document.getElementById('exec-orc-row').style.display = 'flex';
+  loadSaldoMensalChart();
 }
 
 /* (deflator PIB e IPC carregados via getSeriesData — BPstat séries 12706759 e 12704650) */

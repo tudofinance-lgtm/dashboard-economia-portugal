@@ -346,14 +346,14 @@
 ══════════════════════════════════════════════════════════ */
 const API = 'https://bpstat.bportugal.pt/data/v1';
 const WORKER_URL = '/data/cache.json';
-let _workerData = null;
+let _workerPromise = null;  // singleton — um único fetch partilhado por todos os callers
 
-async function _getWorkerData() {
-  if (_workerData) return _workerData;
-  const r = await fetch(WORKER_URL, { signal: AbortSignal.timeout(8000) });
-  if (!r.ok) throw new Error(`Worker HTTP ${r.status}`);
-  _workerData = await r.json();
-  return _workerData;
+function _getWorkerData() {
+  if (!_workerPromise) {
+    _workerPromise = fetch(WORKER_URL, { signal: AbortSignal.timeout(12000) })
+      .then(r => { if (!r.ok) throw new Error(`Worker HTTP ${r.status}`); return r.json(); });
+  }
+  return _workerPromise;
 }
 
 async function fetchDatasetPageFiltered(domainId, datasetId, seriesId) {

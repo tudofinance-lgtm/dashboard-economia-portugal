@@ -233,13 +233,13 @@
       .hgov-name{display:none}
     }
 
-    /* ── EXEC ORC ROW (table + chart side-by-side) ── */
-    .exec-orc-row{display:flex;gap:16px;align-items:flex-start}
-    .exec-orc-row .table-side{flex:1;min-width:0}
-    .exec-orc-row .chart-side{flex:0 0 400px;min-width:0}
-    @media(max-width:900px){
-      .exec-orc-row{flex-direction:column}
-      .exec-orc-row .chart-side{flex:none;width:100%}
+    /* ── EXEC ORC LAYOUT (esquerda: info-bar+tabela · direita: chart) ── */
+    .exec-orc-layout{display:flex;gap:16px;align-items:flex-start}
+    .exec-orc-left{flex:1;min-width:0}
+    .exec-orc-right{flex:0 0 390px;min-width:0;position:sticky;top:8px}
+    @media(max-width:960px){
+      .exec-orc-layout{flex-direction:column}
+      .exec-orc-right{flex:none;width:100%;position:static}
     }
 
     /* ── CHART CARD ── */
@@ -278,32 +278,36 @@
 </header>
 
 <main>
-  <div class="info-bar">
-    <div>
-      <div class="info-bar-title">Execução Orçamental das Administrações Públicas</div>
-      <div class="info-bar-sub">Valores acumulados desde janeiro · em milhões de euros (M€) · actualizado automaticamente</div>
-    </div>
-    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-      <div class="legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#166534"></div><span>Receita</span></div>
-        <div class="legend-item"><div class="legend-dot" style="background:#991b1b"></div><span>Despesa</span></div>
-        <div class="legend-item"><div class="legend-dot" style="background:#075985"></div><span>Saldo</span></div>
+  <div class="exec-orc-layout">
+
+    <!-- ESQUERDA: info-bar + tabela execução -->
+    <div class="exec-orc-left">
+      <div class="info-bar">
+        <div>
+          <div class="info-bar-title">Execução Orçamental das Administrações Públicas</div>
+          <div class="info-bar-sub">Valores acumulados desde janeiro · em milhões de euros (M€) · actualizado automaticamente</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#166534"></div><span>Receita</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:#991b1b"></div><span>Despesa</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:#075985"></div><span>Saldo</span></div>
+          </div>
+          <span class="ref-badge" id="ref-badge">⏳ A carregar...</span>
+        </div>
       </div>
-      <span class="ref-badge" id="ref-badge">⏳ A carregar...</span>
-    </div>
-  </div>
 
-  <div id="loading" class="loading-wrap">
-    <div class="spinner"></div>
-    <div style="font-size:.85rem">A carregar dados do BPstat...</div>
-    <div style="font-size:.72rem;color:var(--muted2);margin-top:6px">Primeira visita pode demorar alguns segundos</div>
-  </div>
+      <div id="loading" class="loading-wrap">
+        <div class="spinner"></div>
+        <div style="font-size:.85rem">A carregar dados do BPstat...</div>
+        <div style="font-size:.72rem;color:var(--muted2);margin-top:6px">Primeira visita pode demorar alguns segundos</div>
+      </div>
 
-  <div id="exec-orc-row" class="exec-orc-row" style="display:none">
-    <div class="table-side">
       <div id="table-container"></div>
     </div>
-    <div class="chart-side">
+
+    <!-- DIREITA: gráfico saldo mensal acumulado -->
+    <div class="exec-orc-right" id="exec-orc-right" style="display:none">
       <div class="orc-chart-card">
         <div class="orc-chart-header">
           <div>
@@ -321,6 +325,7 @@
         </div>
       </div>
     </div>
+
   </div>
 
   <div class="section-label" id="hist-label" style="display:none">Séries Históricas — Contas Nacionais (1990–presente)</div>
@@ -746,7 +751,7 @@ async function init() {
 
   document.getElementById('table-container').innerHTML = html;
   document.getElementById('loading').style.display = 'none';
-  document.getElementById('exec-orc-row').style.display = 'flex';
+  document.getElementById('exec-orc-right').style.display = 'block';
   loadSaldoMensalChart();
 }
 

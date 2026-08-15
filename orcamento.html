@@ -282,11 +282,10 @@
 </header>
 
 <main>
+  <!-- Side-by-side: [info-bar] esquerda | [Gráfico] direita -->
   <div class="exec-orc-layout">
-
-    <!-- ESQUERDA: info-bar + tabela execução -->
     <div class="exec-orc-left">
-      <div class="info-bar">
+      <div class="info-bar" style="height:100%;box-sizing:border-box">
         <div>
           <div class="info-bar-title">Execução Orçamental das Administrações Públicas</div>
           <div class="info-bar-sub">Valores acumulados desde janeiro · em milhões de euros (M€) · actualizado automaticamente</div>
@@ -300,17 +299,7 @@
           <span class="ref-badge" id="ref-badge">⏳ A carregar...</span>
         </div>
       </div>
-
-      <div id="loading" class="loading-wrap">
-        <div class="spinner"></div>
-        <div style="font-size:.85rem">A carregar dados do BPstat...</div>
-        <div style="font-size:.72rem;color:var(--muted2);margin-top:6px">Primeira visita pode demorar alguns segundos</div>
-      </div>
-
-      <div id="table-container"></div>
     </div>
-
-    <!-- DIREITA: gráfico saldo mensal acumulado -->
     <div class="exec-orc-right" id="exec-orc-right" style="display:none">
       <div class="orc-chart-card">
         <div class="orc-chart-header">
@@ -329,8 +318,15 @@
         </div>
       </div>
     </div>
-
   </div>
+
+  <!-- Loading + todas as tabelas abaixo (full-width) -->
+  <div id="loading" class="loading-wrap">
+    <div class="spinner"></div>
+    <div style="font-size:.85rem">A carregar dados do BPstat...</div>
+    <div style="font-size:.72rem;color:var(--muted2);margin-top:6px">Primeira visita pode demorar alguns segundos</div>
+  </div>
+  <div id="table-container"></div>
 
   <div class="section-label" id="hist-label" style="display:none">Séries Históricas — Contas Nacionais (1990–presente)</div>
   <div id="hist-loading" class="loading-wrap" style="display:none;margin-top:0">

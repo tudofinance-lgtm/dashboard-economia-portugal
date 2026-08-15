@@ -238,16 +238,16 @@
     }
 
     /* ── EXEC ORC LAYOUT (esquerda: info-bar+tabela · direita: chart) ── */
-    .exec-orc-layout{display:flex;gap:16px;align-items:flex-start}
-    .exec-orc-left{flex:1;min-width:0}
-    .exec-orc-right{flex:0 0 390px;min-width:0;position:sticky;top:8px}
+    .exec-orc-layout{display:flex;gap:16px;align-items:stretch}
+    .exec-orc-left{flex:1 1 0;min-width:0}
+    .exec-orc-right{flex:1 1 0;min-width:0}
     @media(max-width:960px){
       .exec-orc-layout{flex-direction:column}
-      .exec-orc-right{flex:none;width:100%;position:static}
+      .exec-orc-right{flex:none;width:100%}
     }
 
     /* ── CHART CARD ── */
-    .orc-chart-card{background:var(--card);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);padding:14px 16px 10px}
+    .orc-chart-card{background:var(--card);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);padding:14px 16px 10px;display:flex;flex-direction:column;height:100%;box-sizing:border-box}
     .orc-chart-header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px}
     .orc-chart-title{font-size:.78rem;font-weight:800;letter-spacing:.02em;text-transform:uppercase;color:var(--text)}
     .orc-chart-sub{font-size:.65rem;color:var(--muted);margin-top:2px}
@@ -256,7 +256,7 @@
     .orc-chart-legend{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 4px;font-size:.65rem}
     .orc-chart-legend .legend-item{display:flex;align-items:center;gap:4px;color:var(--muted)}
     .orc-chart-legend .legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-    .orc-chart-wrap{position:relative;height:240px}
+    .orc-chart-wrap{position:relative;flex:1;min-height:280px}
     .orc-chart-loading{text-align:center;padding:40px 0;color:var(--muted);font-size:.8rem}
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>

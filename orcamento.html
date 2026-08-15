@@ -109,9 +109,9 @@
     /* mobile: hide less important columns + layout fixes */
     @media(max-width:600px){
       thead th.col-hide,td.col-hide{display:none}
-      thead th:first-child{width:42%}
-      thead th.col-val{width:21%}
-      thead th.col-var{width:16%}
+      thead th:first-child{width:50%}
+      thead th.col-val{width:29%}
+      thead th.col-var{width:21%}
       table{font-size:.71rem}
       td,thead th{padding:5px 6px}
       /* allow wrap in indicator column so long names don't break layout */
@@ -175,7 +175,7 @@
     footer a:hover{color:var(--muted)}
 
     /* ── HISTORICAL TABLE ── */
-    .hist-wrap{overflow:auto;max-height:680px;border-radius:10px;box-shadow:var(--shadow);border:1px solid var(--border);background:var(--card);margin-bottom:6px}
+    .hist-wrap{overflow:auto;max-height:680px;max-width:100%;border-radius:10px;box-shadow:var(--shadow);border:1px solid var(--border);background:var(--card);margin-bottom:6px;-webkit-overflow-scrolling:touch}
     .hist-tbl{width:max-content;min-width:100%;border-collapse:collapse;font-size:.72rem;white-space:nowrap}
     .hist-tbl th{text-align:center}
     .hist-tbl .hg{font-size:.57rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:6px 7px;border-bottom:0;text-align:center;position:sticky;top:0;z-index:3}
@@ -224,6 +224,10 @@
     .hnull{color:var(--muted2);font-size:.68rem}
     @media(max-width:600px){
       .hist-hide{display:none}
+      /* on mobile: let the page scroll handle rows; only clip horizontally */
+      .hist-wrap{max-height:none;overflow-x:auto;overflow-y:visible}
+      /* sticky headers don't work well inside page scroll — keep static */
+      .hist-tbl .hg,.hist-tbl .hs{position:static}
       .hist-tbl{font-size:.68rem}
       .hist-tbl .hg{padding:5px 5px;font-size:.53rem}
       .hist-tbl .hs{padding:3px 5px;font-size:.5rem}
@@ -704,7 +708,7 @@ async function init() {
           <tr>
             <th style="text-align:left">Indicador</th>
             <th class="col-val">${mLabel} ${y0} (M€)</th>
-            <th class="col-val">${mLabel} ${y1} (M€)</th>
+            <th class="col-val col-hide">${mLabel} ${y1} (M€)</th>
             <th class="col-val col-hide">${mLabel} ${y2} (M€)</th>
             <th class="col-var">Δ ${y0}/${y1}</th>
             <th class="col-var col-hide">Δ ${y1}/${y2}</th>
@@ -731,7 +735,7 @@ async function init() {
           <tr class="${rowCls}">
             <td><span class="row-label">${row.label}</span>${tipoBadge}</td>
             <td>${fmtVal(vN, row.tipo, isTotais)}</td>
-            <td>${fmtVal(vN1, row.tipo, isTotais)}</td>
+            <td class="col-hide">${fmtVal(vN1, row.tipo, isTotais)}</td>
             <td class="col-hide">${fmtVal(vN2, row.tipo, isTotais)}</td>
             <td>${fmtVar(p1, row.tipo, row.greenIfUp)}</td>
             <td class="col-hide">${fmtVar(p2, row.tipo, row.greenIfUp)}</td>

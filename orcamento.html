@@ -237,6 +237,9 @@
       .hgov-name{display:none}
     }
 
+    .info-bar-seo{font-size:.72rem;color:var(--muted);line-height:1.55;max-width:360px;margin:0 auto;text-align:center}
+    .info-bar-seo strong{color:var(--text);font-weight:600}
+
     /* ── EXEC ORC LAYOUT (esquerda: info-bar+tabela · direita: chart) ── */
     .exec-orc-layout{display:flex;gap:16px;align-items:stretch}
     .exec-orc-left{flex:1 1 0;min-width:0}
@@ -285,19 +288,18 @@
   <!-- Side-by-side: [info-bar] esquerda | [Gráfico] direita -->
   <div class="exec-orc-layout">
     <div class="exec-orc-left">
-      <div class="info-bar" style="height:100%;box-sizing:border-box">
+      <div class="info-bar" style="height:100%;box-sizing:border-box;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:16px">
         <div>
-          <div class="info-bar-title">Execução Orçamental das Administrações Públicas</div>
-          <div class="info-bar-sub">Valores acumulados desde janeiro · em milhões de euros (M€) · actualizado automaticamente</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-          <div class="legend">
+          <div class="info-bar-title" style="font-size:1.05rem;margin-bottom:6px">Execução Orçamental das Administrações Públicas</div>
+          <div class="info-bar-sub" style="margin-bottom:14px">Valores acumulados desde janeiro · em milhões de euros (M€) · actualizado automaticamente</div>
+          <span class="ref-badge" id="ref-badge" style="margin:0 auto 16px;display:inline-flex">⏳ A carregar...</span>
+          <div class="legend" style="justify-content:center;margin-bottom:16px">
             <div class="legend-item"><div class="legend-dot" style="background:#166534"></div><span>Receita</span></div>
             <div class="legend-item"><div class="legend-dot" style="background:#991b1b"></div><span>Despesa</span></div>
             <div class="legend-item"><div class="legend-dot" style="background:#075985"></div><span>Saldo</span></div>
           </div>
-          <span class="ref-badge" id="ref-badge">⏳ A carregar...</span>
         </div>
+        <p class="info-bar-seo">Acompanhe a <strong>execução orçamental de Portugal</strong> em tempo real — receitas, despesas e saldo das Administrações Públicas (Consolidado, Estado e Segurança Social) com comparação inter-anual. Dados do <strong>BPstat / Banco de Portugal</strong>, actualizados diariamente.</p>
       </div>
     </div>
     <div class="exec-orc-right" id="exec-orc-right" style="display:none">

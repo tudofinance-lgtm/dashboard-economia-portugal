@@ -1136,14 +1136,19 @@ async function loadSaldoOrcamental() {
 
 async function loadSaldoEstado() {
   // 88895 saldo, 88896 quotizações, 88881 outras receitas correntes, 88885 despesas totais
-  const [saldoRaw, recRaw, outrasRaw, despRaw] = await Promise.all([
+  const results = await Promise.allSettled([
     getSeriesData(88895),
     getSeriesData(88896),
     getSeriesData(88881),
     getSeriesData(88885),
   ]);
+  const [saldoRaw, recRaw, outrasRaw, despRaw] = results.map((r, i) => {
+    if (r.status === 'rejected') { console.warn('SS série falhou:', [88895,88896,88881,88885][i], r.reason); return []; }
+    return r.value || [];
+  });
   const filterDec = pts => {
-    const dec = pts.filter(p => p.date.length >= 7 && p.date.slice(5, 7) === '12');
+    if (!pts || !pts.length) return [];
+    const dec = pts.filter(p => p.date && p.date.length >= 7 && p.date.slice(5, 7) === '12');
     const use = dec.length > 0 ? dec : pts;
     return use
       .map(p => ({ date: p.date.slice(0, 4), value: p.value }))
@@ -1151,9 +1156,9 @@ async function loadSaldoEstado() {
       .sort((a, b) => a.date.localeCompare(b.date));
   };
   return {
-    saldo: filterDec(saldoRaw),
+    saldo:   filterDec(saldoRaw),
     receita: filterDec(recRaw),
-    outras: filterDec(outrasRaw),
+    outras:  filterDec(outrasRaw),
     despesa: filterDec(despRaw),
   };
 }
@@ -3171,7 +3176,7 @@ async function loadRenPreco() {
 
 async function fetchAllData() {
   // Reset Worker cache so each fetchAllData gets fresh data
-  _workerData = null;
+  _workerPromise = null;
   // Phase 1: PIB (needed by saldo % PIB e PIB per capita UE)
   let pibAnnual = [];
   let pibOk = false;

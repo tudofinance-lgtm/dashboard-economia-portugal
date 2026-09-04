@@ -52,10 +52,6 @@ BPSTAT_SERIES = [
     12645533,  # Receitas de capital AP anual
     12706759,  # Deflator PIB — taxa variação anual (INE)
     12704650,  # Taxa inflação IPC total anual (INE)
-    88895,     # Saldo Seg. Social
-    88896,     # Receitas quotizações SS
-    88881,     # Outras receitas correntes SS
-    88885,     # Despesas totais SS
     88873,     # Receita Estado
     88884,     # Despesa Estado
     12560943,  # Saldo mensal acumulado YTD

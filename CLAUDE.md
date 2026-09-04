@@ -3,7 +3,7 @@
 ## Regra obrigatória: séries novas → fetch_data.py
 
 **Sempre que adicionar um gráfico novo com dados do BPstat:**
-1. Identificar os IDs das séries usadas (ex: `88896`)
+1. Identificar os IDs das séries usadas (ex: `12560943`)
 2. Adicionar ao array `BPSTAT_SERIES` em `scripts/fetch_data.py`
 3. Fazer commit de ambos os ficheiros (`index.html` + `fetch_data.py`) juntos
 
@@ -26,10 +26,6 @@ Para séries ECB/Eurostat: atualizar  as funções `fetch_ecb()` / `fetch_eurost
 | 12645533 | Receitas de capital AP anual |
 | 12706759 | Deflator PIB — taxa variação anual (INE) |
 | 12704650 | Taxa inflação IPC total anual (INE) |
-| 88895 | Saldo Seg. Social |
-| 88896 | Receitas quotizações SS |
-| 88881 | Outras receitas correntes SS |
-| 88885 | Despesas totais SS |
 | 88873 | Receita Estado |
 | 88884 | Despesa Estado |
 | 12560943 | Saldo mensal acumulado YTD |

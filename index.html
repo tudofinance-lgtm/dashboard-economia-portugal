@@ -375,11 +375,11 @@
       <div class="chart-card">
         <div class="chart-header">
           <div>
-            <div class="chart-title">Segurança Social: Receitas vs Despesas</div>
-            <div class="chart-subtitle">M€ · anuais · quotizações (verde) · despesas totais (vermelho) · saldo M€ (azul) · saldo % PIB: eixo direito</div>
+            <div class="chart-title">Estado: Receitas vs Despesas</div>
+            <div class="chart-subtitle">M€ · anuais · receitas (verde) · despesas (vermelho) · saldo M€ (azul) · saldo % PIB: eixo direito</div>
           </div>
           <div style="text-align:right">
-            <div class="chart-source">BPstat · 88896 / 88881 / 88885 / 88895</div>
+            <div class="chart-source">BPstat · 88873 / 88884 / 88894</div>
             <div class="chart-range" id="range-saldo-estado">–</div>
           </div>
         </div>
@@ -1135,15 +1135,14 @@ async function loadSaldoOrcamental() {
 }
 
 async function loadSaldoEstado() {
-  // 88895 saldo, 88896 quotizações, 88881 outras receitas correntes, 88885 despesas totais
+  // 88873 receita Estado, 88884 despesa Estado, 88894 saldo Estado (mensal YTD → filtrar Dez)
   const results = await Promise.allSettled([
-    getSeriesData(88895),
-    getSeriesData(88896),
-    getSeriesData(88881),
-    getSeriesData(88885),
+    getSeriesData(88894),
+    getSeriesData(88873),
+    getSeriesData(88884),
   ]);
-  const [saldoRaw, recRaw, outrasRaw, despRaw] = results.map((r, i) => {
-    if (r.status === 'rejected') { console.warn('SS série falhou:', [88895,88896,88881,88885][i], r.reason); return []; }
+  const [saldoRaw, recRaw, despRaw] = results.map((r, i) => {
+    if (r.status === 'rejected') { console.warn('Estado série falhou:', [88894,88873,88884][i], r.reason); return []; }
     return r.value || [];
   });
   const filterDec = pts => {
@@ -1158,7 +1157,6 @@ async function loadSaldoEstado() {
   return {
     saldo:   filterDec(saldoRaw),
     receita: filterDec(recRaw),
-    outras:  filterDec(outrasRaw),
     despesa: filterDec(despRaw),
   };
 }
@@ -2429,7 +2427,7 @@ function initSSComboChart(wrapId, saldoPts, recPts, despPts, pibAnnual) {
     const r = recMap[d], de = despMap[d];
     return (r != null && de != null) ? +(r - de).toFixed(0) : null;
   });
-  // Saldo % PIB — usa série 88895 (saldo oficial SS)
+  // Saldo % PIB — usa saldo Estado (88894)
   const saldoPctVals = saldoSlice.map(p => {
     const pib = pibMap[p.date] ?? latestPib;
     return (pib && p.value != null) ? +(p.value / pib * 100).toFixed(2) : null;
@@ -2441,25 +2439,25 @@ function initSSComboChart(wrapId, saldoPts, recPts, despPts, pibAnnual) {
       labels,
       datasets: [
         {
-          type: 'line', label: 'Quotizações',
+          type: 'line', label: 'Receitas Estado',
           data: recVals,
           borderColor: '#16a34a', backgroundColor: 'transparent',
           borderWidth: 2, pointRadius: 2, fill: false, yAxisID: 'y', tension: 0.2, order: 1,
         },
         {
-          type: 'line', label: 'Despesas totais',
+          type: 'line', label: 'Despesas Estado',
           data: despVals,
           borderColor: '#dc2626', backgroundColor: 'transparent',
           borderWidth: 2, pointRadius: 2, fill: false, yAxisID: 'y', tension: 0.2, order: 1,
         },
         {
-          type: 'line', label: 'Saldo (quot. − desp.)',
+          type: 'line', label: 'Saldo Estado',
           data: saldoLinVals,
           borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.08)',
           borderWidth: 2, pointRadius: 2, fill: false, yAxisID: 'y', tension: 0.2, order: 1,
         },
         {
-          type: 'bar', label: 'Saldo SS % PIB',
+          type: 'bar', label: 'Saldo Estado % PIB',
           data: saldoPctVals,
           backgroundColor: saldoPctVals.map(v => v >= 0 ? 'rgba(5,150,105,.55)' : 'rgba(220,38,38,.55)'),
           borderColor:     saldoPctVals.map(v => v >= 0 ? '#059669' : '#dc2626'),
@@ -2476,7 +2474,7 @@ function initSSComboChart(wrapId, saldoPts, recPts, despPts, pibAnnual) {
           labels: {
             font: { size: 10 }, color: '#6b7280', boxWidth: 12, padding: 8,
             generateLabels: chart => Chart.defaults.plugins.legend.labels.generateLabels(chart).map(item => {
-              if (item.text === 'Saldo SS % PIB') {
+              if (item.text === 'Saldo Estado % PIB') {
                 item.fillStyle = 'rgba(5,150,105,.55)';
                 item.strokeStyle = '#059669';
               }
@@ -2489,12 +2487,12 @@ function initSSComboChart(wrapId, saldoPts, recPts, despPts, pibAnnual) {
             label: ctx => {
               const v = ctx.raw;
               if (v == null) return null;
-              if (ctx.dataset.label === 'Saldo SS % PIB')
+              if (ctx.dataset.label === 'Saldo Estado % PIB')
                 return ` Saldo: ${v >= 0 ? '+' : ''}${v.toFixed(2)}% PIB`;
-              if (ctx.dataset.label === 'Saldo (quot. − desp.)')
-                return ` Saldo (quot.−desp.): ${v >= 0 ? '+' : ''}${v.toLocaleString('pt-PT', { maximumFractionDigits: 0 })} M€`;
-              if (ctx.dataset.label === 'Despesas totais')
-                return ` Despesas totais: ${Math.abs(v).toLocaleString('pt-PT', { maximumFractionDigits: 0 })} M€`;
+              if (ctx.dataset.label === 'Saldo Estado')
+                return ` Saldo Estado: ${v >= 0 ? '+' : ''}${v.toLocaleString('pt-PT', { maximumFractionDigits: 0 })} M€`;
+              if (ctx.dataset.label === 'Despesas Estado')
+                return ` Despesas Estado: ${Math.abs(v).toLocaleString('pt-PT', { maximumFractionDigits: 0 })} M€`;
               return ` ${ctx.dataset.label}: ${v.toLocaleString('pt-PT', { maximumFractionDigits: 0 })} M€`;
             },
           },
@@ -3419,7 +3417,7 @@ async function renderDashboard(data, fromCache) {
     if (saldoR.status === 'rejected') hasError = true;
   }
 
-  /* ── SEGURANÇA SOCIAL: receitas / despesas / saldo ── */
+  /* ── ESTADO: receitas / despesas / saldo ── */
   if (saldoEstadoR && saldoEstadoR.status === 'fulfilled') {
     const { saldo, receita, despesa } = saldoEstadoR.value;
     if (saldo.length) {

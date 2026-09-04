@@ -99,6 +99,8 @@ def fetch_bpstat_series(series_id: int) -> Optional[list]:
         url = f"{BPSTAT}/domains/{domain_id}/datasets/{dataset_id}/?lang=PT&series_ids={series_id}"
         ds_r = get(url)
         ds = ds_r.json()
+        n_series = len(ds.get("extension", {}).get("series", []))
+        log.info(f"    filtered endpoint: {n_series} series in extension")
         pts = extract_bpstat(ds, series_id)
         if pts:
             return pts
@@ -114,6 +116,7 @@ def fetch_bpstat_series(series_id: int) -> Optional[list]:
             if not ds.get("extension", {}).get("next_page"):
                 break
             page += 1
+        log.warning(f"    {series_id}: no data found after full scan (domain={domain_id}, dataset={dataset_id})")
     except Exception as e:
         log.error(f"BPstat {series_id} failed: {e}")
     return None
@@ -121,7 +124,8 @@ def fetch_bpstat_series(series_id: int) -> Optional[list]:
 def extract_bpstat(ds: dict, target_id: int) -> Optional[list]:
     """Extract [{date, value}] for target_id from a BPstat dataset page."""
     series_list = ds.get("extension", {}).get("series", [])
-    target = next((s for s in series_list if s["id"] == target_id), None)
+    # Compare as strings to handle API returning IDs as int or str
+    target = next((s for s in series_list if str(s.get("id","")) == str(target_id)), None)
     if not target:
         return None
 

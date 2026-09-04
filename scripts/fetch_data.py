@@ -126,15 +126,31 @@ def extract_bpstat(ds: dict, target_id: int) -> Optional[list]:
     series_list = ds.get("extension", {}).get("series", [])
     # Compare as strings to handle API returning IDs as int or str
     target = next((s for s in series_list if str(s.get("id","")) == str(target_id)), None)
-    if not target:
+
+    dim_ids   = ds.get("id", [])
+    dim_sizes = ds.get("size", [])
+    dims      = ds.get("dimension", {})
+    values    = ds.get("value", {})
+    time_role = (ds.get("role", {}).get("time") or ["reference_date"])[0]
+
+    if not dim_ids or time_role not in dims:
         return None
 
-    dim_ids   = ds["id"]
-    dim_sizes = ds["size"]
-    dims      = ds["dimension"]
-    values    = ds["value"]
-    time_role = (ds.get("role", {}).get("time") or ["reference_date"])[0]
     time_idx  = dim_ids.index(time_role)
+    dates = dims[time_role]["category"]["index"]
+
+    # If no extension.series (e.g. filtered endpoint for some datasets),
+    # assume dataset contains only the requested series — extract directly.
+    if not target and not series_list:
+        result = []
+        for t, date in enumerate(dates):
+            v = values[t] if isinstance(values, list) else values.get(str(t))
+            if v is not None:
+                result.append({"date": date, "value": v})
+        return result if result else None
+
+    if not target:
+        return None
 
     strides = [1] * len(dim_ids)
     for i in range(len(dim_ids) - 2, -1, -1):
@@ -153,7 +169,6 @@ def extract_bpstat(ds: dict, target_id: int) -> Optional[list]:
         if cat_idx >= 0:
             base += cat_idx * strides[i]
 
-    dates = dims[time_role]["category"]["index"]
     result = []
     for t, date in enumerate(dates):
         key = base + t * strides[time_idx]

@@ -2432,17 +2432,24 @@ function initSSComboChart(wrapId, saldoPts, recPts, despPts, pibAnnual) {
   const recMap  = Object.fromEntries(recPts.map(p => [p.date, p.value]));
   const despMap = Object.fromEntries(despPts.map(p => [p.date, p.value]));
 
+  // TR e TE ambos positivos (eixo esquerdo só positivo, mais legível)
   const recVals  = labels.map(d => recMap[d]  != null ? recMap[d]  : null);
-  const despVals = labels.map(d => despMap[d] != null ? -despMap[d] : null);
-  const saldoLinVals = labels.map(d => {
-    const r = recMap[d], de = despMap[d];
-    return (r != null && de != null) ? +(r - de).toFixed(0) : null;
-  });
-  // Saldo % PIB — usa saldo SS (B9 do Eurostat)
+  const despVals = labels.map(d => despMap[d] != null ? despMap[d] : null);
+
+  // Saldo % PIB — usa B9 do Eurostat (eixo direito independente)
   const saldoPctVals = saldoSlice.map(p => {
     const pib = pibMap[p.date] ?? latestPib;
     return (pib && p.value != null) ? +(p.value / pib * 100).toFixed(2) : null;
   });
+
+  // Eixo esquerdo: 0 até max(TR, TE) + 10%
+  const lMax = Math.max(0, ...recVals.filter(Boolean), ...despVals.filter(Boolean)) * 1.1;
+
+  // Eixo direito: independente, centrado em 0
+  const rVals = saldoPctVals.filter(v => v != null);
+  const rMin = Math.min(...rVals, 0);
+  const rMax = Math.max(...rVals, 0);
+  const rPad = Math.max((rMax - rMin) * 0.15, 0.5);
 
   const chart = new Chart(ctx, {
     type: 'bar',
@@ -2459,12 +2466,6 @@ function initSSComboChart(wrapId, saldoPts, recPts, despPts, pibAnnual) {
           type: 'line', label: 'Despesas SS',
           data: despVals,
           borderColor: '#dc2626', backgroundColor: 'transparent',
-          borderWidth: 2, pointRadius: 2, fill: false, yAxisID: 'y', tension: 0.2, order: 1,
-        },
-        {
-          type: 'line', label: 'Saldo SS',
-          data: saldoLinVals,
-          borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.08)',
           borderWidth: 2, pointRadius: 2, fill: false, yAxisID: 'y', tension: 0.2, order: 1,
         },
         {
@@ -2500,35 +2501,27 @@ function initSSComboChart(wrapId, saldoPts, recPts, despPts, pibAnnual) {
               if (v == null) return null;
               if (ctx.dataset.label === 'Saldo SS % PIB')
                 return ` Saldo: ${v >= 0 ? '+' : ''}${v.toFixed(2)}% PIB`;
-              if (ctx.dataset.label === 'Saldo SS')
-                return ` Saldo SS: ${v >= 0 ? '+' : ''}${v.toLocaleString('pt-PT', { maximumFractionDigits: 0 })} M€`;
-              if (ctx.dataset.label === 'Despesas SS')
-                return ` Despesas SS: ${Math.abs(v).toLocaleString('pt-PT', { maximumFractionDigits: 0 })} M€`;
               return ` ${ctx.dataset.label}: ${v.toLocaleString('pt-PT', { maximumFractionDigits: 0 })} M€`;
             },
           },
         },
       },
-      scales: (() => {
-        const leftAll = [...recVals, ...despVals, ...saldoLinVals];
-        const { lMin, lMax, rMin, rMax } = ssAlignAxes(leftAll, saldoPctVals);
-        return {
-          x: { grid: { color: '#f3f4f6' }, ticks: { font: { size: 10 }, color: '#9ca3af' } },
-          y: {
-            position: 'left', grid: { color: '#f3f4f6' },
-            min: lMin, max: lMax,
-            ticks: { font: { size: 10 }, color: '#9ca3af',
-              callback: v => (v / 1000).toFixed(0) + 'k M€' },
-          },
-          y2: {
-            position: 'right', grid: { drawOnChartArea: false },
-            min: rMin, max: rMax,
-            ticks: { font: { size: 10 }, color: '#9ca3af',
-              callback: v => v.toFixed(1) + '%' },
-            title: { display: true, text: '% PIB', font: { size: 10 }, color: '#9ca3af' },
-          },
-        };
-      })(),
+      scales: {
+        x: { grid: { color: '#f3f4f6' }, ticks: { font: { size: 10 }, color: '#9ca3af' } },
+        y: {
+          position: 'left', grid: { color: '#f3f4f6' },
+          min: 0, max: lMax,
+          ticks: { font: { size: 10 }, color: '#9ca3af',
+            callback: v => (v / 1000).toFixed(0) + 'k M€' },
+        },
+        y2: {
+          position: 'right', grid: { drawOnChartArea: false },
+          min: rMin - rPad, max: rMax + rPad,
+          ticks: { font: { size: 10 }, color: '#9ca3af',
+            callback: v => v.toFixed(1) + '%' },
+          title: { display: true, text: '% PIB', font: { size: 10 }, color: '#9ca3af' },
+        },
+      },
     },
   });
 
@@ -3013,30 +3006,27 @@ function applyFilterExtended(years) {
       const labels = saldoSlice.map(p => p.date);
       const recMap  = Object.fromEntries(reg._recPts.map(p => [p.date, p.value]));
       const despMap = Object.fromEntries(reg._despPts.map(p => [p.date, p.value]));
+      const recVals  = labels.map(d => recMap[d]  != null ? recMap[d]  : null);
+      const despVals = labels.map(d => despMap[d] != null ? despMap[d] : null);
       const saldoPctVals = saldoSlice.map(p => {
         const pib = pibMap[p.date] ?? latestPib;
         return (pib && p.value != null) ? +(p.value / pib * 100).toFixed(2) : null;
       });
       reg.chart.data.labels = labels;
-      reg.chart.data.datasets[0].data = labels.map(d => recMap[d]  != null ? recMap[d]  : null);
-      reg.chart.data.datasets[1].data = labels.map(d => despMap[d] != null ? -despMap[d] : null);
-      reg.chart.data.datasets[2].data = labels.map(d => {
-        const r = recMap[d], de = despMap[d];
-        return (r != null && de != null) ? +(r - de).toFixed(0) : null;
-      });
-      const saldoLinValsF = labels.map(d => {
-        const r = recMap[d], de = despMap[d];
-        return (r != null && de != null) ? +(r - de).toFixed(0) : null;
-      });
-      reg.chart.data.datasets[3].data = saldoPctVals;
-      reg.chart.data.datasets[3].backgroundColor = saldoPctVals.map(v => v >= 0 ? 'rgba(5,150,105,.55)' : 'rgba(220,38,38,.55)');
-      reg.chart.data.datasets[3].borderColor = saldoPctVals.map(v => v >= 0 ? '#059669' : '#dc2626');
-      const leftAllF = [...labels.map(d => recMap[d] ?? null), ...labels.map(d => despMap[d] != null ? -despMap[d] : null), ...saldoLinValsF];
-      const axF = ssAlignAxes(leftAllF, saldoPctVals);
-      reg.chart.options.scales.y.min  = axF.lMin;
-      reg.chart.options.scales.y.max  = axF.lMax;
-      reg.chart.options.scales.y2.min = axF.rMin;
-      reg.chart.options.scales.y2.max = axF.rMax;
+      reg.chart.data.datasets[0].data = recVals;
+      reg.chart.data.datasets[1].data = despVals;
+      reg.chart.data.datasets[2].data = saldoPctVals;
+      reg.chart.data.datasets[2].backgroundColor = saldoPctVals.map(v => v >= 0 ? 'rgba(5,150,105,.55)' : 'rgba(220,38,38,.55)');
+      reg.chart.data.datasets[2].borderColor = saldoPctVals.map(v => v >= 0 ? '#059669' : '#dc2626');
+      const lMaxF = Math.max(0, ...recVals.filter(Boolean), ...despVals.filter(Boolean)) * 1.1;
+      const rVals = saldoPctVals.filter(v => v != null);
+      const rMin = Math.min(...rVals, 0);
+      const rMax = Math.max(...rVals, 0);
+      const rPad = Math.max((rMax - rMin) * 0.15, 0.5);
+      reg.chart.options.scales.y.min  = 0;
+      reg.chart.options.scales.y.max  = lMaxF;
+      reg.chart.options.scales.y2.min = rMin - rPad;
+      reg.chart.options.scales.y2.max = rMax + rPad;
       reg.chart.update();
       updateRangeLabel(wrapId, saldoSlice);
     } else if (reg.isSaldo) {

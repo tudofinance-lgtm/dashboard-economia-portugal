@@ -378,6 +378,39 @@ def fetch_eurostat() -> dict:
     except Exception as e:
         log.error(f"    Salaries failed: {e}")
 
+    # Segurança Social (S.1314) — TR, TE, B9 — Eurostat gov_10a_main
+    log.info("  Eurostat SS S1314 (TR/TE/B9)…")
+    try:
+        url = (f"{ESTAT}/statistics/1.0/data/gov_10a_main"
+               "?format=JSON&geo=PT&unit=MIO_EUR&sector=S1314&lang=en")
+        r = get(url)
+        data = r.json()
+        dims    = data.get("dimension", {})
+        na_idx  = dims.get("na_item", {}).get("category", {}).get("index", {})
+        time_d  = dims.get("time",    {}).get("category", {})
+        times   = sorted(time_d.get("index", {}).items(), key=lambda x: x[1])
+        n_time  = len(times)
+        values  = data.get("value", {})
+
+        def extract_ss_item(code: str) -> list:
+            pos = na_idx.get(code)
+            if pos is None:
+                return []
+            return [{"date": t, "value": values.get(str(pos * n_time + ti))}
+                    for ti, (t, _) in enumerate(times)
+                    if values.get(str(pos * n_time + ti)) is not None]
+
+        out["ss"] = {
+            "tr": extract_ss_item("TR"),   # Receitas totais SS
+            "te": extract_ss_item("TE"),   # Despesas totais SS
+            "b9": extract_ss_item("B9"),   # Saldo (net lending)
+        }
+        log.info(f"    → TR {len(out['ss']['tr'])} pts, "
+                 f"TE {len(out['ss']['te'])} pts, B9 {len(out['ss']['b9'])} pts")
+    except Exception as e:
+        log.error(f"    SS Eurostat failed: {e}")
+    time.sleep(0.3)
+
     return out
 
 # ──────────────────────────────────────────────────────────

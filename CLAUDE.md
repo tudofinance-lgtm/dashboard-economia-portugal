@@ -50,6 +50,19 @@ Para séries ECB/Eurostat: atualizar  as funções `fetch_ecb()` / `fetch_eurost
 | 88910 | Juros e encargos Estado |
 | 12561508–12561512 | Confiança |
 
+## Chaves Eurostat em cache (eurostat.*)
+
+| Chave | Dataset | Descrição |
+|---|---|---|
+| `eurostat.unemp` | une_rt_q | Taxa desemprego PT trimestral |
+| `eurostat.pibEU` | nama_10_pc | PIB per capita EU27 anual |
+| `eurostat.salarios` | earn_nt_net | Salários PT + EU27 |
+| `eurostat.ss.tr` | gov_10a_main / S1314 | SS Receitas totais anuais M€ |
+| `eurostat.ss.te` | gov_10a_main / S1314 | SS Despesas totais anuais M€ |
+| `eurostat.ss.b9` | gov_10a_main / S1314 | SS Saldo (net lending) anuais M€ |
+
+*Nota: séries BPstat 88895/88896/88881/88885 (SS mensais) foram removidas do BPstat → substituídas por Eurostat gov_10a_main S.1314.*
+
 ## Arquitetura geral
 
 - Site estático GitHub Pages + Cloudflare CDN

@@ -72,6 +72,7 @@ BPSTAT_SERIES = [
     # Execução orçamental Estado — detalhes adicionais
     88875,  # Receitas correntes Estado
     88877,  # Receitas IVA Estado
+    88878,  # Receitas ISP Estado (Imposto sobre Produtos Petrolíferos)
     88886,  # Despesas correntes Estado
     88894,  # Saldo Estado
     88898,  # Impostos diretos Estado

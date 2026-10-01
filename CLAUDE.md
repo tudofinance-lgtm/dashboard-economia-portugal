@@ -41,6 +41,7 @@ Para séries ECB/Eurostat: atualizar  as funções `fetch_ecb()` / `fetch_eurost
 | 12560967, 12560987–12560992 | Despesas AP por categoria (capital, pessoal, transferências, etc.) |
 | 88875 | Receitas correntes Estado |
 | 88877 | Receitas IVA Estado |
+| 88878 | Receitas ISP Estado (Imposto sobre Produtos Petrolíferos) |
 | 88886 | Despesas correntes Estado |
 | 88894 | Saldo Estado |
 | 88898 | Impostos diretos Estado |

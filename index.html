@@ -8,18 +8,12 @@
   <meta name="keywords" content="dashboard economia portugal, PIB portugal, inflação portugal, desemprego portugal, dívida pública, euribor, dados macroeconómicos"/>
   <meta name="robots" content="index, follow"/>
   <link rel="canonical" href="https://dashboardportugal.pt/"/>
-  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
   <!-- Open Graph -->
   <meta property="og:type" content="website"/>
   <meta property="og:title" content="Dashboard Económico Portugal — Indicadores Macroeconómicos"/>
   <meta property="og:description" content="Painel de dados macroeconómicos de Portugal: PIB, inflação, desemprego, dívida pública e mais. Dados de fontes oficiais actualizados automaticamente."/>
   <meta property="og:url" content="https://dashboardportugal.pt/"/>
   <meta property="og:locale" content="pt_PT"/>
-  <meta property="og:image" content="https://dashboardportugal.pt/og-image.png"/>
-  <meta property="og:image:width" content="1200"/>
-  <meta property="og:image:height" content="630"/>
-  <meta name="twitter:card" content="summary_large_image"/>
-  <meta name="twitter:image" content="https://dashboardportugal.pt/og-image.png"/>
   <!-- Schema.org JSON-LD -->
   <script type="application/ld+json">
   {
@@ -30,14 +24,6 @@
     "url": "https://dashboardportugal.pt/",
     "inLanguage": "pt-PT"
   }
-  </script>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q1HGNHGTKK"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-Q1HGNHGTKK');
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <script>
@@ -121,8 +107,8 @@
     #sticky-filter-bar h2{font-size:.95rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--text)}
 
     /* LEADERBOARD AD */
-    .ad-leaderboard{display:flex;align-items:center;justify-content:center;margin:18px 0}
-    .ad-leaderboard ins{display:block;width:100%;max-width:728px}
+    .ad-leaderboard{display:flex;align-items:center;justify-content:center;margin:18px 0;min-height:90px}
+    .ad-leaderboard ins,.ad-leaderboard .ad-placeholder{display:block;width:728px;height:90px;max-width:100%}
     .ad-placeholder{background:#f8f9fa;border:1px dashed #d1d5db;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:.65rem;letter-spacing:.05em;text-transform:uppercase;font-weight:600}
     @media(max-width:768px){.ad-leaderboard ins,.ad-leaderboard .ad-placeholder{width:320px;height:50px}}
 
@@ -151,32 +137,15 @@
     .navbar-link.active{background:rgba(37,99,235,.10);color:#2563eb}
     .navbar-link .nav-icon{font-size:.9rem}
     @media(max-width:600px){.navbar-brand{font-size:.82rem}.navbar-link{padding:5px 9px;font-size:.72rem}}
-
-    /* ── MOBILE LAYOUT ── */
-    @media(max-width:600px){
-      header{padding:12px 14px 0}
-      main{padding:16px 14px}
-      footer{padding:10px 14px;flex-wrap:wrap;gap:4px}
-      #stale-warning{padding:0 14px!important}
-      /* Nav: scroll horizontal em vez de overflow */
-      .navbar-links{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;width:100%}
-      .navbar-links::-webkit-scrollbar{display:none}
-      /* KPI: 2 colunas */
-      .kpi-grid{grid-template-columns:repeat(2,1fr);gap:8px}
-      .kpi-value{font-size:1.15rem}
-      .kpi-card{padding:12px 13px 11px}
-      .kpi-icon{top:10px;right:10px;font-size:.85rem}
-      /* Filter bar: empilhar */
-      #sticky-filter-bar{flex-direction:column;align-items:flex-start;gap:6px}
-      #sticky-filter-bar h2{font-size:.85rem}
-      /* Section head: wrap */
-      .section-head{flex-wrap:wrap;gap:8px}
-      /* Chart header: empilhar fonte/intervalo */
-      .chart-header{flex-direction:column;gap:3px}
-      .chart-header > div:last-child{text-align:left}
-      /* Ad */
-      .ad-leaderboard{margin:10px 0}
-    }
+    /* KPI card source links */
+    .kpi-ext-link{position:absolute;inset:0;z-index:1;cursor:pointer;border-radius:10px}
+    .kpi-ext-link::after{content:'↗';position:absolute;bottom:7px;right:9px;font-size:.65rem;color:var(--muted2);opacity:0;transition:opacity .15s;font-weight:700;line-height:1}
+    .kpi-card:hover .kpi-ext-link::after{opacity:.8}
+    .kpi-card{transition:border-color .15s,box-shadow .15s}
+    .kpi-card:hover{border-color:#d1d5db;box-shadow:0 2px 8px rgba(0,0,0,.10)}
+    /* Chart source links */
+    .chart-source a,.chart-src a{color:var(--muted2);text-decoration:none;border-bottom:1px dotted currentColor}
+    .chart-source a:hover,.chart-src a:hover{color:var(--muted)}
   </style>
 </head>
 <body>
@@ -184,10 +153,9 @@
 <header>
   <div class="header-inner">
     <div class="header-top">
-      <a class="navbar-brand" href="/">Dashboard<span>Portugal</span></a>
+      <a class="navbar-brand" href="index.html">Dashboard<span>Portugal</span></a>
       <div class="navbar-links">
-        <a class="navbar-link active" href="/"><span class="nav-icon">📊</span> Dashboard Macroeconómico</a>
-        <a class="navbar-link" href="orcamento.html"><span class="nav-icon">🏛️</span> Orçamento</a>
+        <a class="navbar-link active" href="index.html"><span class="nav-icon">📊</span> Dashboard Macroeconómico</a>
         <a class="navbar-link" href="inflacao-hicp.html"><span class="nav-icon">📈</span> Inflação IHPC</a>
         <a class="navbar-link" href="euribor.html"><span class="nav-icon">💶</span> Euribor &amp; Crédito</a>
       </div>
@@ -217,110 +185,148 @@
   <section>
     <div class="kpi-grid">
       <div class="kpi-card" id="kpi-pib">
+        <a class="kpi-ext-link" href="https://bpstat.bportugal.pt/serie/12518356" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
         <div class="kpi-icon">📈</div>
         <div class="kpi-label">PIB Total</div>
         <div class="kpi-value kpi-loading">…</div>
         <div class="kpi-sub">Preços correntes · soma anual</div>
       </div>
       <div class="kpi-card" id="kpi-pib-pc">
+        <a class="kpi-ext-link" href="https://bpstat.bportugal.pt/serie/12518356" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
         <div class="kpi-icon">👤</div>
         <div class="kpi-label">PIB per Capita</div>
         <div class="kpi-value kpi-loading">…</div>
         <div class="kpi-sub">Estimativa anual</div>
       </div>
       <div class="kpi-card" id="kpi-divida-pct">
+        <a class="kpi-ext-link" href="https://bpstat.bportugal.pt/serie/12561512" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
         <div class="kpi-icon">📊</div>
         <div class="kpi-label">Dívida Pública % PIB</div>
         <div class="kpi-value kpi-loading">…</div>
         <div class="kpi-sub">Critério Maastricht (EDP)</div>
       </div>
       <div class="kpi-card" id="kpi-divida-total">
+        <a class="kpi-ext-link" href="https://bpstat.bportugal.pt/serie/12561511" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
         <div class="kpi-icon">💳</div>
         <div class="kpi-label">Dívida Pública Total</div>
         <div class="kpi-value kpi-loading">…</div>
         <div class="kpi-sub">Estimativa</div>
       </div>
       <div class="kpi-card" id="kpi-desemprego">
+        <a class="kpi-ext-link" href="https://ec.europa.eu/eurostat/databrowser/view/UNE_RT_Q" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
         <div class="kpi-icon">👥</div>
         <div class="kpi-label">Taxa de Desemprego</div>
         <div class="kpi-value kpi-loading">…</div>
         <div class="kpi-sub">Total HM · trimestral · INE</div>
       </div>
       <div class="kpi-card" id="kpi-balanca">
+        <a class="kpi-ext-link" href="https://bpstat.bportugal.pt/serie/12457924" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
         <div class="kpi-icon">🌐</div>
         <div class="kpi-label">Balança Corrente</div>
         <div class="kpi-value kpi-loading">…</div>
         <div class="kpi-sub">Saldo trimestral (M€)</div>
       </div>
       <div class="kpi-card" id="kpi-endiv">
+        <a class="kpi-ext-link" href="https://bpstat.bportugal.pt/serie/12512877" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
         <div class="kpi-icon">⬇</div>
         <div class="kpi-label">Endividamento Part.</div>
         <div class="kpi-value kpi-loading">…</div>
         <div class="kpi-sub">Famílias · stock mensal</div>
       </div>
       <div class="kpi-card" id="kpi-prestacao">
+        <a class="kpi-ext-link" href="https://bpstat.bportugal.pt/serie/12710744" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
         <div class="kpi-icon">🏠</div>
         <div class="kpi-label">Prestação Habitação</div>
         <div class="kpi-value kpi-loading">…</div>
         <div class="kpi-sub">Mediana · stock empréstimos</div>
       </div>
       <div class="kpi-card" id="kpi-saldo">
+        <a class="kpi-ext-link" href="https://bpstat.bportugal.pt/serie/12645509" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
         <div class="kpi-icon">💰</div>
         <div class="kpi-label">Saldo Orçamental</div>
         <div class="kpi-value kpi-loading">…</div>
         <div class="kpi-sub">% PIB · Adm. Públicas</div>
       </div>
       <div class="kpi-card" id="kpi-ot10">
+        <a class="kpi-ext-link" href="https://bpstat.bportugal.pt/serie/12099459" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
         <div class="kpi-icon">📋</div>
         <div class="kpi-label">OT 10 Anos</div>
         <div class="kpi-value kpi-loading">…</div>
         <div class="kpi-sub">Taxa rendibilidade · Portugal</div>
       </div>
       <div class="kpi-card" id="kpi-spread">
+        <a class="kpi-ext-link" href="https://bpstat.bportugal.pt/serie/12099459" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
         <div class="kpi-icon">⚖️</div>
         <div class="kpi-label">Spread OT/Bund</div>
         <div class="kpi-value kpi-loading">…</div>
         <div class="kpi-sub">Risco soberano · pp</div>
       </div>
-
+      <div class="kpi-card" id="kpi-renovavel">
+        <a class="kpi-ext-link" href="https://www.dgeg.gov.pt/estatisticas/energia/balanco-eletrico/" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
+        <div class="kpi-icon">⚡</div>
+        <div class="kpi-label">Energia Renovável</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div class="kpi-sub">% produção elétrica · DGEG</div>
+      </div>
       <div class="kpi-card" id="kpi-populacao">
+        <a class="kpi-ext-link" href="https://www.ine.pt/xportal/xmain?xpid=INE&xpgid=ine_indicadores&indOcorrCod=0008273" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
         <div class="kpi-icon">👥</div>
         <div class="kpi-label">População</div>
         <div class="kpi-value kpi-loading">…</div>
         <div class="kpi-sub">Residentes · INE</div>
       </div>
       <div class="kpi-card" id="kpi-inflacao">
+        <a class="kpi-ext-link" href="https://bpstat.bportugal.pt/serie/12704650" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
         <div class="kpi-icon">📉</div>
         <div class="kpi-label">Inflação IPC</div>
         <div class="kpi-value kpi-loading">…</div>
         <div class="kpi-sub">Taxa variação anual · INE</div>
       </div>
       <div class="kpi-card" id="kpi-euribor6m">
+        <a class="kpi-ext-link" href="https://data.ecb.europa.eu/data/datasets/FM/FM.M.U2.EUR.RT0.MM.EURIBOR6MD_.HSTA" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
         <div class="kpi-icon">💶</div>
         <div class="kpi-label">Euribor 6M</div>
         <div class="kpi-value kpi-loading">…</div>
         <div class="kpi-sub">Taxa mensal · BCE</div>
       </div>
       <div class="kpi-card" id="kpi-euribor12m">
+        <a class="kpi-ext-link" href="https://data.ecb.europa.eu/data/datasets/FM/FM.M.U2.EUR.RT0.MM.EURIBOR1YD_.HSTA" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
         <div class="kpi-icon">💶</div>
         <div class="kpi-label">Euribor 12M</div>
         <div class="kpi-value kpi-loading">…</div>
         <div class="kpi-sub">Taxa mensal · BCE</div>
       </div>
-
+      <div class="kpi-card" id="kpi-ren-consumo">
+        <a class="kpi-ext-link" href="https://datahub.ren.pt/pt/eletricidade/consumo/" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
+        <div class="kpi-icon">⚡</div>
+        <div class="kpi-label">Consumo Elétrico</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div class="kpi-sub" id="kpi-ren-consumo-sub">Variação mensal · REN</div>
+      </div>
+      <div class="kpi-card" id="kpi-ren-preco">
+        <a class="kpi-ext-link" href="https://datahub.ren.pt/pt/eletricidade/precos-mercado/" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
+        <div class="kpi-icon">🔌</div>
+        <div class="kpi-label">Preço Mercado Elétrico</div>
+        <div class="kpi-value kpi-loading">…</div>
+        <div id="kpi-ren-preco-badge"></div>
+        <div class="kpi-sub" id="kpi-ren-preco-sub">Média mensal PT · REN</div>
+      </div>
       <div class="kpi-card" id="kpi-pib-est">
+        <a class="kpi-ext-link" href="https://bpstat.bportugal.pt/serie/12518283" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
         <div class="kpi-icon">📈</div>
         <div class="kpi-label">PIB Total — Estimativa</div>
         <div class="kpi-value kpi-loading">…</div>
         <div class="kpi-sub" id="kpi-pib-est-sub">Extrapolação trimestral · BPstat</div>
       </div>
       <div class="kpi-card" id="kpi-pib-pc-est">
+        <a class="kpi-ext-link" href="https://bpstat.bportugal.pt/serie/12518283" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
         <div class="kpi-icon">👤</div>
         <div class="kpi-label">PIB per Capita — Estimativa</div>
         <div class="kpi-value kpi-loading">…</div>
         <div class="kpi-sub" id="kpi-pib-pc-est-sub">Extrapolação trimestral · BPstat</div>
       </div>
       <div class="kpi-card" id="kpi-divida-pct-est">
+        <a class="kpi-ext-link" href="https://bpstat.bportugal.pt/serie/12561508" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
         <div class="kpi-icon">📊</div>
         <div class="kpi-label">Dívida % PIB — Estimativa</div>
         <div class="kpi-value kpi-loading">…</div>
@@ -330,9 +336,10 @@
   </section>
 
   <!-- AD: LEADERBOARD 1 — após KPIs -->
-  <div class="ad-leaderboard" id="ad-lb-1" style="display:none">
-    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-1015529156935926" data-ad-slot="5645404457" data-ad-format="auto" data-full-width-responsive="true"></ins>
-    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  <div class="ad-leaderboard">
+    <!-- Google AdSense — substituir pelo bloco <ins> quando aprovado -->
+    <!-- <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins> -->
+    <div class="ad-placeholder">Publicidade · 728×90</div>
   </div>
 
   <!-- BARRA DE FILTRO STICKY -->
@@ -366,7 +373,7 @@
             <div class="chart-subtitle">% do PIB · anual · positivo = excedente</div>
           </div>
           <div style="text-align:right">
-            <div class="chart-source">BPstat · Série 12645509</div>
+            <div class="chart-source"><a href="https://bpstat.bportugal.pt/serie/12645509" target="_blank" rel="noopener">BPstat · Série 12645509</a></div>
             <div class="chart-range" id="range-saldo">–</div>
           </div>
         </div>
@@ -375,11 +382,11 @@
       <div class="chart-card">
         <div class="chart-header">
           <div>
-            <div class="chart-title">Segurança Social: Receitas vs Despesas</div>
-            <div class="chart-subtitle">M€ · anuais · receitas (verde) · despesas (vermelho) · saldo M€ (azul) · saldo % PIB: eixo direito</div>
+            <div class="chart-title">Saldo Orçamental da Segurança Social</div>
+            <div class="chart-subtitle">% do PIB · anual · positivo = excedente</div>
           </div>
           <div style="text-align:right">
-            <div class="chart-source">Eurostat · gov_10a_main · S.1314</div>
+            <div class="chart-source"><a href="https://bpstat.bportugal.pt/serie/88895" target="_blank" rel="noopener">BPstat · Série 88895</a></div>
             <div class="chart-range" id="range-saldo-estado">–</div>
           </div>
         </div>
@@ -392,7 +399,7 @@
             <div class="chart-subtitle">M€ · Estado central (linhas sólidas) vs AP consolidadas execução orçamental (linhas tracejadas)</div>
           </div>
           <div style="text-align:right">
-            <div class="chart-source">BPstat · Séries 88873 / 88884</div>
+            <div class="chart-source"><a href="https://bpstat.bportugal.pt/serie/88873" target="_blank" rel="noopener">BPstat · Séries 88873 / 88884</a></div>
             <div class="chart-range" id="range-recdep">–</div>
           </div>
         </div>
@@ -412,7 +419,7 @@
             <div class="chart-subtitle">YTD · M€ · comparação anual (últimos 3 anos)</div>
           </div>
           <div style="text-align:right">
-            <div class="chart-source">BPstat · Série 12560943</div>
+            <div class="chart-source"><a href="https://bpstat.bportugal.pt/serie/12560943" target="_blank" rel="noopener">BPstat · Série 12560943</a></div>
             <div class="chart-range" id="range-execorc">–</div>
           </div>
         </div>
@@ -435,7 +442,7 @@
             <div class="chart-subtitle">Valor absoluto · M€ · anual · BPstat / INE</div>
           </div>
           <div style="text-align:right">
-            <div class="chart-source">BPstat · BdP</div>
+            <div class="chart-source"><a href="https://bpstat.bportugal.pt/" target="_blank" rel="noopener">BPstat · BdP</a></div>
             <div class="chart-range" id="range-divida-total">–</div>
           </div>
         </div>
@@ -453,7 +460,7 @@
             <div class="chart-subtitle">Estimativas anuais · milhares · INE</div>
           </div>
           <div style="text-align:right">
-            <div class="chart-source">INE</div>
+            <div class="chart-source"><a href="https://www.ine.pt/" target="_blank" rel="noopener">INE</a></div>
             <div class="chart-range" id="range-pop">2000–2025</div>
           </div>
         </div>
@@ -466,7 +473,7 @@
             <div class="chart-subtitle">Preços correntes · anual · BPstat ÷ INE · Eurostat</div>
           </div>
           <div style="text-align:right">
-            <div class="chart-source">BPstat · INE</div>
+            <div class="chart-source"><a href="https://bpstat.bportugal.pt/serie/12518356" target="_blank" rel="noopener">BPstat · INE</a></div>
             <div class="chart-range" id="range-pib-pc-pt">–</div>
           </div>
         </div>
@@ -481,29 +488,29 @@
         <div class="chart-header">
           <div>
             <div class="chart-title">Receitas AP — Decomposição</div>
-            <div class="chart-subtitle">Últimos 5 anos · mensal YTD · % do total · variação YoY</div>
+            <div class="chart-subtitle">Ano mais recente · % do total · AP consolidadas</div>
           </div>
           <div style="text-align:right">
-            <div class="chart-source">BPstat · 12560971 · 75 · 79 · 83 · 55</div>
+            <div class="chart-source"><a href="https://bpstat.bportugal.pt/serie/12560975" target="_blank" rel="noopener">BPstat · 12560975 · 79 · 83 · 55 · 71</a></div>
             <div class="chart-range" id="range-rec-decomp">–</div>
           </div>
         </div>
         <div class="chart-legend" id="legend-rec-decomp"></div>
-        <div class="chart-wrap" style="height:300px" id="wrap-rec-decomp"><div class="chart-loading">A carregar…</div></div>
+        <div class="chart-wrap" style="height:280px" id="wrap-rec-decomp"><div class="chart-loading">A carregar…</div></div>
       </div>
       <div class="chart-card">
         <div class="chart-header">
           <div>
             <div class="chart-title">Despesas AP — Decomposição</div>
-            <div class="chart-subtitle">Últimos 5 anos · mensal YTD · % do total · variação YoY</div>
+            <div class="chart-subtitle">Ano mais recente · % do total · AP consolidadas</div>
           </div>
           <div style="text-align:right">
-            <div class="chart-source">BPstat · 12560987 · 88 · 89 · 90 · 91 · 92 · 67</div>
+            <div class="chart-source"><a href="https://bpstat.bportugal.pt/serie/12560987" target="_blank" rel="noopener">BPstat · 12560987–92 · 67</a></div>
             <div class="chart-range" id="range-desp-decomp">–</div>
           </div>
         </div>
         <div class="chart-legend" id="legend-desp-decomp"></div>
-        <div class="chart-wrap" style="height:300px" id="wrap-desp-decomp"><div class="chart-loading">A carregar…</div></div>
+        <div class="chart-wrap" style="height:280px" id="wrap-desp-decomp"><div class="chart-loading">A carregar…</div></div>
       </div>
     </div>
   </section>
@@ -521,7 +528,7 @@
             <div class="chart-subtitle">Variação anual · % · INE Portugal</div>
           </div>
           <div style="text-align:right">
-            <div class="chart-source">INE</div>
+            <div class="chart-source"><a href="https://www.ine.pt/" target="_blank" rel="noopener">INE</a></div>
             <div class="chart-range" id="range-inflacao">–</div>
           </div>
         </div>
@@ -539,7 +546,7 @@
             <div class="chart-subtitle">Taxa mensal · % · BCE</div>
           </div>
           <div style="text-align:right">
-            <div class="chart-source" id="src-euribor">BCE (estimativa)</div>
+            <div class="chart-source" id="src-euribor"><a href="https://data.ecb.europa.eu/data/datasets/FM" target="_blank" rel="noopener">BCE (estimativa)</a></div>
             <div class="chart-range" id="range-euribor">–</div>
           </div>
         </div>
@@ -568,7 +575,7 @@
             <div class="chart-subtitle">Geração total · Renovável · Saldo importação · Consumo · GWh</div>
           </div>
           <div style="text-align:right">
-            <div class="chart-source">REN DataHub</div>
+            <div class="chart-source"><a href="https://datahub.ren.pt/" target="_blank" rel="noopener">REN DataHub</a></div>
             <div class="chart-range" id="range-ren-balanco">–</div>
           </div>
         </div>
@@ -582,7 +589,7 @@
             <div class="chart-subtitle">Último mês disponível · GWh</div>
           </div>
           <div style="text-align:right">
-            <div class="chart-source">REN DataHub</div>
+            <div class="chart-source"><a href="https://datahub.ren.pt/" target="_blank" rel="noopener">REN DataHub</a></div>
             <div class="chart-range" id="range-ren-renovaveis">–</div>
           </div>
         </div>
@@ -596,7 +603,7 @@
             <div class="chart-subtitle">Preço médio mensal PT · MIBEL · €/MWh</div>
           </div>
           <div style="text-align:right">
-            <div class="chart-source">REN DataHub</div>
+            <div class="chart-source"><a href="https://datahub.ren.pt/" target="_blank" rel="noopener">REN DataHub</a></div>
             <div class="chart-range" id="range-ren-preco-hist">–</div>
           </div>
         </div>
@@ -619,7 +626,7 @@
             <div class="chart-subtitle">Taxa PT − Taxa DE · mensal · pp (pontos percentuais)</div>
           </div>
           <div style="text-align:right">
-            <div class="chart-source" id="src-spread">BPstat · BCE</div>
+            <div class="chart-source" id="src-spread"><a href="https://bpstat.bportugal.pt/serie/12099459" target="_blank" rel="noopener">BPstat · BCE</a></div>
             <div class="chart-range" id="range-spread">–</div>
           </div>
         </div>
@@ -638,7 +645,7 @@
             <div class="chart-subtitle">Bruto anual · trabalhador solteiro 100% sal. médio · EUR · Eurostat</div>
           </div>
           <div style="text-align:right">
-            <div class="chart-source">Eurostat · earn_nt_net</div>
+            <div class="chart-source"><a href="https://ec.europa.eu/eurostat/databrowser/view/EARN_NT_NET" target="_blank" rel="noopener">Eurostat · earn_nt_net</a></div>
             <div class="chart-range" id="range-salarios">–</div>
           </div>
         </div>
@@ -664,7 +671,7 @@
             <div class="chart-subtitle">Stock de empréstimos · percentil 50 · mensal · €</div>
           </div>
           <div style="text-align:right">
-            <div class="chart-source">BPstat · Série 12710744</div>
+            <div class="chart-source"><a href="https://bpstat.bportugal.pt/serie/12710744" target="_blank" rel="noopener">BPstat · Série 12710744</a></div>
             <div class="chart-range" id="range-prestacao">–</div>
           </div>
         </div>
@@ -674,7 +681,7 @@
         <div class="chart-header">
           <div>
             <div class="chart-title">Endividamento dos Particulares</div>
-            <div class="chart-src" id="src-endiv">BPstat · Banco de Portugal</div>
+            <div class="chart-src" id="src-endiv"><a href="https://bpstat.bportugal.pt/serie/12512877" target="_blank" rel="noopener">BPstat · Banco de Portugal</a></div>
           </div>
           <div class="chart-range" id="range-endiv" style="text-align:right">–</div>
         </div>
@@ -697,7 +704,7 @@
             <div class="chart-subtitle">Transações acumuladas ano móvel · % do PIB · trimestral · BPstat</div>
           </div>
           <div style="text-align:right">
-            <div class="chart-source">BPstat · 12414395 · 12427901 · 12439580 · 12445096 · 12456320</div>
+            <div class="chart-source"><a href="https://bpstat.bportugal.pt/serie/12414395" target="_blank" rel="noopener">BPstat · 12414395 · 12427901 · 12439580 · 12445096 · 12456320</a></div>
             <div class="chart-range" id="range-cap-fin">–</div>
           </div>
         </div>
@@ -717,7 +724,7 @@
             <div class="chart-subtitle">Saldo de respostas · anual · INE Portugal</div>
           </div>
           <div style="text-align:right">
-            <div class="chart-source">INE</div>
+            <div class="chart-source"><a href="https://www.ine.pt/" target="_blank" rel="noopener">INE</a></div>
             <div class="chart-range" id="range-confianca">–</div>
           </div>
         </div>
@@ -731,93 +738,16 @@
   </section>
 
   <!-- AD: LEADERBOARD 3 — antes do rodapé -->
-  <div class="ad-leaderboard" id="ad-lb-3" style="display:none;margin-top:10px;margin-bottom:0">
-    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-1015529156935926" data-ad-slot="5645404457" data-ad-format="auto" data-full-width-responsive="true"></ins>
-    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  <div class="ad-leaderboard" style="margin-top:10px;margin-bottom:0">
+    <!-- <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins> -->
+    <div class="ad-placeholder">Publicidade · 728×90</div>
   </div>
-
-  <!-- SEO ARTICLE + FAQ -->
-  <section style="margin-top:32px">
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:32px 36px;box-shadow:var(--shadow);max-width:900px;margin:0 auto">
-      <h2 style="font-size:1.1rem;font-weight:800;letter-spacing:.03em;text-transform:none;color:var(--text);margin-bottom:6px">O Estado da Macroeconomia em Portugal: Uma Análise Estrutural do PIB, Dívida Pública e Inflação</h2>
-
-      <div id="seo-article-body" style="display:block">
-        <div style="font-size:.82rem;line-height:1.75;color:var(--text);opacity:.85">
-
-          <h3 style="font-size:.85rem;font-weight:700;margin:20px 0 6px;color:var(--text)">Introdução Contextual</h3>
-          <p>A trajetória macroeconómica de Portugal nas últimas décadas revela um percurso de profunda integração europeia, marcado por desafios estruturais persistentes e respostas assimétricas a choques externos. Compreender o comportamento das principais variáveis — nomeadamente o <strong>PIB</strong>, a <strong>dívida pública</strong> e a <strong>taxa de inflação</strong> — é fundamental para decifrar não só o estado atual das finanças do país, mas também o seu potencial de crescimento a longo prazo.</p>
-
-          <h3 style="font-size:.85rem;font-weight:700;margin:20px 0 6px;color:var(--text)">O Comportamento e Evolução do PIB em Portugal</h3>
-          <p>O Produto Interno Bruto (PIB) constitui a métrica central para aferir a atividade económica e a riqueza total produzida no país. Quando avaliamos historicamente este indicador, observamos ciclos macroeconómicos bem delineados. Após a adesão à Zona Euro, Portugal registou um período de convergência nominal rápida, contudo acompanhado por desequilíbrios estruturais que culminaram na crise de balança de pagamentos e na subsequente intervenção financeira em 2011.</p>
-          <p>Nos anos subsequentes à assistência financeira, a recuperação económica foi impulsionada significativamente pelo setor externo, com o turismo e as exportações de bens e serviços a desempenharem o papel de motores principais. A evolução reflete a transição para uma economia mais aberta, embora persistam vulnerabilidades ligadas à baixa produtividade total dos fatores e ao défice de investimento crónico em capital fixo (FBCF).</p>
-
-          <h3 style="font-size:.85rem;font-weight:700;margin:20px 0 6px;color:var(--text)">O PIB Per Capita em Portugal e a Convergência Europeia</h3>
-          <p>Embora o valor nominal ou em volume do PIB forneça a dimensão absoluta da economia, é o <strong>PIB per capita</strong> (ajustado pelas Paridades de Poder de Compra — PPC) que traduz o verdadeiro padrão de vida e o nível de bem-estar económico da população face aos parceiros europeus. A análise deste indicador revela um fenómeno que os economistas designam frequentemente por "armadilha do rendimento médio" ou estagnação da convergência.</p>
-          <p>Apesar dos progressos registados em anos recentes de recuperação pós-pandémica, o ritmo de aproximação à média da União Europeia tem sido historicamente lento, sendo o país por vezes ultrapassado por economias de leste que integraram o bloco comunitário mais tarde. Esta realidade decorre de uma estrutura produtiva exposta a setores tradicionais de baixo valor acrescentado, baixos salários médios e assimetrias geracionais nas qualificações de capital humano.</p>
-
-          <h3 style="font-size:.85rem;font-weight:700;margin:20px 0 6px;color:var(--text)">A Problemática da Dívida Pública: Sustentabilidade e Consolidação</h3>
-          <p>A evolução da <strong>dívida pública portuguesa</strong> tem sido um dos temas mais debatidos pelas agências de notação financeira e pelas instituições europeias. A acumulação de sucessivos défices orçamentais e as crises financeiras passadas empurraram o rácio dívida/PIB para níveis consideravelmente elevados, ultrapassando os 130% em momentos críticos do passado recente.</p>
-          <p>Contudo, esta dinâmica alterou-se de forma acentuada no pós-pandemia. Graças a uma combinação de consolidação orçamental rigorosa, crescimento nominal da economia e o impacto mecânico da inflação — que expande o denominador do rácio —, o país tem registado uma das trajetórias de redução de dívida mais rápidas da Zona Euro. A continuação desta tendência é imperativa para reduzir o prémio de risco soberano e libertar recursos que poderiam ser canalizados para o investimento público estrutural.</p>
-
-          <h3 style="font-size:.85rem;font-weight:700;margin:20px 0 6px;color:var(--text)">A Interação entre Crescimento Económico e Consolidação da Dívida</h3>
-          <p>A sustentabilidade de longo prazo das finanças públicas está intrinsecamente ligada ao desempenho do PIB. A equação da dinâmica da dívida demonstra que, se a taxa de juro implícita for superior à taxa de crescimento nominal da economia, o Estado é obrigado a gerar saldos primários substanciais apenas para estabilizar o rácio. Por isso, políticas exclusivamente focadas na austeridade, sem estimular a atividade produtiva, podem revelar-se contraproducentes, comprometendo a capacidade de desalavancagem sustentada do país.</p>
-
-          <h3 style="font-size:.85rem;font-weight:700;margin:20px 0 6px;color:var(--text)">O Impacto Recente da Inflação em Portugal</h3>
-          <p>O surto inflacionista recente, desencadeado pelas disrupções nas cadeias de abastecimento globais no pós-COVID e agravado pelas tensões geopolíticas no Leste Europeu, alterou o comportamento dos agentes económicos e a condução da política monetária global. A <strong>taxa de inflação</strong> atingiu picos que não se registavam desde a década de 1990, impulsionada essencialmente pelos preços dos bens energéticos e alimentares.</p>
-          <p>A resposta do BCE através da subida agressiva das taxas de juro de referência teve um impacto profundo na economia nacional, dado que o mercado imobiliário e o crédito à habitação são historicamente muito dependentes de taxas variáveis (Euribor). Sob uma perspetiva orçamental, a inflação funcionou temporariamente como estabilizador das contas públicas — expandiu a receita fiscal nominal e reduziu o rácio da dívida em termos relativos. Este é, contudo, um efeito de curto prazo: a prazo, salários e pensões ajustam-se, anulando o benefício e exigindo reformas estruturais na produtividade.</p>
-
-          <h3 style="font-size:.85rem;font-weight:700;margin:20px 0 6px;color:var(--text)">Conclusão e Perspetivas Futuras</h3>
-          <p>O equilíbrio macroeconómico de Portugal assenta num triângulo dinâmico e interdependente. O crescimento robusto do PIB é a condição sine qua non para assegurar a convergência real do rendimento per capita com a Europa e para garantir a sustentabilidade das finanças públicas. Paralelamente, o controlo da inflação assume um papel fulcral na preservação da coesão social e da estabilidade financeira. O desafio futuro passará por implementar reformas estruturais que elevem o produto potencial através da inovação, da capitalização das empresas e da eficiência administrativa.</p>
-
-          <!-- FAQ accordion -->
-          <h3 style="font-size:.85rem;font-weight:700;margin:28px 0 12px;color:var(--text)">Perguntas Frequentes</h3>
-          <div style="display:flex;flex-direction:column;gap:6px">
-
-            <details style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
-              <summary style="padding:12px 16px;cursor:pointer;font-weight:600;font-size:.8rem;color:var(--text);list-style:none;display:flex;justify-content:space-between;align-items:center;user-select:none" onclick="this.parentElement.querySelector('.faq-icon').textContent=this.parentElement.open?'+':'−'">
-                Qual tem sido a evolução recente do rácio da dívida pública em Portugal?
-                <span class="faq-icon" style="font-size:1rem;color:var(--accent);font-weight:400;flex-shrink:0;margin-left:12px">−</span>
-              </summary>
-              <div style="padding:0 16px 14px;font-size:.78rem;line-height:1.7;color:var(--text);opacity:.8">O rácio da dívida pública tem registado uma trajetória de descida acentuada nos últimos anos, saindo de máximos históricos e aproximando-se de valores abaixo dos 100% do PIB. Esta redução deve-se ao excedente orçamental registado, ao crescimento do produto nominal e ao efeito da inflação sobre o denominador da equação.</div>
-            </details>
-
-            <details style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
-              <summary style="padding:12px 16px;cursor:pointer;font-weight:600;font-size:.8rem;color:var(--text);list-style:none;display:flex;justify-content:space-between;align-items:center;user-select:none" onclick="this.parentElement.querySelector('.faq-icon').textContent=this.parentElement.open?'+':'−'">
-                Como se compara o PIB per capita de Portugal com a média da União Europeia?
-                <span class="faq-icon" style="font-size:1rem;color:var(--accent);font-weight:400;flex-shrink:0;margin-left:12px">−</span>
-              </summary>
-              <div style="padding:0 16px 14px;font-size:.78rem;line-height:1.7;color:var(--text);opacity:.8">O PIB per capita nacional, medido em Paridades de Poder de Compra (PPC) para anular as diferenças de preços entre países, situa-se historicamente entre os 75% e os 80% da média da União Europeia. Apesar de períodos pontuais de aproximação, o ritmo de convergência de longo prazo tem sido moderado.</div>
-            </details>
-
-            <details style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
-              <summary style="padding:12px 16px;cursor:pointer;font-weight:600;font-size:.8rem;color:var(--text);list-style:none;display:flex;justify-content:space-between;align-items:center;user-select:none" onclick="this.parentElement.querySelector('.faq-icon').textContent=this.parentElement.open?'+':'−'">
-                De que forma a inflação afetou a economia e o PIB em Portugal?
-                <span class="faq-icon" style="font-size:1rem;color:var(--accent);font-weight:400;flex-shrink:0;margin-left:12px">−</span>
-              </summary>
-              <div style="padding:0 16px 14px;font-size:.78rem;line-height:1.7;color:var(--text);opacity:.8">O surto inflacionista provocou uma compressão do rendimento disponível real das famílias, penalizando o consumo privado — uma componente chave do PIB. Em contrapartida, impulsionou as receitas fiscais nominais do Estado e reduziu o rácio da dívida pública em termos relativos no curto prazo.</div>
-            </details>
-
-            <details style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
-              <summary style="padding:12px 16px;cursor:pointer;font-weight:600;font-size:.8rem;color:var(--text);list-style:none;display:flex;justify-content:space-between;align-items:center;user-select:none" onclick="this.parentElement.querySelector('.faq-icon').textContent=this.parentElement.open?'+':'−'">
-                Quais são as principais fontes de crescimento do PIB em Portugal?
-                <span class="faq-icon" style="font-size:1rem;color:var(--accent);font-weight:400;flex-shrink:0;margin-left:12px">−</span>
-              </summary>
-              <div style="padding:0 16px 14px;font-size:.78rem;line-height:1.7;color:var(--text);opacity:.8">O crescimento económico tem sido sustentado pelo dinamismo do setor externo — com destaque para o turismo e as exportações de bens e serviços de valor acrescentado — e, de forma intermitente, pelo consumo privado e pelo investimento associado aos fundos estruturais europeus.</div>
-            </details>
-
-          </div><!-- /FAQ -->
-        </div><!-- /article body -->
-      </div><!-- /seo-article-body -->
-
-      <button id="seo-toggle" onclick="(function(){var b=document.getElementById('seo-article-body'),t=document.getElementById('seo-toggle'),open=b.style.display==='none';b.style.display=open?'block':'none';t.textContent=open?'Mostrar menos ▲':'Ler mais ▼';})()" style="margin-top:12px;background:none;border:none;color:var(--accent);font-size:.75rem;font-weight:600;cursor:pointer;padding:0">Mostrar menos ▲</button>
-    </div>
-  </section>
 
 </main>
 
 <footer>
-  <span>Nota: Este painel é uma compilação de fontes públicas e não constitui uma representação oficial do governo. BPstat · INE · BCE · Eurostat · DGEG/REN</span>
-  <span style="display:flex;gap:16px;flex-shrink:0"><a href="politica-privacidade.html" style="color:inherit;text-decoration:none">Política de Privacidade</a><a href="contactos.html" style="color:inherit;text-decoration:none">Contactos</a></span>
+  <span>Nota: Este painel é uma compilação de fontes públicas e não constitui uma representação oficial do governo.</span>
+  <span>BPstat · INE · BCE · Eurostat · DGEG/REN</span>
 </footer>
 
 <script>
@@ -830,15 +760,15 @@ const API = 'https://bpstat.bportugal.pt/data/v1';
    Depois de fazer deploy do Worker, substituir null pelo URL:
    const WORKER_URL = 'https://dashboardportugal.pt/api/data';
    Enquanto null, o dashboard continua a chamar as APIs directamente. */
-const WORKER_URL = '/data/cache.json';
-let _workerPromise = null;  // singleton — um único fetch partilhado por todos os callers
+const WORKER_URL = null;
+let _workerData = null;
 
-function _getWorkerData() {
-  if (!_workerPromise) {
-    _workerPromise = fetch(WORKER_URL, { signal: AbortSignal.timeout(12000) })
-      .then(r => { if (!r.ok) throw new Error(`Worker HTTP ${r.status}`); return r.json(); });
-  }
-  return _workerPromise;
+async function _getWorkerData() {
+  if (_workerData) return _workerData;
+  const r = await fetch(WORKER_URL, { signal: AbortSignal.timeout(8000) });
+  if (!r.ok) throw new Error(`Worker HTTP ${r.status}`);
+  _workerData = await r.json();
+  return _workerData;
 }
 // População residente — INE, Estimativas Anuais da População Residente
 // Actualizar manualmente: dados publicados anualmente pelo INE (Junho do ano seguinte)
@@ -1097,24 +1027,15 @@ async function loadEndividamento() {
 
 async function loadDividaPublica() {
   // Série 12561512: Dívida AP em % do PIB — anual (BPstat, domínio 28)
-  // Série 12561507: Dívida AP em % do PIB — Eurostat/EDP, sempre actualizado
   // Série 12561511: Dívida AP valor absoluto (M€) — anual
   // Série 12561508: Dívida AP stocks mensais consolidados — M€ (para KPI mensal)
-  const [ptsPct, ptsPctEurostat, ptsAbs, ptsMensal] = await Promise.all([
+  const [ptsPct, ptsAbs, ptsMensal] = await Promise.all([
     getSeriesData(12561512),
-    getSeriesData(12561507).catch(() => []),
     getSeriesData(12561511),
     getSeriesData(12561508),
   ]);
-  // Merge % PIB: usar 12561512 como base histórica + 12561507 para anos mais recentes
-  const pctMap = {};
-  ptsPct.forEach(p => { pctMap[p.date.slice(0, 4)] = p.value; });
-  ptsPctEurostat.forEach(p => { pctMap[p.date.slice(0, 4)] = p.value; }); // sobrepõe com mais recente
-  const ptsPctMerged = Object.entries(pctMap)
-    .map(([date, value]) => ({ date, value }))
-    .sort((a, b) => a.date.localeCompare(b.date));
   return {
-    pts:      ptsPctMerged,
+    pts:      ptsPct.map(p => ({ date: p.date.slice(0, 4), value: p.value })),
     ptsAbs:   ptsAbs.map(p => ({ date: p.date.slice(0, 4), value: p.value })),
     ptsMensal: ptsMensal.map(p => ({ date: p.date.slice(0, 7), value: p.value })),
     isFallback: false,
@@ -1135,41 +1056,16 @@ async function loadSaldoOrcamental() {
 }
 
 async function loadSaldoEstado() {
-  // Segurança Social — Eurostat gov_10a_main, S.1314, PT, MIO_EUR
-  // TR = receitas totais, TE = despesas totais, B9 = saldo (net lending)
-  // Tenta cache primeiro, fallback direto à API
-  try {
-    const wd = await _getWorkerData();
-    const ss = wd?.eurostat?.ss;
-    if (ss?.tr?.length > 5 && ss?.te?.length > 5) {
-      return { saldo: ss.b9 || [], receita: ss.tr, despesa: ss.te };
-    }
-  } catch(e) {}
-
-  // Fallback: fetch direto ao Eurostat
-  try {
-    const url = 'https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/gov_10a_main' +
-      '?format=JSON&geo=PT&unit=MIO_EUR&sector=S1314&lang=en';
-    const data = await fetch(url, { signal: AbortSignal.timeout(15000) }).then(r => r.json());
-    const dims   = data.dimension || {};
-    const naIdx  = dims.na_item?.category?.index || {};
-    const timeD  = dims.time?.category?.index   || {};
-    const times  = Object.keys(timeD).sort();
-    const nTime  = times.length;
-    const vals   = data.value || {};
-    const extract = code => {
-      const pos = naIdx[code];
-      if (pos == null) return [];
-      return times.map((t, ti) => {
-        const v = vals[String(pos * nTime + ti)];
-        return v != null ? { date: t, value: v } : null;
-      }).filter(Boolean);
-    };
-    const tr = extract('TR'), te = extract('TE'), b9 = extract('B9');
-    if (tr.length > 5) return { saldo: b9, receita: tr, despesa: te };
-  } catch(e) { console.warn('SS Eurostat fallback failed:', e); }
-
-  return { saldo: [], receita: [], despesa: [] };
+  // Série 88895: Saldo da Segurança Social
+  // Pode ser mensal YTD (YYYY-MM) ou anual (YYYY) — tratar ambos
+  const pts = await getSeriesData(88895);
+  // Tenta filtro dezembro (mensal YTD)
+  const decPts = pts.filter(p => p.date.length >= 7 && p.date.slice(5, 7) === '12');
+  const usePts = decPts.length > 0 ? decPts : pts; // fallback: dados já anuais
+  return usePts
+    .map(p => ({ date: p.date.slice(0, 4), value: p.value }))
+    .filter((p, i, arr) => arr.findIndex(x => x.date === p.date) === i)
+    .sort((a, b) => a.date.localeCompare(b.date));
 }
 
 async function loadReceitaDespesa() {
@@ -1494,11 +1390,11 @@ async function loadSpreadOT() {
 async function loadReceitasDecompostas() {
   // Execução orçamental AP — receitas por categoria (YTD mensal → filtro dezembro = anual)
   const CFG = [
-    { id: 12560971, label: 'Impostos Diretos' },
-    { id: 12560975, label: 'Impostos Indiretos' },
-    { id: 12560979, label: 'Contribuições e Cotizações' },
-    { id: 12560983, label: 'Outras Receitas Correntes' },
-    { id: 12560955, label: 'Receitas de Capital' },
+    { id: 12560975, label: 'Impostos Diretos' },
+    { id: 12560979, label: 'Impostos Indiretos' },
+    { id: 12560983, label: 'Contribuições e Cotizações' },
+    { id: 12560955, label: 'Outras Receitas Correntes' },
+    { id: 12560971, label: 'Receitas de Capital' },
   ];
   const results = await Promise.allSettled(CFG.map(c => getSeriesData(c.id)));
   return CFG.map((c, i) => ({
@@ -1507,9 +1403,6 @@ async function loadReceitasDecompostas() {
       ? results[i].value
           .filter(p => p.date.slice(5, 7) === '12')
           .map(p => ({ date: p.date.slice(0, 4), value: p.value }))
-      : [],
-    monthlyPts: results[i].status === 'fulfilled'
-      ? results[i].value.map(p => ({ date: p.date.slice(0, 7), value: p.value }))
       : [],
   }));
 }
@@ -1517,13 +1410,13 @@ async function loadReceitasDecompostas() {
 async function loadDespesasDecompostas() {
   // Execução orçamental AP — despesas por categoria (YTD mensal → filtro dezembro = anual)
   const CFG = [
-    { id: 12560987, label: 'Pessoal' },
-    { id: 12560988, label: 'Bens e Serviços' },
-    { id: 12560989, label: 'Juros e Encargos' },
-    { id: 12560990, label: 'Subsídios' },
-    { id: 12560991, label: 'Transferências Correntes' },
-    { id: 12560992, label: 'Outras Despesas Correntes' },
-    { id: 12560967, label: 'Despesas de Capital' },
+    { id: 12560988, label: 'Pessoal' },
+    { id: 12560992, label: 'Transferências Correntes' },
+    { id: 12560989, label: 'Bens e Serviços' },
+    { id: 12560990, label: 'Juros e Encargos' },
+    { id: 12560987, label: 'Despesas de Capital' },
+    { id: 12560991, label: 'Subsídios' },
+    { id: 12560967, label: 'Outras' },
   ];
   const results = await Promise.allSettled(CFG.map(c => getSeriesData(c.id)));
   return CFG.map((c, i) => ({
@@ -1532,9 +1425,6 @@ async function loadDespesasDecompostas() {
       ? results[i].value
           .filter(p => p.date.slice(5, 7) === '12')
           .map(p => ({ date: p.date.slice(0, 4), value: p.value }))
-      : [],
-    monthlyPts: results[i].status === 'fulfilled'
-      ? results[i].value.map(p => ({ date: p.date.slice(0, 7), value: p.value }))
       : [],
   }));
 }
@@ -1570,46 +1460,33 @@ async function loadCapacidadeFinanciamento() {
    INDICATOR LOADERS — AP CONSOLIDADAS (SEC 2010)
 ══════════════════════════════════════════════════════════ */
 
-async function loadReceitaDespesaAP() {
-  // Administrações Públicas consolidadas — ótica SEC 2010 / Contas Nacionais
-  // Fonte: BPstat 12645530 (despesas totais AP anual) + 12645509 (saldo AP anual)
-  // Fallback histórico (2000-2012): dados aproximados INE/AMECO para anos pré-BPstat
-  const fallbackReceita = [
+function loadReceitaDespesaAP() {
+  // Administrações Públicas consolidadas — ótica SEC 2010
+  // Fonte: INE Contas Nacionais / DGO / AMECO · valores em M€
+  // Défice/Superávit: 2019 +0.2%, 2020 -5.8%, 2021 -2.9%, 2022 -0.3%, 2023 +1.2%, 2024 +0.4%
+  const receita = [
     {date:'2000',value:43000},{date:'2001',value:46000},{date:'2002',value:48000},
     {date:'2003',value:50000},{date:'2004',value:52000},{date:'2005',value:55000},
     {date:'2006',value:59000},{date:'2007',value:66000},{date:'2008',value:70000},
     {date:'2009',value:64000},{date:'2010',value:68000},{date:'2011',value:78000},
-    {date:'2012',value:73000},
+    {date:'2012',value:73000},{date:'2013',value:75000},{date:'2014',value:77000},
+    {date:'2015',value:78000},{date:'2016',value:80000},{date:'2017',value:84000},
+    {date:'2018',value:89000},{date:'2019',value:92000},{date:'2020',value:89000},
+    {date:'2021',value:100000},{date:'2022',value:114000},{date:'2023',value:126000},
+    {date:'2024',value:132000},
   ];
-  const fallbackDespesa = [
+  const despesa = [
     {date:'2000',value:47000},{date:'2001',value:51000},{date:'2002',value:52000},
     {date:'2003',value:54000},{date:'2004',value:57000},{date:'2005',value:64000},
     {date:'2006',value:66000},{date:'2007',value:71000},{date:'2008',value:76000},
     {date:'2009',value:80000},{date:'2010',value:87000},{date:'2011',value:91000},
-    {date:'2012',value:83000},
+    {date:'2012',value:83000},{date:'2013',value:83000},{date:'2014',value:84000},
+    {date:'2015',value:86000},{date:'2016',value:84000},{date:'2017',value:90000},
+    {date:'2018',value:90000},{date:'2019',value:92000},{date:'2020',value:101000},
+    {date:'2021',value:106000},{date:'2022',value:115000},{date:'2023',value:123000},
+    {date:'2024',value:131000},
   ];
-  try {
-    const [despPts, salPts] = await Promise.all([
-      getSeriesData(12645530),  // Despesas totais AP anual (Contas Nacionais)
-      getSeriesData(12645509),  // Saldo AP anual (Contas Nacionais)
-    ]);
-    if (!despPts?.length || !salPts?.length) return { receita: fallbackReceita, despesa: fallbackDespesa };
-    const despMap = {}, salMap = {};
-    despPts.forEach(p => { despMap[p.date.slice(0,4)] = p.value; });
-    salPts.forEach(p => { salMap[p.date.slice(0,4)] = p.value; });
-    const bpYears = Object.keys(despMap).filter(y => salMap[y] != null && +y >= 2013).sort();
-    const receita = [...fallbackReceita];
-    const despesa = [...fallbackDespesa];
-    bpYears.forEach(y => {
-      const d = despMap[y], s = salMap[y];
-      despesa.push({ date: y, value: d });
-      receita.push({ date: y, value: d + s });
-    });
-    return { receita, despesa };
-  } catch(e) {
-    console.warn('AP series load failed, using fallback:', e.message);
-    return { receita: fallbackReceita, despesa: fallbackDespesa };
-  }
+  return { receita, despesa };
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -2392,147 +2269,6 @@ function initSaldoChart(wrapId, allPts, pibAnnual) {
 }
 
 /* ══════════════════════════════════════════════════════════
-   SS COMBO CHART — receitas vs despesas + saldo eixo direito
-══════════════════════════════════════════════════════════ */
-// Calcula min/max de dois eixos para que o zero fique alinhado visualmente
-function ssAlignAxes(leftVals, rightVals, pad = 0.08) {
-  const lMax = Math.max(0, ...leftVals.filter(v => v != null));
-  const lMin = Math.min(0, ...leftVals.filter(v => v != null));
-  const rMax = Math.max(0, ...rightVals.filter(v => v != null));
-  const rMin = Math.min(0, ...rightVals.filter(v => v != null));
-  let lMaxF = lMax + (lMax - lMin) * pad;
-  let lMinF = lMin - (lMax - lMin) * pad;
-  let rMaxF = rMax + (rMax - rMin) * pad;
-  let rMinF = rMin - (rMax - rMin) * pad;
-  // Alinha: zero deve estar na mesma fracção vertical nos dois eixos
-  const lFrac = Math.abs(lMinF) / (lMaxF - lMinF);
-  const rFrac = Math.abs(rMinF) / (rMaxF - rMinF);
-  if (lFrac > rFrac) {
-    rMinF = -(lFrac * rMaxF) / (1 - lFrac);
-  } else {
-    lMinF = -(rFrac * lMaxF) / (1 - rFrac);
-  }
-  return { lMin: lMinF, lMax: lMaxF, rMin: rMinF, rMax: rMaxF };
-}
-
-function initSSComboChart(wrapId, saldoPts, recPts, despPts, pibAnnual) {
-  const wrap = document.getElementById(wrapId);
-  if (!wrap) return;
-  wrap.innerHTML = '<canvas></canvas>';
-  const ctx = wrap.querySelector('canvas');
-
-  const pibMap = {};
-  (pibAnnual || []).forEach(p => { pibMap[p.date] = p.value; });
-  const latestPib = pibAnnual?.length ? pibAnnual[pibAnnual.length - 1].value : null;
-
-  const yearsNum = activeYears === 'max' ? 'max' : parseInt(activeYears);
-  const saldoSlice = sliceByYears(saldoPts, yearsNum, 'annual');
-  const labels = saldoSlice.map(p => p.date);
-
-  const recMap  = Object.fromEntries(recPts.map(p => [p.date, p.value]));
-  const despMap = Object.fromEntries(despPts.map(p => [p.date, p.value]));
-
-  // TR e TE ambos positivos (eixo esquerdo só positivo, mais legível)
-  const recVals  = labels.map(d => recMap[d]  != null ? recMap[d]  : null);
-  const despVals = labels.map(d => despMap[d] != null ? despMap[d] : null);
-
-  // Saldo % PIB — usa B9 do Eurostat (eixo direito independente)
-  const saldoPctVals = saldoSlice.map(p => {
-    const pib = pibMap[p.date] ?? latestPib;
-    return (pib && p.value != null) ? +(p.value / pib * 100).toFixed(2) : null;
-  });
-
-  // Eixo esquerdo: 0 até max(TR, TE) + 10%
-  const lMax = Math.max(0, ...recVals.filter(Boolean), ...despVals.filter(Boolean)) * 1.1;
-
-  // Eixo direito: independente, centrado em 0
-  const rVals = saldoPctVals.filter(v => v != null);
-  const rMin = Math.min(...rVals, 0);
-  const rMax = Math.max(...rVals, 0);
-  const rPad = Math.max((rMax - rMin) * 0.15, 0.5);
-
-  const chart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        {
-          type: 'line', label: 'Receitas SS',
-          data: recVals,
-          borderColor: '#16a34a', backgroundColor: 'transparent',
-          borderWidth: 2, pointRadius: 2, fill: false, yAxisID: 'y', tension: 0.2, order: 1,
-        },
-        {
-          type: 'line', label: 'Despesas SS',
-          data: despVals,
-          borderColor: '#dc2626', backgroundColor: 'transparent',
-          borderWidth: 2, pointRadius: 2, fill: false, yAxisID: 'y', tension: 0.2, order: 1,
-        },
-        {
-          type: 'bar', label: 'Saldo SS % PIB',
-          data: saldoPctVals,
-          backgroundColor: saldoPctVals.map(v => v >= 0 ? 'rgba(5,150,105,.55)' : 'rgba(220,38,38,.55)'),
-          borderColor:     saldoPctVals.map(v => v >= 0 ? '#059669' : '#dc2626'),
-          borderWidth: 1, yAxisID: 'y2', order: 2,
-        },
-      ],
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: {
-          display: true, position: 'top',
-          labels: {
-            font: { size: 10 }, color: '#6b7280', boxWidth: 12, padding: 8,
-            generateLabels: chart => Chart.defaults.plugins.legend.labels.generateLabels(chart).map(item => {
-              if (item.text === 'Saldo SS % PIB') {
-                item.fillStyle = 'rgba(5,150,105,.55)';
-                item.strokeStyle = '#059669';
-              }
-              return item;
-            }),
-          },
-        },
-        tooltip: {
-          callbacks: {
-            label: ctx => {
-              const v = ctx.raw;
-              if (v == null) return null;
-              if (ctx.dataset.label === 'Saldo SS % PIB')
-                return ` Saldo: ${v >= 0 ? '+' : ''}${v.toFixed(2)}% PIB`;
-              return ` ${ctx.dataset.label}: ${v.toLocaleString('pt-PT', { maximumFractionDigits: 0 })} M€`;
-            },
-          },
-        },
-      },
-      scales: {
-        x: { grid: { color: '#f3f4f6' }, ticks: { font: { size: 10 }, color: '#9ca3af' } },
-        y: {
-          position: 'left', grid: { color: '#f3f4f6' },
-          min: 0, max: lMax,
-          ticks: { font: { size: 10 }, color: '#9ca3af',
-            callback: v => (v / 1000).toFixed(0) + 'k M€' },
-        },
-        y2: {
-          position: 'right', grid: { drawOnChartArea: false },
-          min: rMin - rPad, max: rMax + rPad,
-          ticks: { font: { size: 10 }, color: '#9ca3af',
-            callback: v => v.toFixed(1) + '%' },
-          title: { display: true, text: '% PIB', font: { size: 10 }, color: '#9ca3af' },
-        },
-      },
-    },
-  });
-
-  REGISTRY[wrapId] = {
-    chart, allPts: saldoPts, _recPts: recPts, _despPts: despPts, _pibAnnual: pibAnnual || [],
-    _isSSCombo: true, periodicity: 'annual',
-  };
-  updateRangeLabel(wrapId, saldoSlice);
-}
-
-/* ══════════════════════════════════════════════════════════
    STACKED BAR CHART — decomposição receitas/despesas AP
 ══════════════════════════════════════════════════════════ */
 const STACK_PALETTE = [
@@ -2661,266 +2397,6 @@ function initPieDecomp(wrapperId, legendId, rangeId, series) {
   });
 }
 
-/* ── DONUT + YoY badges na legenda ── */
-function initPieWithYoY(wrapperId, legendId, rangeId, series) {
-  const colours = ['#2563eb','#16a34a','#dc2626','#7c3aed','#ea580c','#0d9488','#ca8a04'];
-  const monthNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-
-  // Build sorted list of years from annual (December) data
-  const allYearsSet = new Set();
-  series.forEach(s => s.pts.forEach(p => allYearsSet.add(p.date)));
-  const sortedYears = [...allYearsSet].sort();
-
-  // Detect partial current year from monthly data (year not yet in annual)
-  let partialYear = null, partialLatestMonth = null;
-  const allMonthsSet = new Set();
-  series.forEach(s => { if (s.monthlyPts) s.monthlyPts.forEach(p => allMonthsSet.add(p.date)); });
-  if (allMonthsSet.size) {
-    const latestMo = [...allMonthsSet].sort().pop();
-    const latestYr = latestMo.slice(0, 4);
-    if (!allYearsSet.has(latestYr)) { partialYear = latestYr; partialLatestMonth = latestMo; }
-  }
-
-  // Last 5 complete years + partial current year if available
-  const recentYears = [...sortedYears.slice(-5), ...(partialYear ? [partialYear] : [])];
-
-  const hasMonthly = series.some(s => s.monthlyPts && s.monthlyPts.length > 0);
-
-  const wrap = document.getElementById(wrapperId);
-  if (!wrap) return;
-
-  // Insert filter bar before the chart wrap (only once)
-  const filterId = wrapperId + '-filter';
-  let filterBar = document.getElementById(filterId);
-  if (!filterBar) {
-    filterBar = document.createElement('div');
-    filterBar.id = filterId;
-    filterBar.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;';
-    wrap.parentNode.insertBefore(filterBar, wrap);
-  }
-
-  let activeMode = recentYears[recentYears.length - 1]; // default: most recent (incl. partial year)
-
-  const getVal = (s, yr) => { const pt = s.pts.find(p => p.date === yr); return pt ? pt.value : null; };
-
-  const btnCss = (active) =>
-    `border:1px solid ${active ? '#2563eb' : '#e5e7eb'};background:${active ? '#2563eb' : '#fff'};` +
-    `color:${active ? '#fff' : '#6b7280'};border-radius:4px;padding:2px 9px;font-size:.65rem;` +
-    `cursor:pointer;transition:all .15s;`;
-
-  const renderButtons = () => {
-    filterBar.innerHTML = '';
-    recentYears.forEach(yr => {
-      const btn = document.createElement('button');
-      btn.textContent = yr;
-      btn.style.cssText = btnCss(activeMode === yr);
-      btn.onclick = () => { activeMode = yr; render(); };
-      filterBar.appendChild(btn);
-    });
-  };
-
-  const renderAnnual = (yr) => {
-    const isPartial = yr === partialYear;
-    const prevYr = isPartial ? sortedYears[sortedYears.length - 1] : sortedYears[sortedYears.indexOf(yr) - 1];
-    const labels = [], currVals = [], yoyPcts = [];
-
-    if (isPartial && partialLatestMonth) {
-      // Use latest available YTD month for current year; compare to same month last year
-      const prevMo = prevYr + partialLatestMonth.slice(4);
-      series.forEach(s => {
-        const curr = s.monthlyPts?.find(p => p.date === partialLatestMonth)?.value ?? null;
-        const prev = s.monthlyPts?.find(p => p.date === prevMo)?.value ?? null;
-        if (curr == null) return;
-        labels.push(s.label);
-        currVals.push(curr);
-        yoyPcts.push(prev != null ? ((curr - prev) / Math.abs(prev) * 100) : null);
-      });
-    } else {
-      series.forEach(s => {
-        const curr = getVal(s, yr);
-        const prev = prevYr ? getVal(s, prevYr) : null;
-        if (curr == null) return;
-        labels.push(s.label);
-        currVals.push(curr);
-        yoyPcts.push(prev != null ? ((curr - prev) / Math.abs(prev) * 100) : null);
-      });
-    }
-
-    const total = currVals.reduce((a, b) => a + b, 0);
-
-    const rangeEl = document.getElementById(rangeId);
-    if (rangeEl) {
-      const moLabel = isPartial ? ` até ${monthNames[parseInt(partialLatestMonth.slice(5)) - 1]}` : '';
-      rangeEl.textContent = yr + moLabel + (prevYr ? ` vs ${prevYr}` : '');
-    }
-
-    const legendEl = document.getElementById(legendId);
-    if (legendEl) {
-      legendEl.innerHTML = labels.map((l, i) => {
-        const pct = total > 0 ? (currVals[i] / total * 100).toFixed(1) : 0;
-        const yoy = yoyPcts[i];
-        const yoyBadge = yoy != null
-          ? `<span style="font-size:.6rem;font-weight:700;margin-left:5px;color:${yoy >= 0 ? '#059669' : '#dc2626'}">${yoy >= 0 ? '▲' : '▼'}${Math.abs(yoy).toFixed(1)}%</span>`
-          : '';
-        return `<span class="legend-item"><span class="legend-dot" style="background:${colours[i]}"></span>${l}&nbsp;<span style="color:#9ca3af;font-size:.6rem">${pct}%</span>${yoyBadge}</span>`;
-      }).join('');
-    }
-
-    wrap.innerHTML = '<canvas></canvas>';
-    const canvas = wrap.querySelector('canvas');
-    new Chart(canvas.getContext('2d'), {
-      type: 'doughnut',
-      data: { labels, datasets: [{ data: currVals, backgroundColor: colours.slice(0, labels.length), borderWidth: 2, borderColor: '#fff', hoverOffset: 6 }] },
-      options: {
-        responsive: true, maintainAspectRatio: false, cutout: '52%',
-        plugins: {
-          legend: { display: false },
-          tooltip: { callbacks: { label: ctx => {
-            const v = ctx.raw;
-            const pct = total > 0 ? (v / total * 100).toFixed(1) : 0;
-            const yoy = yoyPcts[ctx.dataIndex];
-            const yoyStr = yoy != null ? `  YoY: ${yoy >= 0 ? '+' : ''}${yoy.toFixed(1)}%` : '';
-            return ` ${ctx.label}: ${(v/1000).toFixed(1)}B€ (${pct}%)${yoyStr}`;
-          }}}
-        }
-      }
-    });
-  };
-
-  const renderMonthly = () => {
-    // Determine current and previous year from the monthly data
-    const allMonths = new Set();
-    series.forEach(s => { if (s.monthlyPts) s.monthlyPts.forEach(p => allMonths.add(p.date)); });
-    const sortedMonths = [...allMonths].sort();
-    if (!sortedMonths.length) return;
-
-    // Use the year of the latest available month as "current year"
-    const latestMonth = sortedMonths[sortedMonths.length - 1];
-    const curYr = latestMonth.slice(0, 4);
-    const prevYr = String(parseInt(curYr) - 1);
-
-    // Get months available in the current year
-    const curMonths = sortedMonths.filter(m => m.startsWith(curYr));
-
-    // Sum all categories per month
-    const sumMonth = (ym) => series.reduce((sum, s) => {
-      const pt = s.monthlyPts?.find(p => p.date === ym);
-      return sum + (pt ? pt.value : 0);
-    }, 0);
-
-    const curTotals  = curMonths.map(m => sumMonth(m));
-    const prevTotals = curMonths.map(m => sumMonth(prevYr + m.slice(4)));
-    const labels     = curMonths.map(m => monthNames[parseInt(m.slice(5)) - 1]);
-
-    const rangeEl = document.getElementById(rangeId);
-    if (rangeEl) rangeEl.textContent = `${curYr} vs ${prevYr} (YTD)`;
-
-    const legendEl = document.getElementById(legendId);
-    if (legendEl) {
-      legendEl.innerHTML =
-        `<span class="legend-item"><span class="legend-dot" style="background:#d1d5db"></span>${prevYr}</span>` +
-        `<span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>${curYr}</span>`;
-    }
-
-    wrap.innerHTML = '<canvas></canvas>';
-    const canvas = wrap.querySelector('canvas');
-    new Chart(canvas.getContext('2d'), {
-      type: 'bar',
-      data: {
-        labels,
-        datasets: [
-          { label: prevYr, data: prevTotals, backgroundColor: '#e5e7eb', borderRadius: 3, barPercentage: 0.75, categoryPercentage: 0.82 },
-          { label: curYr,  data: curTotals,  backgroundColor: '#2563eb', borderRadius: 3, barPercentage: 0.75, categoryPercentage: 0.82 },
-        ],
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: { callbacks: { label: ctx => {
-            const v = ctx.raw;
-            if (!v) return '';
-            const other = ctx.chart.data.datasets[ctx.datasetIndex === 1 ? 0 : 1].data[ctx.dataIndex];
-            const yoy = (ctx.datasetIndex === 1 && other) ? `  YoY: ${v >= other ? '+' : ''}${((v - other) / Math.abs(other) * 100).toFixed(1)}%` : '';
-            return ` ${ctx.dataset.label}: ${(v/1000).toFixed(1)}B€${yoy}`;
-          }}}
-        },
-        scales: {
-          x: { grid: { display: false }, border: { display: false }, ticks: { color: '#6b7280', font: { size: 10 } } },
-          y: { grid: { color: '#f3f4f6' }, border: { display: false }, ticks: { color: '#6b7280', font: { size: 10 }, callback: v => `${(v/1000).toFixed(0)}B€`, maxTicksLimit: 5 } }
-        }
-      }
-    });
-  };
-
-  const render = () => {
-    renderButtons();
-    if (activeMode === 'mensal') renderMonthly();
-    else renderAnnual(activeMode);
-  };
-
-  render();
-}
-
-/* ── GROUPED BAR: YoY comparison ── */
-function initBarYoY(wrapperId, legendId, rangeId, series) {
-  const allYears = new Set();
-  series.forEach(s => s.pts.forEach(p => allYears.add(p.date)));
-  const sortedYears = [...allYears].sort();
-  if (sortedYears.length < 2) return;
-  const currYear = sortedYears[sortedYears.length - 1];
-  const prevYear = sortedYears[sortedYears.length - 2];
-  const getVal = (s, yr) => { const pt = s.pts.find(p => p.date === yr); return pt ? pt.value : null; };
-  const labels = series.map(s => s.label);
-  const currVals = series.map(s => getVal(s, currYear));
-  const prevVals = series.map(s => getVal(s, prevYear));
-
-  const rangeEl = document.getElementById(rangeId);
-  if (rangeEl) rangeEl.textContent = `${prevYear} vs ${currYear}`;
-
-  const legendEl = document.getElementById(legendId);
-  if (legendEl) legendEl.innerHTML =
-    `<span class="legend-item"><span class="legend-dot" style="background:#d1d5db"></span>${prevYear}</span>` +
-    `<span class="legend-item"><span class="legend-dot" style="background:#2563eb"></span>${currYear}</span>`;
-
-  const wrap = document.getElementById(wrapperId);
-  if (!wrap) return;
-  wrap.innerHTML = '<canvas></canvas>';
-  const canvas = wrap.querySelector('canvas');
-  new Chart(canvas.getContext('2d'), {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        { label: prevYear, data: prevVals, backgroundColor: '#e5e7eb', borderRadius: 3, barPercentage: 0.75, categoryPercentage: 0.8 },
-        { label: currYear, data: currVals, backgroundColor: '#2563eb', borderRadius: 3, barPercentage: 0.75, categoryPercentage: 0.8 },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: ctx => {
-              const v = ctx.raw;
-              if (v == null) return '';
-              const other = ctx.chart.data.datasets[ctx.datasetIndex === 1 ? 0 : 1].data[ctx.dataIndex];
-              const pct = (ctx.datasetIndex === 1 && other) ? ` (${v >= other ? '+' : ''}${((v - other) / other * 100).toFixed(1)}% YoY)` : '';
-              return ` ${ctx.dataset.label}: ${(v / 1000).toFixed(1)}B€${pct}`;
-            }
-          }
-        }
-      },
-      scales: {
-        x: { grid: { display: false }, border: { display: false }, ticks: { color: '#6b7280', font: { size: 9 }, maxRotation: 25, minRotation: 0 } },
-        y: { grid: { color: '#f3f4f6' }, border: { display: false }, ticks: { color: '#6b7280', font: { size: 10 }, callback: v => `${(v / 1000).toFixed(0)}B€`, maxTicksLimit: 5 } }
-      }
-    }
-  });
-}
-
 function initStackedBarChart(wrapId, seriesList) {
   const wrap = document.getElementById(wrapId);
   if (!wrap) return;
@@ -2998,38 +2474,7 @@ function applyFilterExtended(years) {
   });
 
   Object.entries(REGISTRY).forEach(([wrapId, reg]) => {
-    if (reg._isSSCombo) {
-      const pibMap = {};
-      (reg._pibAnnual || []).forEach(p => { pibMap[p.date] = p.value; });
-      const latestPib = reg._pibAnnual?.length ? reg._pibAnnual[reg._pibAnnual.length - 1].value : null;
-      const saldoSlice = sliceByYears(reg.allPts, yearsNum, 'annual');
-      const labels = saldoSlice.map(p => p.date);
-      const recMap  = Object.fromEntries(reg._recPts.map(p => [p.date, p.value]));
-      const despMap = Object.fromEntries(reg._despPts.map(p => [p.date, p.value]));
-      const recVals  = labels.map(d => recMap[d]  != null ? recMap[d]  : null);
-      const despVals = labels.map(d => despMap[d] != null ? despMap[d] : null);
-      const saldoPctVals = saldoSlice.map(p => {
-        const pib = pibMap[p.date] ?? latestPib;
-        return (pib && p.value != null) ? +(p.value / pib * 100).toFixed(2) : null;
-      });
-      reg.chart.data.labels = labels;
-      reg.chart.data.datasets[0].data = recVals;
-      reg.chart.data.datasets[1].data = despVals;
-      reg.chart.data.datasets[2].data = saldoPctVals;
-      reg.chart.data.datasets[2].backgroundColor = saldoPctVals.map(v => v >= 0 ? 'rgba(5,150,105,.55)' : 'rgba(220,38,38,.55)');
-      reg.chart.data.datasets[2].borderColor = saldoPctVals.map(v => v >= 0 ? '#059669' : '#dc2626');
-      const lMaxF = Math.max(0, ...recVals.filter(Boolean), ...despVals.filter(Boolean)) * 1.1;
-      const rVals = saldoPctVals.filter(v => v != null);
-      const rMin = Math.min(...rVals, 0);
-      const rMax = Math.max(...rVals, 0);
-      const rPad = Math.max((rMax - rMin) * 0.15, 0.5);
-      reg.chart.options.scales.y.min  = 0;
-      reg.chart.options.scales.y.max  = lMaxF;
-      reg.chart.options.scales.y2.min = rMin - rPad;
-      reg.chart.options.scales.y2.max = rMax + rPad;
-      reg.chart.update();
-      updateRangeLabel(wrapId, saldoSlice);
-    } else if (reg.isSaldo) {
+    if (reg.isSaldo) {
       const slice = sliceByYears(reg._saldoPct, yearsNum, 'annual');
       const values = slice.map(p => p.value);
       reg.chart.data.labels = slice.map(p => p.date);
@@ -3175,7 +2620,7 @@ async function loadRenPreco() {
 
 async function fetchAllData() {
   // Reset Worker cache so each fetchAllData gets fresh data
-  _workerPromise = null;
+  _workerData = null;
   // Phase 1: PIB (needed by saldo % PIB e PIB per capita UE)
   let pibAnnual = [];
   let pibOk = false;
@@ -3215,7 +2660,7 @@ async function fetchAllData() {
   };
 }
 
-async function renderDashboard(data, fromCache) {
+function renderDashboard(data, fromCache) {
   const {
     pibAnnual, pibOk,
     desempR, balancaR, prestacaoR, endivR, dividaR,
@@ -3418,11 +2863,11 @@ async function renderDashboard(data, fromCache) {
     if (saldoR.status === 'rejected') hasError = true;
   }
 
-  /* ── SEGURANÇA SOCIAL: receitas / despesas / saldo (Eurostat S.1314) ── */
+  /* ── SALDO ORÇAMENTAL ESTADO CENTRAL (série 88895) ── */
   if (saldoEstadoR && saldoEstadoR.status === 'fulfilled') {
-    const { saldo, receita, despesa } = saldoEstadoR.value;
-    if (saldo.length) {
-      initSSComboChart('wrap-saldo-estado', saldo, receita, despesa, pibAnnual);
+    const pts = saldoEstadoR.value;
+    if (pts.length) {
+      initSaldoChart('wrap-saldo-estado', pts, pibAnnual);
     } else {
       chartError('wrap-saldo-estado', 'Sem dados disponíveis');
     }
@@ -3446,7 +2891,7 @@ async function renderDashboard(data, fromCache) {
   if (recDepR.status === 'fulfilled') {
     const { receita, despesa } = recDepR.value;
     if (receita.length && despesa.length) {
-      const apData = await loadReceitaDespesaAP();
+      const apData = loadReceitaDespesaAP();
       initChartMulti('wrap-recdep', [
         { pts: receita,       colour: 'green', label: 'Receita Estado', fill: false, points: false },
         { pts: despesa,       colour: 'red',   label: 'Despesa Estado', fill: false, points: false },
@@ -3551,9 +2996,9 @@ async function renderDashboard(data, fromCache) {
       setKPI('kpi-inflacao-sub', latSub ? latSub.value.toFixed(1) + '%' : '—',
         `Subjacente · ${latSub?.date || '—'}`, null);
       initChartMulti('wrap-inflacao', [
-        { pts: ipc,        colour: 'blue',   label: 'IPC Total',           fill: false },
-        { pts: subjacente, colour: 'red',    label: 'Inflação Subjacente', fill: false },
-        { pts: alimentar,  colour: 'orange', label: 'Inflação Alimentar',  fill: false },
+        { pts: ipc,        colour: 'red',    label: 'IPC total',  fill: false },
+        { pts: subjacente, colour: 'orange', label: 'Subjacente', fill: false },
+        { pts: alimentar,  colour: 'purple', label: 'Alimentar',  fill: false },
       ], { pct: true }, 'monthly');
       const legendEl = document.getElementById('legend-inflacao');
       if (legendEl) legendEl.innerHTML =
@@ -4060,7 +3505,7 @@ async function renderDashboard(data, fromCache) {
   if (recDecompR.status === 'fulfilled') {
     const series = recDecompR.value.filter(s => s.pts && s.pts.length > 0);
     if (series.length) {
-      initPieWithYoY('wrap-rec-decomp', 'legend-rec-decomp', 'range-rec-decomp', series);
+      initPieDecomp('wrap-rec-decomp', 'legend-rec-decomp', 'range-rec-decomp', series);
     } else {
       chartError('wrap-rec-decomp', 'Sem dados disponíveis');
     }
@@ -4072,7 +3517,7 @@ async function renderDashboard(data, fromCache) {
   if (despDecompR.status === 'fulfilled') {
     const series = despDecompR.value.filter(s => s.pts && s.pts.length > 0);
     if (series.length) {
-      initPieWithYoY('wrap-desp-decomp', 'legend-desp-decomp', 'range-desp-decomp', series);
+      initPieDecomp('wrap-desp-decomp', 'legend-desp-decomp', 'range-desp-decomp', series);
     } else {
       chartError('wrap-desp-decomp', 'Sem dados disponíveis');
     }
@@ -4198,17 +3643,11 @@ async function renderDashboard(data, fromCache) {
   }
 
   function loadAds() {
-    // TODO: uncomment the block below once AdSense account is approved
-    // ['ad-lb-1','ad-lb-3'].forEach(id => {
-    //   const el = document.getElementById(id);
-    //   if (el) el.style.display = '';
-    // });
-
-    // Load AdSense script (only once) — needed for approval review
+    // Only load AdSense script after consent
     if (document.querySelector('script[src*="adsbygoogle"]')) return;
     const s = document.createElement('script');
     s.async = true;
-    s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1015529156935926';
+    s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX';
     s.crossOrigin = 'anonymous';
     document.head.appendChild(s);
   }

@@ -156,6 +156,7 @@
       <a class="navbar-brand" href="index.html">Dashboard<span>Portugal</span></a>
       <div class="navbar-links">
         <a class="navbar-link active" href="index.html"><span class="nav-icon">📊</span> Dashboard Macroeconómico</a>
+        <a class="navbar-link" href="orcamento.html"><span class="nav-icon">🏛️</span> Orçamento de Estado</a>
         <a class="navbar-link" href="inflacao-hicp.html"><span class="nav-icon">📈</span> Inflação IHPC</a>
         <a class="navbar-link" href="euribor.html"><span class="nav-icon">💶</span> Euribor &amp; Crédito</a>
       </div>
@@ -276,21 +277,21 @@
         <div class="kpi-sub">Residentes · INE</div>
       </div>
       <div class="kpi-card" id="kpi-inflacao">
-        <a class="kpi-ext-link" href="https://bpstat.bportugal.pt/serie/12704650" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
+        <a class="kpi-ext-link" href="https://data.ecb.europa.eu/data/datasets/HICP/HICP.M.PT.N.000000.4D0.ANR" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
         <div class="kpi-icon">📉</div>
         <div class="kpi-label">Inflação IPC</div>
         <div class="kpi-value kpi-loading">…</div>
         <div class="kpi-sub">Taxa variação anual · INE</div>
       </div>
       <div class="kpi-card" id="kpi-euribor6m">
-        <a class="kpi-ext-link" href="https://data.ecb.europa.eu/data/datasets/FM/FM.M.U2.EUR.RT0.MM.EURIBOR6MD_.HSTA" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
+        <a class="kpi-ext-link" href="https://www.ecb.europa.eu/stats/financial_markets_and_interest_rates/money_market_interest_rates/euribor/html/index.en.html" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
         <div class="kpi-icon">💶</div>
         <div class="kpi-label">Euribor 6M</div>
         <div class="kpi-value kpi-loading">…</div>
         <div class="kpi-sub">Taxa mensal · BCE</div>
       </div>
       <div class="kpi-card" id="kpi-euribor12m">
-        <a class="kpi-ext-link" href="https://data.ecb.europa.eu/data/datasets/FM/FM.M.U2.EUR.RT0.MM.EURIBOR1YD_.HSTA" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
+        <a class="kpi-ext-link" href="https://www.ecb.europa.eu/stats/financial_markets_and_interest_rates/money_market_interest_rates/euribor/html/index.en.html" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
         <div class="kpi-icon">💶</div>
         <div class="kpi-label">Euribor 12M</div>
         <div class="kpi-value kpi-loading">…</div>
@@ -386,7 +387,7 @@
             <div class="chart-subtitle">% do PIB · anual · positivo = excedente</div>
           </div>
           <div style="text-align:right">
-            <div class="chart-source"><a href="https://bpstat.bportugal.pt/serie/88895" target="_blank" rel="noopener">BPstat · Série 88895</a></div>
+            <div class="chart-source"><a href="https://ec.europa.eu/eurostat/databrowser/view/GOV_10A_MAIN" target="_blank" rel="noopener">Eurostat · gov_10a_main · S1314</a></div>
             <div class="chart-range" id="range-saldo-estado">–</div>
           </div>
         </div>
@@ -546,7 +547,7 @@
             <div class="chart-subtitle">Taxa mensal · % · BCE</div>
           </div>
           <div style="text-align:right">
-            <div class="chart-source" id="src-euribor"><a href="https://data.ecb.europa.eu/data/datasets/FM" target="_blank" rel="noopener">BCE (estimativa)</a></div>
+            <div class="chart-source" id="src-euribor"><a href="https://www.ecb.europa.eu/stats/financial_markets_and_interest_rates/money_market_interest_rates/euribor/html/index.en.html" target="_blank" rel="noopener">BCE (estimativa)</a></div>
             <div class="chart-range" id="range-euribor">–</div>
           </div>
         </div>
@@ -1056,16 +1057,46 @@ async function loadSaldoOrcamental() {
 }
 
 async function loadSaldoEstado() {
-  // Série 88895: Saldo da Segurança Social
-  // Pode ser mensal YTD (YYYY-MM) ou anual (YYYY) — tratar ambos
-  const pts = await getSeriesData(88895);
-  // Tenta filtro dezembro (mensal YTD)
-  const decPts = pts.filter(p => p.date.length >= 7 && p.date.slice(5, 7) === '12');
-  const usePts = decPts.length > 0 ? decPts : pts; // fallback: dados já anuais
-  return usePts
-    .map(p => ({ date: p.date.slice(0, 4), value: p.value }))
-    .filter((p, i, arr) => arr.findIndex(x => x.date === p.date) === i)
-    .sort((a, b) => a.date.localeCompare(b.date));
+  // Eurostat gov_10a_main · S.1314 (Seg. Social) · B9 (net lending/borrowing) · M€ anual
+  // Substituiu BPstat 88895 (removido do BPstat)
+  // 1. Tentar cache (Worker ou data/cache.json via GitHub Actions)
+  if (WORKER_URL) {
+    try {
+      const wd = await _getWorkerData();
+      const pts = wd?.eurostat?.ss?.b9;
+      if (pts && pts.length > 5) return pts;
+    } catch(e) {}
+  }
+  // 2. Tentar cache.json diretamente (GitHub Pages static)
+  try {
+    const r = await fetch('data/cache.json', { signal: AbortSignal.timeout(5000) });
+    if (r.ok) {
+      const cache = await r.json();
+      const pts = cache?.eurostat?.ss?.b9;
+      if (pts && pts.length > 5) return pts;
+    }
+  } catch(e) {}
+  // 3. Fallback: Eurostat API direto
+  try {
+    const url = 'https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/gov_10a_main' +
+      '?format=JSON&geo=PT&unit=MIO_EUR&sector=S1314&lang=en';
+    const r = await fetch(url, { signal: AbortSignal.timeout(12000) });
+    const d = await r.json();
+    const dims   = d.dimension || {};
+    const naIdx  = dims.na_item?.category?.index || {};
+    const timeD  = dims.time?.category || {};
+    const times  = Object.entries(timeD.index || {}).sort((a, b) => a[1] - b[1]);
+    const nTime  = times.length;
+    const values = d.value || {};
+    const pos    = naIdx['B9'];
+    if (pos != null) {
+      const pts = times
+        .map(([t, ti]) => ({ date: t, value: values[String(pos * nTime + ti)] }))
+        .filter(p => p.value != null);
+      if (pts.length > 5) return pts;
+    }
+  } catch(e) {}
+  return [];
 }
 
 async function loadReceitaDespesa() {

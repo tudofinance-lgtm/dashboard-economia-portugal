@@ -131,6 +131,10 @@
     tr.level-0 td:first-child .row-label{font-weight:700;color:var(--text)}
     tr.level-1 td:first-child .row-label{font-weight:500;color:#374151}
     tr.level-2 td:first-child .row-label{font-weight:400;color:var(--muted)}
+    a.row-link{text-decoration:none;color:inherit}
+    a.row-link:hover{text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px}
+    a.row-link::after{content:'↗';font-size:.6em;opacity:0;margin-left:3px;transition:opacity .15s;vertical-align:super}
+    a.row-link:hover::after{opacity:.45}
     tr.level-0{border-top:1px solid #e5e7eb}
 
     /* saldo highlight */
@@ -487,48 +491,50 @@ async function getSeriesData(seriesId) {
    tipo: R=receita (verde se sobe), D=despesa (verde se desce), S=saldo (verde se sobe)
    level: 0=total/saldo, 1=sub-agregado, 2=detalhe
 ══════════════════════════════════════════════════════════ */
+const BPSTAT_URL = id => `https://bpstat.bportugal.pt/serie/${id}`;
+
 const SECTIONS = [
   {
     title: 'Administrações Públicas — Consolidado',
-    anchor: 12560943,   // série usada como referência de data
+    anchor: 12560943,
     rows: [
-      { id: 12560943, label: 'Saldo',                       tipo: 'S', level: 0 },
-      { id: 12560947, label: 'Receitas totais',             tipo: 'R', level: 0, highlight: true },
-      { id: 12560951, label: 'Receitas correntes',          tipo: 'R', level: 1 },
-      { id: 12560971, label: 'Impostos diretos',            tipo: 'R', level: 2 },
-      { id: 12560975, label: 'Impostos indiretos',          tipo: 'R', level: 2 },
-      { id: 12560979, label: 'Contribuições e cotizações',  tipo: 'R', level: 2 },
-      { id: 12560983, label: 'Outras receitas correntes',   tipo: 'R', level: 2 },
-      { id: 12560959, label: 'Despesas totais',             tipo: 'D', level: 0, highlight: true },
-      { id: 12560963, label: 'Despesas correntes',          tipo: 'D', level: 1 },
-      { id: 12560967, label: 'Investimento público',         tipo: 'D', level: 1, greenIfUp: true },
-      { id: 12560987, label: 'Despesas com pessoal',        tipo: 'D', level: 2 },
-      { id: 12560991, label: 'Transferências correntes',    tipo: 'D', level: 2 },
+      { id: 12560943, label: 'Saldo',                      tipo: 'S', level: 0, desc: 'Diferença entre receitas e despesas totais das AP (acumulado YTD)' },
+      { id: 12560947, label: 'Receitas totais',            tipo: 'R', level: 0, highlight: true, desc: 'Receitas totais das Administrações Públicas consolidadas (YTD)' },
+      { id: 12560951, label: 'Receitas correntes',         tipo: 'R', level: 1, desc: 'Receitas correntes das AP: impostos, contribuições sociais e outras' },
+      { id: 12560971, label: 'Impostos diretos',           tipo: 'R', level: 2, desc: 'IRS, IRC e outros impostos sobre rendimento e riqueza' },
+      { id: 12560975, label: 'Impostos indiretos',         tipo: 'R', level: 2, desc: 'IVA, ISP, Imposto do Selo e outros impostos sobre produção/importação' },
+      { id: 12560979, label: 'Contribuições e cotizações', tipo: 'R', level: 2, desc: 'Contribuições para a Segurança Social e CGA' },
+      { id: 12560983, label: 'Outras receitas correntes',  tipo: 'R', level: 2, desc: 'Rendimentos de propriedade, transferências correntes e outras receitas' },
+      { id: 12560959, label: 'Despesas totais',            tipo: 'D', level: 0, highlight: true, desc: 'Despesas totais das AP (despesas correntes + investimento público)' },
+      { id: 12560963, label: 'Despesas correntes',         tipo: 'D', level: 1, desc: 'Despesas correntes: pessoal, juros, bens/serviços e transferências' },
+      { id: 12560967, label: 'Investimento público',        tipo: 'D', level: 1, greenIfUp: true, desc: 'Formação bruta de capital fixo e aquisições de ativos não financeiros' },
+      { id: 12560987, label: 'Despesas com pessoal',       tipo: 'D', level: 2, desc: 'Remunerações, contribuições patronais e outros encargos com trabalhadores' },
+      { id: 12560991, label: 'Transferências correntes',   tipo: 'D', level: 2, desc: 'Prestações sociais, subsídios e outras transferências correntes' },
     ]
   },
   {
     title: 'Estado',
     anchor: 88873,
     rows: [
-      { id: 88894, label: 'Saldo',             tipo: 'S', level: 0 },
-      { id: 88873, label: 'Receitas totais',   tipo: 'R', level: 0, highlight: true },
-      { id: 88875, label: 'Receitas correntes',tipo: 'R', level: 1 },
-      { id: 88877, label: 'IVA',               tipo: 'R', level: 2 },
-      { id: 88878, label: 'ISP',               tipo: 'R', level: 2 },
-      { id: 88898, label: 'Impostos diretos',  tipo: 'R', level: 2 },
-      { id: 88899, label: 'IRS',               tipo: 'R', level: 2 },
-      { id: 88900, label: 'IRC',               tipo: 'R', level: 2 },
-      { id: 88901, label: 'Impostos indiretos',tipo: 'R', level: 2 },
-      { id: 88884, label: 'Despesas totais',   tipo: 'D', level: 0, highlight: true },
-      { id: 88886, label: 'Despesas correntes',tipo: 'D', level: 1 },
-      { id: 88910, label: 'Juros e encargos',  tipo: 'D', level: 2 },
+      { id: 88894, label: 'Saldo',              tipo: 'S', level: 0, desc: 'Diferença entre receitas e despesas totais do Estado (acumulado YTD)' },
+      { id: 88873, label: 'Receitas totais',    tipo: 'R', level: 0, highlight: true, desc: 'Total das receitas do Estado (correntes e de capital)' },
+      { id: 88875, label: 'Receitas correntes', tipo: 'R', level: 1, desc: 'Receitas correntes do Estado: impostos diretos, indiretos e outras' },
+      { id: 88877, label: 'IVA',                tipo: 'R', level: 2, desc: 'Imposto sobre o Valor Acrescentado — principal imposto indireto' },
+      { id: 88878, label: 'ISP',                tipo: 'R', level: 2, desc: 'Imposto sobre os Produtos Petrolíferos e Energéticos' },
+      { id: 88898, label: 'Impostos diretos',   tipo: 'R', level: 2, desc: 'IRS, IRC e demais impostos diretos cobrados pelo Estado' },
+      { id: 88899, label: 'IRS',                tipo: 'R', level: 2, desc: 'Imposto sobre o Rendimento das Pessoas Singulares' },
+      { id: 88900, label: 'IRC',                tipo: 'R', level: 2, desc: 'Imposto sobre o Rendimento das Pessoas Coletivas' },
+      { id: 88901, label: 'Impostos indiretos', tipo: 'R', level: 2, desc: 'IVA, ISP, Imposto do Selo e outros impostos indiretos do Estado' },
+      { id: 88884, label: 'Despesas totais',    tipo: 'D', level: 0, highlight: true, desc: 'Total das despesas do Estado (correntes e de capital)' },
+      { id: 88886, label: 'Despesas correntes', tipo: 'D', level: 1, desc: 'Despesas correntes: pessoal, juros, bens/serviços e transferências do Estado' },
+      { id: 88910, label: 'Juros e encargos',   tipo: 'D', level: 2, desc: 'Serviço da dívida pública — juros e encargos pagos pelo Estado' },
     ]
   },
   {
     title: 'Segurança Social',
     anchor: 88895,
     rows: [
-      { id: 88895, label: 'Saldo', tipo: 'S', level: 0 },
+      { id: 88895, label: 'Saldo', tipo: 'S', level: 0, desc: 'Saldo da execução orçamental da Segurança Social (acumulado YTD)' },
     ]
   },
 ];
@@ -758,7 +764,7 @@ async function init() {
 
       html += `
           <tr class="${rowCls}">
-            <td><span class="row-label">${row.label}</span>${tipoBadge}</td>
+            <td><a class="row-label row-link" href="${BPSTAT_URL(row.id)}" target="_blank" rel="noopener" title="${row.desc || ''}">${row.label}</a>${tipoBadge}</td>
             <td>${fmtVal(vN, row.tipo, isTotais)}</td>
             <td class="col-hide">${fmtVal(vN1, row.tipo, isTotais)}</td>
             <td class="col-hide">${fmtVal(vN2, row.tipo, isTotais)}</td>

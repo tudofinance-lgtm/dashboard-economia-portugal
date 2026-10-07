@@ -136,7 +136,12 @@
     .navbar-link:hover{background:var(--bg);color:var(--text)}
     .navbar-link.active{background:rgba(37,99,235,.10);color:#2563eb}
     .navbar-link .nav-icon{font-size:.9rem}
-    @media(max-width:600px){.navbar-brand{font-size:.82rem}.navbar-link{padding:5px 9px;font-size:.72rem}}
+    .navbar-links::-webkit-scrollbar{display:none}
+    @media(max-width:600px){
+      .navbar-brand{font-size:.82rem}
+      .navbar-link{padding:5px 9px;font-size:.72rem}
+      .navbar-links{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;width:100%}
+    }
   </style>
 </head>
 <body>

@@ -136,7 +136,12 @@
     .navbar-link:hover{background:var(--bg);color:var(--text)}
     .navbar-link.active{background:rgba(37,99,235,.10);color:#2563eb}
     .navbar-link .nav-icon{font-size:.9rem}
-    @media(max-width:600px){.navbar-brand{font-size:.82rem}.navbar-link{padding:5px 9px;font-size:.72rem}}
+    .navbar-links::-webkit-scrollbar{display:none}
+    @media(max-width:600px){
+      .navbar-brand{font-size:.82rem}
+      .navbar-link{padding:5px 9px;font-size:.72rem}
+      .navbar-links{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;width:100%}
+    }
     /* KPI card source links */
     .kpi-ext-link{position:absolute;inset:0;z-index:1;cursor:pointer;border-radius:10px}
     .kpi-ext-link::after{content:'↗';position:absolute;bottom:7px;right:9px;font-size:.65rem;color:var(--muted2);opacity:0;transition:opacity .15s;font-weight:700;line-height:1}

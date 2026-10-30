@@ -28,7 +28,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <script>
     /* REN_DATA_START */
-    const REN_CONSUMO_DATA = [{"yearEvolCTWD":5.5,"monthEvolCTWD":5.5,"twelveMonthEvolCTWD":2.6,"consumption":5405,"yearEvol":7.8,"twelveMonthEvol":3.7,"type":"January","monthEvol":7.8},{"yearEvolCTWD":5.1,"monthEvolCTWD":4.6,"twelveMonthEvolCTWD":2.8,"consumption":4585,"yearEvol":6,"twelveMonthEvol":3.8,"type":"February","monthEvol":3.9},{"yearEvolCTWD":3.9,"monthEvolCTWD":1.3,"twelveMonthEvolCTWD":2.7,"consumption":4630,"yearEvol":3.8,"twelveMonthEvol":3.4,"type":"March","monthEvol":-0.6},{"yearEvolCTWD":3.4,"monthEvolCTWD":1.8,"twelveMonthEvolCTWD":2.6,"consumption":4086,"yearEvol":3.5,"twelveMonthEvol":3.6,"type":"April","monthEvol":2.4},{"yearEvolCTWD":3.4,"monthEvolCTWD":3.6,"twelveMonthEvolCTWD":2.9,"consumption":4225,"yearEvol":3.6,"twelveMonthEvol":3.9,"type":"May","monthEvol":3.9},{"yearEvolCTWD":null,"monthEvolCTWD":null,"twelveMonthEvolCTWD":null,"consumption":4160,"yearEvol":3.4,"twelveMonthEvol":2.9,"type":"June","monthEvol":3.3},{"yearEvolCTWD":null,"monthEvolCTWD":null,"twelveMonthEvolCTWD":null,"consumption":4547,"yearEvol":3.4,"twelveMonthEvol":3,"type":"July","monthEvol":3.4},{"yearEvolCTWD":null,"monthEvolCTWD":null,"twelveMonthEvolCTWD":null,"consumption":4293,"yearEvol":3.5,"twelveMonthEvol":3.2,"type":"August","monthEvol":3.8},{"yearEvolCTWD":null,"monthEvolCTWD":null,"twelveMonthEvolCTWD":null,"consumption":4320,"yearEvol":3.5,"twelveMonthEvol":3.4,"type":"September","monthEvol":3.7},{"yearEvolCTWD":null,"monthEvolCTWD":null,"twelveMonthEvolCTWD":null,"consumption":4494,"yearEvol":3.5,"twelveMonthEvol":3.5,"type":"October","monthEvol":3.7},{"yearEvolCTWD":null,"monthEvolCTWD":null,"twelveMonthEvolCTWD":null,"consumption":4719,"yearEvol":3.5,"twelveMonthEvol":3.6,"type":"November","monthEvol":3.1},{"yearEvolCTWD":null,"monthEvolCTWD":null,"twelveMonthEvolCTWD":null,"consumption":5065,"yearEvol":3.3,"twelveMonthEvol":3.3,"type":"December","monthEvol":1.9}];
+    const REN_CONSUMO_DATA_UNUSED = [{"yearEvolCTWD":5.5,"monthEvolCTWD":5.5,"twelveMonthEvolCTWD":2.6,"consumption":5405,"yearEvol":7.8,"twelveMonthEvol":3.7,"type":"January","monthEvol":7.8},{"yearEvolCTWD":5.1,"monthEvolCTWD":4.6,"twelveMonthEvolCTWD":2.8,"consumption":4585,"yearEvol":6,"twelveMonthEvol":3.8,"type":"February","monthEvol":3.9},{"yearEvolCTWD":3.9,"monthEvolCTWD":1.3,"twelveMonthEvolCTWD":2.7,"consumption":4630,"yearEvol":3.8,"twelveMonthEvol":3.4,"type":"March","monthEvol":-0.6},{"yearEvolCTWD":3.4,"monthEvolCTWD":1.8,"twelveMonthEvolCTWD":2.6,"consumption":4086,"yearEvol":3.5,"twelveMonthEvol":3.6,"type":"April","monthEvol":2.4},{"yearEvolCTWD":3.4,"monthEvolCTWD":3.6,"twelveMonthEvolCTWD":2.9,"consumption":4225,"yearEvol":3.6,"twelveMonthEvol":3.9,"type":"May","monthEvol":3.9},{"yearEvolCTWD":null,"monthEvolCTWD":null,"twelveMonthEvolCTWD":null,"consumption":4160,"yearEvol":3.4,"twelveMonthEvol":2.9,"type":"June","monthEvol":3.3},{"yearEvolCTWD":null,"monthEvolCTWD":null,"twelveMonthEvolCTWD":null,"consumption":4547,"yearEvol":3.4,"twelveMonthEvol":3,"type":"July","monthEvol":3.4},{"yearEvolCTWD":null,"monthEvolCTWD":null,"twelveMonthEvolCTWD":null,"consumption":4293,"yearEvol":3.5,"twelveMonthEvol":3.2,"type":"August","monthEvol":3.8},{"yearEvolCTWD":null,"monthEvolCTWD":null,"twelveMonthEvolCTWD":null,"consumption":4320,"yearEvol":3.5,"twelveMonthEvol":3.4,"type":"September","monthEvol":3.7},{"yearEvolCTWD":null,"monthEvolCTWD":null,"twelveMonthEvolCTWD":null,"consumption":4494,"yearEvol":3.5,"twelveMonthEvol":3.5,"type":"October","monthEvol":3.7},{"yearEvolCTWD":null,"monthEvolCTWD":null,"twelveMonthEvolCTWD":null,"consumption":4719,"yearEvol":3.5,"twelveMonthEvol":3.6,"type":"November","monthEvol":3.1},{"yearEvolCTWD":null,"monthEvolCTWD":null,"twelveMonthEvolCTWD":null,"consumption":5065,"yearEvol":3.3,"twelveMonthEvol":3.3,"type":"December","monthEvol":1.9}];
     const REN_PRECO_DATA = {"June":{"Market Spliting [%]":13.7,"PT":{"On Peak":54.22,"Off-Peak":70.56,"Average Price":62.72},"Capacity [MW]":{"Import":3509,"Export":2755},"ES":{"On Peak":52.37,"Off-Peak":70.46,"Average Price":61.78}}};
     const REN_BALANCO_HIST_DATA = [{"date":"2021-01","total_gen":4939,"renewable":3357,"import_bal":283,"consumption":4983},{"date":"2021-02","total_gen":5064,"renewable":4353,"import_bal":-857,"consumption":3996},{"date":"2021-03","total_gen":4249,"renewable":3195,"import_bal":-10,"consumption":4068},{"date":"2021-04","total_gen":3684,"renewable":2047,"import_bal":184,"consumption":3743},{"date":"2021-05","total_gen":3329,"renewable":2123,"import_bal":831,"consumption":3921},{"date":"2021-06","total_gen":3633,"renewable":1896,"import_bal":324,"consumption":3842},{"date":"2021-07","total_gen":3648,"renewable":2170,"import_bal":560,"consumption":4130},{"date":"2021-08","total_gen":3027,"renewable":1687,"import_bal":1024,"consumption":3961},{"date":"2021-09","total_gen":3431,"renewable":1691,"import_bal":691,"consumption":4011},{"date":"2021-10","total_gen":3373,"renewable":1826,"import_bal":883,"consumption":4026},{"date":"2021-11","total_gen":3979,"renewable":2328,"import_bal":468,"consumption":4286},{"date":"2021-12","total_gen":4349,"renewable":3019,"import_bal":372,"consumption":4501},{"date":"2022-01","total_gen":4074,"renewable":2455,"import_bal":772,"consumption":4642},{"date":"2022-02","total_gen":2999,"renewable":1534,"import_bal":1375,"consumption":4115},{"date":"2022-03","total_gen":4059,"renewable":2559,"import_bal":600,"consumption":4458},{"date":"2022-04","total_gen":3529,"renewable":2222,"import_bal":764,"consumption":4004},{"date":"2022-05","total_gen":3395,"renewable":1833,"import_bal":892,"consumption":4050},{"date":"2022-06","total_gen":3232,"renewable":1502,"import_bal":973,"consumption":3968},{"date":"2022-07","total_gen":3343,"renewable":1541,"import_bal":1286,"consumption":4414},{"date":"2022-08","total_gen":3167,"renewable":1450,"import_bal":1033,"consumption":4025},{"date":"2022-09","total_gen":3388,"renewable":1768,"import_bal":862,"consumption":3992},{"date":"2022-10","total_gen":3474,"renewable":1776,"import_bal":920,"consumption":4056},{"date":"2022-11","total_gen":4139,"renewable":2439,"import_bal":313,"consumption":4183},{"date":"2022-12","total_gen":5219,"renewable":4074,"import_bal":-536,"consumption":4424},{"date":"2023-01","total_gen":5334,"renewable":4502,"import_bal":-188,"consumption":4829},{"date":"2023-02","total_gen":4337,"renewable":2806,"import_bal":124,"consumption":4235},{"date":"2023-03","total_gen":3423,"renewable":2542,"import_bal":1286,"consumption":4406},{"date":"2023-04","total_gen":2712,"renewable":1880,"import_bal":1406,"consumption":3775},{"date":"2023-05","total_gen":2933,"renewable":1979,"import_bal":1398,"consumption":3978},{"date":"2023-06","total_gen":3113,"renewable":1832,"import_bal":1097,"consumption":3999},{"date":"2023-07","total_gen":3285,"renewable":1846,"import_bal":1193,"consumption":4177},{"date":"2023-08","total_gen":3177,"renewable":1925,"import_bal":1236,"consumption":4100},{"date":"2023-09","total_gen":3003,"renewable":1670,"import_bal":1298,"consumption":3979},{"date":"2023-10","total_gen":3824,"renewable":2820,"import_bal":688,"consumption":4183},{"date":"2023-11","total_gen":4667,"renewable":3895,"import_bal":-81,"consumption":4324},{"date":"2023-12","total_gen":4287,"renewable":3484,"import_bal":775,"consumption":4718},{"date":"2024-01","total_gen":4968,"renewable":3994,"import_bal":247,"consumption":4904},{"date":"2024-02","total_gen":4575,"renewable":3819,"import_bal":100,"consumption":4271},{"date":"2024-03","total_gen":5508,"renewable":4672,"import_bal":-507,"consumption":4524},{"date":"2024-04","total_gen":4343,"renewable":3804,"import_bal":27,"consumption":3946},{"date":"2024-05","total_gen":3382,"renewable":2889,"import_bal":1137,"consumption":4072},{"date":"2024-06","total_gen":2715,"renewable":2274,"import_bal":1570,"consumption":3939},{"date":"2024-07","total_gen":2995,"renewable":2311,"import_bal":1674,"consumption":4314},{"date":"2024-08","total_gen":2971,"renewable":2294,"import_bal":1495,"consumption":4117},{"date":"2024-09","total_gen":3032,"renewable":2284,"import_bal":1438,"consumption":4076},{"date":"2024-10","total_gen":3791,"renewable":2984,"import_bal":984,"consumption":4327},{"date":"2024-11","total_gen":3839,"renewable":2939,"import_bal":804,"consumption":4256},{"date":"2024-12","total_gen":3569,"renewable":2491,"import_bal":1498,"consumption":4659},{"date":"2025-01","total_gen":4846,"renewable":3872,"import_bal":531,"consumption":5015},{"date":"2025-02","total_gen":4311,"renewable":3503,"import_bal":383,"consumption":4411},{"date":"2025-03","total_gen":4975,"renewable":4190,"import_bal":156,"consumption":4660},{"date":"2025-04","total_gen":4367,"renewable":3636,"import_bal":82,"consumption":3989},{"date":"2025-05","total_gen":4199,"renewable":3184,"import_bal":269,"consumption":4068},{"date":"2025-06","total_gen":3387,"renewable":2302,"import_bal":1186,"consumption":4110},{"date":"2025-07","total_gen":3583,"renewable":2455,"import_bal":1342,"consumption":4482},{"date":"2025-08","total_gen":3485,"renewable":2360,"import_bal":1245,"consumption":4254},{"date":"2025-09","total_gen":3611,"renewable":2429,"import_bal":1109,"consumption":4164},{"date":"2025-10","total_gen":3404,"renewable":2240,"import_bal":1430,"consumption":4379},{"date":"2025-11","total_gen":4123,"renewable":3044,"import_bal":822,"consumption":4529},{"date":"2025-12","total_gen":4592,"renewable":3686,"import_bal":736,"consumption":4985},{"date":"2026-01","total_gen":5465,"renewable":4402,"import_bal":307,"consumption":5405},{"date":"2026-02","total_gen":5131,"renewable":3952,"import_bal":-250,"consumption":4585},{"date":"2026-03","total_gen":4662,"renewable":3609,"import_bal":436,"consumption":4630},{"date":"2026-04","total_gen":3550,"renewable":2513,"import_bal":1070,"consumption":4086},{"date":"2026-05","total_gen":3651,"renewable":2655,"import_bal":1223,"consumption":4225}];
     const REN_RENOVAVEIS_LAST_DATA = {"date":"2026-05","hydro":877,"wind":831,"solar":726,"biomass":221};
@@ -267,13 +267,6 @@
         <div class="kpi-value kpi-loading">…</div>
         <div class="kpi-sub">Risco soberano · pp</div>
       </div>
-      <div class="kpi-card" id="kpi-renovavel">
-        <a class="kpi-ext-link" href="https://www.dgeg.gov.pt/estatisticas/energia/balanco-eletrico/" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
-        <div class="kpi-icon">⚡</div>
-        <div class="kpi-label">Energia Renovável</div>
-        <div class="kpi-value kpi-loading">…</div>
-        <div class="kpi-sub">% produção elétrica · DGEG</div>
-      </div>
       <div class="kpi-card" id="kpi-populacao">
         <a class="kpi-ext-link" href="https://www.ine.pt/xportal/xmain?xpid=INE&xpgid=ine_indicadores&indOcorrCod=0008273" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
         <div class="kpi-icon">👥</div>
@@ -301,21 +294,6 @@
         <div class="kpi-label">Euribor 12M</div>
         <div class="kpi-value kpi-loading">…</div>
         <div class="kpi-sub">Taxa mensal · BCE</div>
-      </div>
-      <div class="kpi-card" id="kpi-ren-consumo">
-        <a class="kpi-ext-link" href="https://datahub.ren.pt/pt/eletricidade/consumo/" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
-        <div class="kpi-icon">⚡</div>
-        <div class="kpi-label">Consumo Elétrico</div>
-        <div class="kpi-value kpi-loading">…</div>
-        <div class="kpi-sub" id="kpi-ren-consumo-sub">Variação mensal · REN</div>
-      </div>
-      <div class="kpi-card" id="kpi-ren-preco">
-        <a class="kpi-ext-link" href="https://datahub.ren.pt/pt/eletricidade/precos-mercado/" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
-        <div class="kpi-icon">🔌</div>
-        <div class="kpi-label">Preço Mercado Elétrico</div>
-        <div class="kpi-value kpi-loading">…</div>
-        <div id="kpi-ren-preco-badge"></div>
-        <div class="kpi-sub" id="kpi-ren-preco-sub">Média mensal PT · REN</div>
       </div>
       <div class="kpi-card" id="kpi-pib-est">
         <a class="kpi-ext-link" href="https://bpstat.bportugal.pt/serie/12518283" target="_blank" rel="noopener" title="Ver dados na fonte" aria-label="Ver dados na fonte"></a>
@@ -2625,34 +2603,6 @@ async function loadRenPrecoHistorico() {
   return await res.json();
 }
 
-/* ── REN: VARIAÇÃO CONSUMO ELÉTRICO ANUAL ── */
-async function loadRenConsumo() {
-  let data = REN_CONSUMO_DATA;
-  if (!data) {
-    const res = await fetch('/ren-consumo.json');
-    if (!res.ok) throw new Error('Sem dados REN consumo');
-    data = await res.json();
-  }
-  if (!Array.isArray(data) || !data.length) throw new Error('REN consumo vazio');
-  const valid = data.filter(d => d.consumption > 0);
-  const last = valid[valid.length - 1];
-  return { month: last.type, monthEvol: last.monthEvol, yearEvol: last.yearEvol, consumption: last.consumption };
-}
-
-/* ── REN: PREÇO MERCADO ELÉTRICO MENSAL ── */
-async function loadRenPreco() {
-  let data = REN_PRECO_DATA;
-  if (!data) {
-    const res = await fetch('/ren-preco.json');
-    if (!res.ok) throw new Error('Sem dados REN preço');
-    data = await res.json();
-  }
-  const key = Object.keys(data)[0];
-  if (!key) throw new Error('REN preço sem chave');
-  const pt = data[key]?.PT;
-  if (!pt) throw new Error('REN preço sem dados PT');
-  return { month: key, year: new Date().getFullYear(), avgPrice: pt['Average Price'], onPeak: pt['On Peak'], offPeak: pt['Off-Peak'] };
-}
 
 async function fetchAllData() {
   // Reset Worker cache so each fetchAllData gets fresh data
@@ -2668,7 +2618,7 @@ async function fetchAllData() {
     desempR, balancaR, prestacaoR, endivR, dividaR,
     saldoR, saldoEstadoR, recDepR, brentR, pibEuR, spreadR, execOrcR, salariosR,
     euriborR, capFinR, recDecompR, despDecompR,
-    renConsumoR, renPrecoR, renPrecoHistR, renBalancoHistR, renRenovaveisR,
+    renPrecoHistR, renBalancoHistR, renRenovaveisR,
     inflacaoR,
   ] = await Promise.allSettled([
     loadDesemprego(), loadBalanca(), loadPrestacao(),
@@ -2678,7 +2628,7 @@ async function fetchAllData() {
     loadSalariosComparativos(),
     loadEuribor(), loadCapacidadeFinanciamento(),
     loadReceitasDecompostas(), loadDespesasDecompostas(),
-    loadRenConsumo(), loadRenPreco(), loadRenPrecoHistorico(),
+    loadRenPrecoHistorico(),
     loadRenBalancoHist(), loadRenRenovaveisLast(),
     loadInflacao(),
   ]);
@@ -2691,7 +2641,7 @@ async function fetchAllData() {
     desempR, balancaR, prestacaoR, endivR, dividaR,
     saldoR, saldoEstadoR, recDepR, brentR, pibEuR, spreadR, execOrcR,
     euriborR, capFinR, recDecompR, despDecompR,
-    renConsumoR, renPrecoR, renPrecoHistR, renBalancoHistR, renRenovaveisR,
+    renPrecoHistR, renBalancoHistR, renRenovaveisR,
     inflacaoData, confiancaData,
   };
 }
@@ -2703,7 +2653,7 @@ function renderDashboard(data, fromCache) {
     saldoR, recDepR, brentR, pibEuR, spreadR, execOrcR, salariosR,
     euriborR, capFinR, recDecompR, despDecompR,
     saldoEstadoR, inflacaoData, confiancaData,
-    renConsumoR, renPrecoR, renPrecoHistR, renBalancoHistR, renRenovaveisR,
+    renPrecoHistR, renBalancoHistR, renRenovaveisR,
   } = data;
 
   // Mix energético é sempre síncrono/estático
@@ -3224,42 +3174,6 @@ function renderDashboard(data, fromCache) {
     chartError('wrap-divida-total', 'Não foi possível carregar os dados');
   }
 
-  /* ── REN: KPI CONSUMO ELÉTRICO ── */
-  try {
-    const renC = renConsumoR.status === 'fulfilled' ? renConsumoR.value : null;
-    if (renC) {
-      const el = document.getElementById('kpi-ren-consumo');
-      const sub = document.getElementById('kpi-ren-consumo-sub');
-      if (el) el.querySelector('.kpi-value').textContent =
-        renC.yearEvol != null ? (renC.yearEvol >= 0 ? '+' : '') + renC.yearEvol.toFixed(1) + '%' : '—';
-      if (sub) sub.textContent = 'Variação anual · ' + renC.month + ' · REN';
-    }
-  } catch(e) { console.warn('REN consumo KPI:', e); }
-
-  /* ── REN: KPI PREÇO MERCADO ELÉTRICO ── */
-  try {
-    const renP = renPrecoR.status === 'fulfilled' ? renPrecoR.value : null;
-    if (renP) {
-      const elP = document.getElementById('kpi-ren-preco');
-      const subP = document.getElementById('kpi-ren-preco-sub');
-      const badgeEl = document.getElementById('kpi-ren-preco-badge');
-      if (elP) elP.querySelector('.kpi-value').textContent =
-        renP.avgPrice != null ? renP.avgPrice.toFixed(1) + ' €/MWh' : '—';
-      if (subP) subP.textContent = 'Média mensal PT · ' + renP.month + ' · REN';
-      if (badgeEl && renPrecoHistR.status === 'fulfilled') {
-        const hist = renPrecoHistR.value;
-        if (Array.isArray(hist) && hist.length >= 13) {
-          const last = hist[hist.length - 1];
-          const prev12 = hist[hist.length - 13];
-          if (last && prev12 && prev12.value) {
-            const chg = ((last.value - prev12.value) / prev12.value) * 100;
-            badgeEl.className = 'kpi-badge ' + (chg >= 0 ? 'badge-down' : 'badge-up');
-            badgeEl.textContent = (chg >= 0 ? '▲ +' : '▼ ') + chg.toFixed(1) + '% vs ano ant.';
-          }
-        }
-      }
-    }
-  } catch(e) { console.warn('REN preço KPI:', e); }
 
   /* ── REN: BALANÇO ELÉTRICO MENSAL (wrap-ren-balanco) ── */
   if (renBalancoHistR.status === 'fulfilled') {

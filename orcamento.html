@@ -48,17 +48,20 @@
     .navbar-link:hover{background:var(--bg);color:var(--text)}
     .navbar-link.active{background:rgba(37,99,235,.10);color:#2563eb}
     .navbar-link .nav-icon{font-size:.9rem}
+    .nav-label-short{display:none}
     @media(max-width:680px){
       header{padding:10px 10px 0}
       .header-inner{padding:10px 12px 12px;border-radius:8px}
-      .navbar-brand{font-size:.82rem}
-      .navbar-link{padding:4px 7px;font-size:.68rem;gap:3px}
-      .navbar-link .nav-icon{display:none}
-      .navbar-links{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;width:100%}
-      .navbar-links::-webkit-scrollbar{display:none}
-      .header-top{flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:8px;padding-bottom:8px}
+      .header-top{flex-direction:column;align-items:stretch;gap:8px;margin-bottom:8px;padding-bottom:8px}
       .header-title{font-size:.95rem}
       .header-subtitle{font-size:.65rem}
+      .navbar-brand{font-size:.85rem}
+      .navbar-links{display:grid;grid-template-columns:1fr 1fr;gap:6px;overflow:visible;width:100%}
+      .navbar-link{flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:10px 6px;border-radius:10px;font-size:.7rem;min-height:54px;background:var(--bg);border:1px solid var(--border);text-align:center;white-space:normal}
+      .navbar-link.active{background:rgba(37,99,235,.10);border-color:rgba(37,99,235,.25);color:#2563eb}
+      .navbar-link .nav-icon{font-size:1.3rem;display:block}
+      .nav-label-full{display:none}
+      .nav-label-short{display:inline}
     }
 
     /* ── MAIN ── */
@@ -282,10 +285,10 @@
     <div class="header-top">
       <a class="navbar-brand" href="/">Dashboard<span>Portugal</span></a>
       <div class="navbar-links">
-        <a class="navbar-link" href="/"><span class="nav-icon">📊</span> Macroeconómico</a>
-        <a class="navbar-link active" href="orcamento.html"><span class="nav-icon">🏛️</span> Orçamento de Estado</a>
-        <a class="navbar-link" href="inflacao-hicp.html"><span class="nav-icon">📈</span> Inflação IHPC</a>
-        <a class="navbar-link" href="euribor.html"><span class="nav-icon">💶</span> Euribor &amp; Crédito</a>
+        <a class="navbar-link" href="/"><span class="nav-icon">📊</span><span class="nav-label-full"> Dashboard Macroeconómico</span><span class="nav-label-short">Dashboard</span></a>
+        <a class="navbar-link active" href="orcamento.html"><span class="nav-icon">🏛️</span><span class="nav-label-full"> Orçamento de Estado</span><span class="nav-label-short">Orçamento</span></a>
+        <a class="navbar-link" href="inflacao-hicp.html"><span class="nav-icon">📈</span><span class="nav-label-full"> Inflação IHPC</span><span class="nav-label-short">Inflação</span></a>
+        <a class="navbar-link" href="euribor.html"><span class="nav-icon">💶</span><span class="nav-label-full"> Euribor &amp; Crédito</span><span class="nav-label-short">Euribor</span></a>
       </div>
     </div>
     <div class="header-left">

@@ -286,7 +286,14 @@
     .orc-kpi-val{font-size:1.15rem;font-weight:800;font-variant-numeric:tabular-nums;color:var(--text);margin-top:3px}
     .orc-kpi-unit{font-size:.62rem;font-weight:600;color:var(--muted2);margin-left:2px}
     .orc-kpi-var{font-size:.66rem;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
-    @media(max-width:680px){.orc-kpi-val{font-size:.95rem}.orc-kpis{gap:6px}}
+    @media(max-width:680px){
+      .orc-kpi-val{font-size:.95rem}.orc-kpis{gap:6px}
+      .orc-kpi-var .var-abs{display:none}
+      td .var-abs{display:none}
+      .h20-card .orc-chart-header{flex-direction:column;gap:2px}
+      .h20-card .orc-chart-source{display:none}
+      .h20-card .orc-chart-range{text-align:left}
+    }
 
     /* ── Receita vs Despesa — 20 anos ── */
     .h20-card{background:var(--card);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);padding:14px 16px 10px;margin:-6px 0 18px}

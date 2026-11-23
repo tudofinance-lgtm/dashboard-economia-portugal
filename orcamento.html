@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Execução Orçamental Portugal — Dashboard Económico</title>
   <meta name="description" content="Execução orçamental acumulada das Administrações Públicas de Portugal: receitas, despesas e saldo com comparação inter-anual. Dados BPstat / Banco de Portugal."/>
-  <meta name="keywords" content="orçamento portugal, execução orçamental portugal, saldo orçamental, receitas estado, despesas administrações públicas, deficit público portugal, pib portugal, pib em portugal, dados macroeconómicos, desempenho económico, bpstat, dashboard pt, juros da dívida pública portuguesa tempo real"/>
+  <meta name="keywords" content="orçamento portugal, execução orçamental portugal, saldo orçamental, receitas estado, despesas administrações públicas, défice público portugal, receita fiscal, despesa pública, bpstat"/>
   <meta name="robots" content="index, follow"/>
   <link rel="canonical" href="https://dashboardportugal.pt/orcamento.html"/>
   <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
@@ -138,7 +138,10 @@
     a.row-link:hover{text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px}
     a.row-link::after{content:'↗';font-size:.6em;opacity:0;margin-left:3px;transition:opacity .15s;vertical-align:super}
     a.row-link:hover::after{opacity:.45}
+    tr.level-3 td:first-child .row-label{font-weight:400;color:var(--muted2);font-size:.92em}
+    tr.level-3 td:first-child{padding-left:28px}
     tr.level-0{border-top:1px solid #e5e7eb}
+    .var-abs{font-size:.62rem;color:var(--muted2);font-weight:600;margin-left:3px}
 
     /* saldo highlight */
     tr.row-saldo td{background:#dbeafe;font-weight:700}
@@ -275,6 +278,24 @@
     .orc-chart-legend .legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
     .orc-chart-wrap{position:relative;flex:1;min-height:280px}
     .orc-chart-loading{text-align:center;padding:40px 0;color:var(--muted);font-size:.8rem}
+
+    /* ── KPIs (painel esquerdo) ── */
+    .orc-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:520px;margin:0 auto 4px}
+    .orc-kpi{border:1px solid var(--border);border-radius:9px;padding:10px 8px;background:#fafbfc;border-top:3px solid var(--kc)}
+    .orc-kpi-label{font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+    .orc-kpi-val{font-size:1.15rem;font-weight:800;font-variant-numeric:tabular-nums;color:var(--text);margin-top:3px}
+    .orc-kpi-unit{font-size:.62rem;font-weight:600;color:var(--muted2);margin-left:2px}
+    .orc-kpi-var{font-size:.66rem;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
+    @media(max-width:680px){.orc-kpi-val{font-size:.95rem}.orc-kpis{gap:6px}}
+
+    /* ── Receita vs Despesa — 20 anos ── */
+    .h20-card{background:var(--card);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);padding:14px 16px 10px;margin:-6px 0 18px}
+    .h20-wrap{position:relative;height:320px}
+    @media(max-width:680px){.h20-wrap{height:260px}}
+    .h20-toggle{display:inline-flex;border:1px solid var(--border);border-radius:7px;overflow:hidden;margin-top:4px}
+    .h20-toggle button{border:0;background:#fff;padding:3px 10px;font-size:.65rem;font-weight:700;color:var(--muted);cursor:pointer}
+    .h20-toggle button.on{background:#111827;color:#fff}
+    .h20-note{font-size:.6rem;color:var(--muted2);margin-top:6px}
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
@@ -305,15 +326,15 @@
       <div class="info-bar" style="height:100%;box-sizing:border-box;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:16px">
         <div>
           <div class="info-bar-title" style="font-size:1.05rem;margin-bottom:6px">Execução Orçamental das Administrações Públicas</div>
-          <div class="info-bar-sub" style="margin-bottom:14px">Valores acumulados desde janeiro · em milhões de euros (M€) · actualizado automaticamente</div>
+          <div class="info-bar-sub" style="margin-bottom:14px">Valores acumulados desde janeiro · em milhões de euros (M€) · atualização mensal</div>
           <span class="ref-badge" id="ref-badge" style="margin:0 auto 16px;display:inline-flex">⏳ A carregar...</span>
-          <div class="legend" style="justify-content:center;margin-bottom:16px">
-            <div class="legend-item"><div class="legend-dot" style="background:#166534"></div><span>Receita</span></div>
-            <div class="legend-item"><div class="legend-dot" style="background:#991b1b"></div><span>Despesa</span></div>
-            <div class="legend-item"><div class="legend-dot" style="background:#075985"></div><span>Saldo</span></div>
+          <div class="orc-kpis">
+            <div class="orc-kpi" style="--kc:#166534"><div class="orc-kpi-label">Receita</div><div class="orc-kpi-val" id="kpi-rec">–</div><div class="orc-kpi-var" id="kpi-rec-var">&nbsp;</div></div>
+            <div class="orc-kpi" style="--kc:#991b1b"><div class="orc-kpi-label">Despesa</div><div class="orc-kpi-val" id="kpi-desp">–</div><div class="orc-kpi-var" id="kpi-desp-var">&nbsp;</div></div>
+            <div class="orc-kpi" style="--kc:#075985"><div class="orc-kpi-label">Saldo</div><div class="orc-kpi-val" id="kpi-saldo">–</div><div class="orc-kpi-var" id="kpi-saldo-var">&nbsp;</div></div>
           </div>
         </div>
-        <p class="info-bar-seo">Acompanhe a <strong>execução orçamental de Portugal</strong> em tempo real — receitas, despesas e saldo das Administrações Públicas (Consolidado, Estado e Segurança Social) com comparação inter-anual. Dados do <strong>BPstat / Banco de Portugal</strong>, actualizados diariamente.</p>
+        <p class="info-bar-seo">Acompanhe a <strong>execução orçamental de Portugal</strong> — receitas, despesas e saldo das Administrações Públicas (Consolidado e Estado) com comparação inter-anual. Dados mensais do <strong>BPstat / Banco de Portugal</strong>, verificados todos os dias e atualizados assim que é publicado um novo mês.</p>
       </div>
     </div>
     <div class="exec-orc-right" id="exec-orc-right" style="display:none">
@@ -354,21 +375,18 @@
 </main>
 
 <section class="seo-block" aria-label="Sobre o dashboard de orçamento Portugal">
-  <h2>Execução do Orçamento em Portugal — Dados em Tempo Real</h2>
+  <h2>Execução do Orçamento em Portugal — Dados Mensais Atualizados</h2>
   <p>
-    Acompanhar o <strong>orçamento Portugal</strong> em detalhe é fundamental para perceber para onde vai o dinheiro dos contribuintes e como evolui o saldo das finanças públicas. Esta página publica diariamente os dados de execução orçamental das Administrações Públicas — Consolidado, Estado e Segurança Social — extraídos diretamente do <strong>BPstat</strong>, a plataforma estatística do Banco de Portugal. Com comparação inter-anual mês a mês, é possível identificar rapidamente tendências de curto prazo nas receitas fiscais e nas despesas correntes e de capital.
+    Acompanhar o <strong>orçamento Portugal</strong> em detalhe é fundamental para perceber para onde vai o dinheiro dos contribuintes e como evolui o saldo das finanças públicas. Esta página apresenta os dados mensais de execução orçamental das Administrações Públicas — Consolidado e Estado — extraídos diretamente do <strong>BPstat</strong>, a plataforma estatística do Banco de Portugal. Com comparação inter-anual mês a mês, é possível identificar rapidamente tendências de curto prazo nas receitas fiscais e nas despesas correntes e de capital.
   </p>
   <p>
-    O <strong>desempenho económico</strong> de Portugal espelha-se com clareza nas contas públicas. Quando o crescimento do <strong>PIB Portugal</strong> acelera, arrecadam-se mais impostos — IVA, IRS, IRC — e o saldo orçamental tende a melhorar. Pelo contrário, em períodos de contração económica, as receitas caem e as despesas com proteção social aumentam, alargando o défice. Perceber esta dinâmica exige acesso fácil a <strong>dados macroeconómicos</strong> fiáveis e actualizados.
+    O <strong>desempenho económico</strong> de Portugal espelha-se com clareza nas contas públicas. Quando o crescimento do <strong>PIB Portugal</strong> acelera, arrecadam-se mais impostos — IVA, IRS, IRC — e o saldo orçamental tende a melhorar. Pelo contrário, em períodos de contração económica, as receitas caem e as despesas com proteção social aumentam, alargando o défice. Perceber esta dinâmica exige acesso fácil a <strong>dados macroeconómicos</strong> fiáveis e atualizados.
   </p>
   <p>
-    No nosso <a href="index.html"><strong>dashboard pt</strong></a> pode acompanhar, além da execução orçamental, o <strong>PIB em Portugal</strong> trimestral e anual, a taxa de desemprego, a balança corrente, a dívida pública, a inflação e os <strong>juros da dívida pública portuguesa tempo real</strong> — o spread das Obrigações do Tesouro a 10 anos face à Alemanha, atualizado diariamente. Todos estes indicadores partilham a mesma fonte primária: o <strong>BPstat</strong> e o Eurostat.
+    No nosso <a href="index.html"><strong>dashboard pt</strong></a> pode acompanhar, além da execução orçamental, o <strong>PIB em Portugal</strong> trimestral e anual, a taxa de desemprego, a balança corrente, a dívida pública, a inflação e os <strong>juros da dívida pública portuguesa</strong> — o spread das Obrigações do Tesouro a 10 anos face à Alemanha, atualizado diariamente. Todos estes indicadores partilham a mesma fonte primária: o <strong>BPstat</strong> e o Eurostat.
   </p>
   <p>
-    Para quem pesquisa um <strong>portugal energy dashboard</strong> ou indicadores sectoriais, o nosso portal disponibiliza também a evolução do preço do petróleo Brent em euros, com impacto direto nas receitas de ISP e no poder de compra das famílias. O <strong>desempenho económico</strong> português está cada vez mais ligado à transição energética e ao custo da energia, pelo que estes dados complementam qualquer análise das contas públicas.
-  </p>
-  <p>
-    Seja para investigação académica, jornalismo de dados ou simples curiosidade sobre como está <strong>a economia e em Portugal</strong>, este <strong>dashboard pt</strong> foi concebido para ser a referência mais completa e acessível de <strong>dados macroeconómicos</strong> nacionais — com séries históricas longas, gráficos interativos e actualização automática a partir de fontes oficiais como o <strong>BPstat</strong>, o Eurostat e o Banco Central Europeu.
+    Seja para investigação académica, jornalismo de dados ou simples curiosidade sobre como está <strong>a economia em Portugal</strong>, este <strong>dashboard pt</strong> foi concebido para ser a referência mais completa e acessível de <strong>dados macroeconómicos</strong> nacionais — com séries históricas longas, gráficos interativos e atualização automática a partir de fontes oficiais como o <strong>BPstat</strong>, o Eurostat e o Banco Central Europeu.
   </p>
 </section>
 
@@ -500,6 +518,7 @@ const SECTIONS = [
   {
     title: 'Administrações Públicas — Consolidado',
     anchor: 12560943,
+    chartAfter: true,
     rows: [
       { id: 12560943, label: 'Saldo',                      tipo: 'S', level: 0, desc: 'Diferença entre receitas e despesas totais das AP (acumulado YTD)' },
       { id: 12560947, label: 'Receitas totais',            tipo: 'R', level: 0, highlight: true, desc: 'Receitas totais das Administrações Públicas consolidadas (YTD)' },
@@ -508,9 +527,9 @@ const SECTIONS = [
       { id: 12560975, label: 'Impostos indiretos',         tipo: 'R', level: 2, desc: 'IVA, ISP, Imposto do Selo e outros impostos sobre produção/importação' },
       { id: 12560979, label: 'Contribuições e cotizações', tipo: 'R', level: 2, desc: 'Contribuições para a Segurança Social e CGA' },
       { id: 12560983, label: 'Outras receitas correntes',  tipo: 'R', level: 2, desc: 'Rendimentos de propriedade, transferências correntes e outras receitas' },
-      { id: 12560959, label: 'Despesas totais',            tipo: 'D', level: 0, highlight: true, desc: 'Despesas totais das AP (despesas correntes + investimento público)' },
+      { id: 12560959, label: 'Despesas totais',            tipo: 'D', level: 0, highlight: true, desc: 'Despesas totais das AP (despesas correntes + despesas de capital)' },
       { id: 12560963, label: 'Despesas correntes',         tipo: 'D', level: 1, desc: 'Despesas correntes: pessoal, juros, bens/serviços e transferências' },
-      { id: 12560967, label: 'Investimento público',        tipo: 'D', level: 1, greenIfUp: true, desc: 'Formação bruta de capital fixo e aquisições de ativos não financeiros' },
+      { id: 12560967, label: 'Despesas de capital',        tipo: 'D', level: 1, greenIfUp: true, desc: 'Despesas de capital: investimento (FBCF), transferências de capital e outras — pode incluir operações pontuais' },
       { id: 12560987, label: 'Despesas com pessoal',       tipo: 'D', level: 2, desc: 'Remunerações, contribuições patronais e outros encargos com trabalhadores' },
       { id: 12560991, label: 'Transferências correntes',   tipo: 'D', level: 2, desc: 'Prestações sociais, subsídios e outras transferências correntes' },
     ]
@@ -522,12 +541,12 @@ const SECTIONS = [
       { id: 88894, label: 'Saldo',              tipo: 'S', level: 0, desc: 'Diferença entre receitas e despesas totais do Estado (acumulado YTD)' },
       { id: 88873, label: 'Receitas totais',    tipo: 'R', level: 0, highlight: true, desc: 'Total das receitas do Estado (correntes e de capital)' },
       { id: 88875, label: 'Receitas correntes', tipo: 'R', level: 1, desc: 'Receitas correntes do Estado: impostos diretos, indiretos e outras' },
-      { id: 88877, label: 'IVA',                tipo: 'R', level: 2, desc: 'Imposto sobre o Valor Acrescentado — principal imposto indireto' },
-      { id: 88878, label: 'ISP',                tipo: 'R', level: 2, desc: 'Imposto sobre os Produtos Petrolíferos e Energéticos' },
       { id: 88898, label: 'Impostos diretos',   tipo: 'R', level: 2, desc: 'IRS, IRC e demais impostos diretos cobrados pelo Estado' },
-      { id: 88899, label: 'IRS',                tipo: 'R', level: 2, desc: 'Imposto sobre o Rendimento das Pessoas Singulares' },
-      { id: 88900, label: 'IRC',                tipo: 'R', level: 2, desc: 'Imposto sobre o Rendimento das Pessoas Coletivas' },
+      { id: 88899, label: 'IRS',                tipo: 'R', level: 3, desc: 'Imposto sobre o Rendimento das Pessoas Singulares' },
+      { id: 88900, label: 'IRC',                tipo: 'R', level: 3, desc: 'Imposto sobre o Rendimento das Pessoas Coletivas' },
       { id: 88901, label: 'Impostos indiretos', tipo: 'R', level: 2, desc: 'IVA, ISP, Imposto do Selo e outros impostos indiretos do Estado' },
+      { id: 88877, label: 'IVA',                tipo: 'R', level: 3, desc: 'Imposto sobre o Valor Acrescentado — principal imposto indireto' },
+      { id: 88878, label: 'ISP',                tipo: 'R', level: 3, desc: 'Imposto sobre os Produtos Petrolíferos e Energéticos' },
       { id: 88884, label: 'Despesas totais',    tipo: 'D', level: 0, highlight: true, desc: 'Total das despesas do Estado (correntes e de capital)' },
       { id: 88886, label: 'Despesas correntes', tipo: 'D', level: 1, desc: 'Despesas correntes: pessoal, juros, bens/serviços e transferências do Estado' },
       { id: 88910, label: 'Juros e encargos',   tipo: 'D', level: 2, desc: 'Serviço da dívida pública — juros e encargos pagos pelo Estado' },
@@ -586,6 +605,17 @@ function fmtVal(v, tipo, bold) {
   }
   const style = bold ? ' style="font-weight:700"' : '';
   return `<span class="val"${style}>${num}</span>`;
+}
+
+// Saldo: variação em M€ (a % de um saldo negativo ou que muda de sinal é enganadora)
+function fmtDiff(newV, oldV) {
+  if (newV == null || oldV == null) return '<span class="var-null">—</span>';
+  const d = newV - oldV;
+  const sign = d >= 0 ? '+' : '−';
+  const arrow = d > 0 ? '▲' : '▼';
+  const cls = d > 0 ? 'var-pos-good' : 'var-neg-good';
+  const num = Math.abs(d).toLocaleString('pt-PT', {maximumFractionDigits: 0});
+  return `<span class="var ${cls}"><span class="arr">${arrow}</span>${sign}${num}<span class="var-abs">M€</span></span>`;
 }
 
 function fmtVar(p, tipo, greenIfUp) {
@@ -705,6 +735,119 @@ async function loadSaldoMensalChart() {
 }
 
 /* ══════════════════════════════════════════════════════════
+   RECEITA vs DESPESA TOTAIS — últimos 20 anos (Contas Nacionais, anual)
+   12645530 = Despesas totais AP · 12645509 = Saldo AP · 12518356 = PIB nominal
+   Receitas totais = Despesas totais + Saldo
+══════════════════════════════════════════════════════════ */
+const HIST20_YEARS = 20;
+const HIST20_HTML = `
+    <div class="h20-card" id="h20-card">
+      <div class="orc-chart-header">
+        <div>
+          <div class="orc-chart-title">Receita e Despesa Totais — Últimos ${HIST20_YEARS} Anos</div>
+          <div class="orc-chart-sub">Administrações Públicas · valores anuais · Contas Nacionais</div>
+          <div class="h20-toggle" role="group" aria-label="Unidade">
+            <button type="button" data-unit="eur" class="on">M€</button>
+            <button type="button" data-unit="pib">% PIB</button>
+          </div>
+        </div>
+        <div>
+          <div class="orc-chart-source">BPstat · Séries 12645530 · 12645509</div>
+          <div class="orc-chart-range" id="range-h20">–</div>
+        </div>
+      </div>
+      <div class="orc-chart-legend">
+        <span class="legend-item"><span class="legend-dot" style="background:#16a34a"></span>Receita total</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#dc2626"></span>Despesa total</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#075985"></span>Saldo</span>
+      </div>
+      <div class="h20-wrap" id="wrap-h20"><div class="orc-chart-loading">A carregar…</div></div>
+      <div class="h20-note">Anos completos, em ótica de contas nacionais (a base do défice reportado a Bruxelas). Não é diretamente comparável com a execução acumulada da tabela acima, que segue a contabilidade pública.</div>
+    </div>`;
+
+let _h20Chart = null;
+
+async function loadHist20Chart() {
+  const wrap = document.getElementById('wrap-h20');
+  if (!wrap) return;
+  try {
+    const [despPts, saldoPts, pibPts] = await Promise.all([
+      getSeriesData(12645530), getSeriesData(12645509), getSeriesData(12518356),
+    ]);
+    const yr = pts => { const m = {}; (pts || []).forEach(p => { m[p.date.slice(0, 4)] = p.value; }); return m; };
+    const desp = yr(despPts), sal = yr(saldoPts), pib = yr(pibPts);
+    const years = Object.keys(desp).filter(y => sal[y] != null).sort().slice(-HIST20_YEARS);
+    if (!years.length) throw new Error('sem dados');
+
+    const series = unit => {
+      const f = (v, y) => v == null ? null : unit === 'pib' ? (pib[y] ? +(v / pib[y] * 100).toFixed(2) : null) : Math.round(v);
+      return {
+        rec:   years.map(y => f(desp[y] + sal[y], y)),
+        desp:  years.map(y => f(desp[y], y)),
+        saldo: years.map(y => f(sal[y], y)),
+      };
+    };
+
+    document.getElementById('range-h20').textContent = years[0] + ' — ' + years[years.length - 1];
+    wrap.innerHTML = '<canvas aria-label="Receita e despesa totais das Administrações Públicas, últimos 20 anos" role="img"></canvas>';
+
+    let unit = 'eur';
+    const fmtTick = v => unit === 'pib' ? v + '%' : (Math.abs(v) >= 1000 ? (v / 1000).toLocaleString('pt-PT', {maximumFractionDigits: 0}) + 'k' : v);
+    const fmtTip  = v => unit === 'pib'
+      ? v.toLocaleString('pt-PT', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + '% PIB'
+      : v.toLocaleString('pt-PT') + ' M€';
+
+    const s = series(unit);
+    _h20Chart = new Chart(wrap.querySelector('canvas'), {
+      data: {
+        labels: years,
+        datasets: [
+          { type: 'line', label: 'Saldo', data: s.saldo, yAxisID: 'y', borderColor: '#075985', backgroundColor: '#075985',
+            borderWidth: 2, pointRadius: 2.5, pointHoverRadius: 5, tension: 0.25, order: 0 },
+          { type: 'bar', label: 'Receita total', data: s.rec, yAxisID: 'y', backgroundColor: '#16a34a', borderRadius: 3,
+            categoryPercentage: 0.75, barPercentage: 0.9, order: 1 },
+          { type: 'bar', label: 'Despesa total', data: s.desp, yAxisID: 'y', backgroundColor: '#dc2626', borderRadius: 3,
+            categoryPercentage: 0.75, barPercentage: 0.9, order: 1 },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        animation: { duration: 300 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1e293b', titleColor: '#94a3b8', bodyColor: '#f8fafc',
+            borderColor: '#334155', borderWidth: 1, padding: 10,
+            callbacks: { label: c => c.raw == null ? '' : ` ${c.dataset.label}: ${fmtTip(c.raw)}` },
+          },
+        },
+        scales: {
+          x:  { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, autoSkipPadding: 6 } },
+          y:  { grid: { color: c => c.tick.value === 0 ? '#94a3b8' : '#f1f5f9' }, ticks: { callback: fmtTick } },
+        },
+      },
+    });
+
+    document.querySelectorAll('#h20-card .h20-toggle button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        unit = btn.dataset.unit;
+        document.querySelectorAll('#h20-card .h20-toggle button').forEach(b => b.classList.toggle('on', b === btn));
+        const n = series(unit);
+        _h20Chart.data.datasets[0].data = n.saldo;
+        _h20Chart.data.datasets[1].data = n.rec;
+        _h20Chart.data.datasets[2].data = n.desp;
+        _h20Chart.update();
+      });
+    });
+  } catch (e) {
+    console.warn('Hist20 chart failed:', e.message);
+    wrap.innerHTML = '<div class="orc-chart-loading">Gráfico indisponível de momento.</div>';
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
    RENDER
 ══════════════════════════════════════════════════════════ */
 async function init() {
@@ -719,6 +862,16 @@ async function init() {
     const [y, m] = apRef.split('-');
     document.getElementById('ref-badge').innerHTML = `📅 Acumulado até ${monthLabel(apRef)} ${y}`;
     document.getElementById('hdr-year').textContent = y;
+
+    // KPIs do painel esquerdo (AP consolidado, YTD vs mesmo período do ano anterior)
+    const apPrev = prevYear(apRef);
+    const fmtK = v => v == null ? '–' : `${v.toLocaleString('pt-PT',{maximumFractionDigits:0})}<span class="orc-kpi-unit">M€</span>`;
+    [['kpi-rec', 12560947, 'R'], ['kpi-desp', 12560959, 'D'], ['kpi-saldo', 12560943, 'S']].forEach(([el, id, tipo]) => {
+      const v = getObs(dm[id], apRef), v1 = getObs(dm[id], apPrev);
+      document.getElementById(el).innerHTML = fmtK(v);
+      document.getElementById(el + '-var').innerHTML =
+        (tipo === 'S' ? fmtDiff(v, v1) : fmtVar(pct(v, v1), tipo)) + `<span class="var-abs">vs ${+y - 1}</span>`;
+    });
   }
 
   let html = '';
@@ -771,9 +924,9 @@ async function init() {
             <td>${fmtVal(vN, row.tipo, isTotais)}</td>
             <td class="col-hide">${fmtVal(vN1, row.tipo, isTotais)}</td>
             <td class="col-hide">${fmtVal(vN2, row.tipo, isTotais)}</td>
-            <td>${fmtVar(p1, row.tipo, row.greenIfUp)}</td>
-            <td class="col-hide">${fmtVar(p2, row.tipo, row.greenIfUp)}</td>
-            <td class="col-hide">${fmtVar(pN2, row.tipo, row.greenIfUp)}</td>
+            <td>${isSaldo ? fmtDiff(vN, vN1) : fmtVar(p1, row.tipo, row.greenIfUp)}</td>
+            <td class="col-hide">${isSaldo ? fmtDiff(vN1, vN2) : fmtVar(p2, row.tipo, row.greenIfUp)}</td>
+            <td class="col-hide">${isSaldo ? fmtDiff(vN, vN2) : fmtVar(pN2, row.tipo, row.greenIfUp)}</td>
           </tr>`;
     }
 
@@ -781,6 +934,8 @@ async function init() {
         </tbody>
       </table>
     </div>`;
+
+    if (sec.chartAfter) html += HIST20_HTML;
   }
 
   if (!html) {
@@ -791,6 +946,7 @@ async function init() {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('exec-orc-right').style.display = 'block';
   loadSaldoMensalChart();
+  loadHist20Chart();
 }
 
 /* (deflator PIB e IPC carregados via getSeriesData — BPstat séries 12706759 e 12704650) */
@@ -965,7 +1121,7 @@ async function initHistorico() {
         <th class="hg hsal" colspan="3">Saldo Orçamental</th>
         <th class="hg hrec hist-hide" colspan="3">Receitas Totais AP</th>
         <th class="hg hdesp hist-hide" colspan="3">Despesas Totais AP</th>
-        <th class="hg hinv hist-hide" colspan="3">Investimento Público</th>
+        <th class="hg hinv hist-hide" colspan="3">Despesas de Capital</th>
         <th class="hg hpib" colspan="4">PIB</th>
       </tr>
       <tr>

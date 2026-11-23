@@ -290,19 +290,16 @@
       .orc-kpi-val{font-size:.95rem}.orc-kpis{gap:6px}
       .orc-kpi-var .var-abs{display:none}
       td .var-abs{display:none}
-      .h20-card .orc-chart-header{flex-direction:column;gap:2px}
-      .h20-card .orc-chart-source{display:none}
-      .h20-card .orc-chart-range{text-align:left}
     }
 
-    /* ── Receita vs Despesa — 20 anos ── */
-    .h20-card{background:var(--card);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);padding:14px 16px 10px;margin:-6px 0 18px}
-    .h20-wrap{position:relative;height:320px}
-    @media(max-width:680px){.h20-wrap{height:260px}}
-    .h20-toggle{display:inline-flex;border:1px solid var(--border);border-radius:7px;overflow:hidden;margin-top:4px}
-    .h20-toggle button{border:0;background:#fff;padding:3px 10px;font-size:.65rem;font-weight:700;color:var(--muted);cursor:pointer}
-    .h20-toggle button.on{background:#111827;color:#fff}
-    .h20-note{font-size:.6rem;color:var(--muted2);margin-top:6px}
+    /* ── Mini-gráficos 20 anos dentro da tabela (Receitas / Despesas totais) ── */
+    tr.row-chart td{padding:4px 14px 12px !important;background:#fff;border-bottom:1px solid #e5e7eb}
+    tr.row-chart:hover td{background:#fff}
+    .h20-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:2px 0 4px}
+    .h20-title{font-size:.66rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+    .h20-src{font-size:.58rem;color:var(--muted2);text-align:right}
+    .h20-wrap{position:relative;height:170px}
+    @media(max-width:680px){.h20-wrap{height:150px}.h20-src{display:none}tr.row-chart td{padding:4px 6px 10px !important}}
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
@@ -525,16 +522,15 @@ const SECTIONS = [
   {
     title: 'Administrações Públicas — Consolidado',
     anchor: 12560943,
-    chartAfter: true,
     rows: [
       { id: 12560943, label: 'Saldo',                      tipo: 'S', level: 0, desc: 'Diferença entre receitas e despesas totais das AP (acumulado YTD)' },
-      { id: 12560947, label: 'Receitas totais',            tipo: 'R', level: 0, highlight: true, desc: 'Receitas totais das Administrações Públicas consolidadas (YTD)' },
+      { id: 12560947, label: 'Receitas totais',            tipo: 'R', level: 0, highlight: true, chart20: 'rec', desc: 'Receitas totais das Administrações Públicas consolidadas (YTD)' },
       { id: 12560951, label: 'Receitas correntes',         tipo: 'R', level: 1, desc: 'Receitas correntes das AP: impostos, contribuições sociais e outras' },
       { id: 12560971, label: 'Impostos diretos',           tipo: 'R', level: 2, desc: 'IRS, IRC e outros impostos sobre rendimento e riqueza' },
       { id: 12560975, label: 'Impostos indiretos',         tipo: 'R', level: 2, desc: 'IVA, ISP, Imposto do Selo e outros impostos sobre produção/importação' },
       { id: 12560979, label: 'Contribuições e cotizações', tipo: 'R', level: 2, desc: 'Contribuições para a Segurança Social e CGA' },
       { id: 12560983, label: 'Outras receitas correntes',  tipo: 'R', level: 2, desc: 'Rendimentos de propriedade, transferências correntes e outras receitas' },
-      { id: 12560959, label: 'Despesas totais',            tipo: 'D', level: 0, highlight: true, desc: 'Despesas totais das AP (despesas correntes + despesas de capital)' },
+      { id: 12560959, label: 'Despesas totais',            tipo: 'D', level: 0, highlight: true, chart20: 'desp', desc: 'Despesas totais das AP (despesas correntes + despesas de capital)' },
       { id: 12560963, label: 'Despesas correntes',         tipo: 'D', level: 1, desc: 'Despesas correntes: pessoal, juros, bens/serviços e transferências' },
       { id: 12560967, label: 'Despesas de capital',        tipo: 'D', level: 1, greenIfUp: true, desc: 'Despesas de capital: investimento (FBCF), transferências de capital e outras — pode incluir operações pontuais' },
       { id: 12560987, label: 'Despesas com pessoal',       tipo: 'D', level: 2, desc: 'Remunerações, contribuições patronais e outros encargos com trabalhadores' },
@@ -747,36 +743,24 @@ async function loadSaldoMensalChart() {
    Receitas totais = Despesas totais + Saldo
 ══════════════════════════════════════════════════════════ */
 const HIST20_YEARS = 20;
-const HIST20_HTML = `
-    <div class="h20-card" id="h20-card">
-      <div class="orc-chart-header">
-        <div>
-          <div class="orc-chart-title">Receita e Despesa Totais — Últimos ${HIST20_YEARS} Anos</div>
-          <div class="orc-chart-sub">Administrações Públicas · valores anuais · Contas Nacionais</div>
-          <div class="h20-toggle" role="group" aria-label="Unidade">
-            <button type="button" data-unit="eur" class="on">M€</button>
-            <button type="button" data-unit="pib">% PIB</button>
-          </div>
-        </div>
-        <div>
-          <div class="orc-chart-source">BPstat · Séries 12645530 · 12645509</div>
-          <div class="orc-chart-range" id="range-h20">–</div>
-        </div>
-      </div>
-      <div class="orc-chart-legend">
-        <span class="legend-item"><span class="legend-dot" style="background:#16a34a"></span>Receita total</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#dc2626"></span>Despesa total</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#075985"></span>Saldo</span>
-      </div>
-      <div class="h20-wrap" id="wrap-h20"><div class="orc-chart-loading">A carregar…</div></div>
-      <div class="h20-note">Anos completos, em ótica de contas nacionais (a base do défice reportado a Bruxelas). Não é diretamente comparável com a execução acumulada da tabela acima, que segue a contabilidade pública.</div>
-    </div>`;
+const HIST20_CFG = {
+  rec:  { title: 'Receitas totais', color: '#16a34a', fill: 'rgba(22,163,74,.08)' },
+  desp: { title: 'Despesas totais', color: '#dc2626', fill: 'rgba(220,38,38,.08)' },
+};
 
-let _h20Chart = null;
+function hist20RowHTML(key) {
+  return `
+          <tr class="row-chart"><td colspan="7">
+            <div class="h20-head">
+              <span class="h20-title">${HIST20_CFG[key].title} — últimos ${HIST20_YEARS} anos <span id="h20-range-${key}"></span></span>
+              <span class="h20-src">Anual · Contas Nacionais · BPstat</span>
+            </div>
+            <div class="h20-wrap" id="h20-${key}"><div class="orc-chart-loading" style="padding:20px 0">A carregar…</div></div>
+          </td></tr>`;
+}
 
 async function loadHist20Chart() {
-  const wrap = document.getElementById('wrap-h20');
-  if (!wrap) return;
+  if (!document.getElementById('h20-rec') && !document.getElementById('h20-desp')) return;
   try {
     const [despPts, saldoPts, pibPts] = await Promise.all([
       getSeriesData(12645530), getSeriesData(12645509), getSeriesData(12518356),
@@ -786,71 +770,62 @@ async function loadHist20Chart() {
     const years = Object.keys(desp).filter(y => sal[y] != null).sort().slice(-HIST20_YEARS);
     if (!years.length) throw new Error('sem dados');
 
-    const series = unit => {
-      const f = (v, y) => v == null ? null : unit === 'pib' ? (pib[y] ? +(v / pib[y] * 100).toFixed(2) : null) : Math.round(v);
-      return {
-        rec:   years.map(y => f(desp[y] + sal[y], y)),
-        desp:  years.map(y => f(desp[y], y)),
-        saldo: years.map(y => f(sal[y], y)),
-      };
+    // Receitas totais = Despesas totais + Saldo (identidade orçamental)
+    const values = {
+      rec:  years.map(y => Math.round(desp[y] + sal[y])),
+      desp: years.map(y => Math.round(desp[y])),
     };
 
-    document.getElementById('range-h20').textContent = years[0] + ' — ' + years[years.length - 1];
-    wrap.innerHTML = '<canvas aria-label="Receita e despesa totais das Administrações Públicas, últimos 20 anos" role="img"></canvas>';
-
-    let unit = 'eur';
-    const fmtTick = v => unit === 'pib' ? v + '%' : (Math.abs(v) >= 1000 ? (v / 1000).toLocaleString('pt-PT', {maximumFractionDigits: 0}) + 'k' : v);
-    const fmtTip  = v => unit === 'pib'
-      ? v.toLocaleString('pt-PT', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + '% PIB'
-      : v.toLocaleString('pt-PT') + ' M€';
-
-    const s = series(unit);
-    _h20Chart = new Chart(wrap.querySelector('canvas'), {
-      data: {
-        labels: years,
-        datasets: [
-          { type: 'line', label: 'Saldo', data: s.saldo, yAxisID: 'y', borderColor: '#075985', backgroundColor: '#075985',
-            borderWidth: 2, pointRadius: 2.5, pointHoverRadius: 5, tension: 0.25, order: 0 },
-          { type: 'bar', label: 'Receita total', data: s.rec, yAxisID: 'y', backgroundColor: '#16a34a', borderRadius: 3,
-            categoryPercentage: 0.75, barPercentage: 0.9, order: 1 },
-          { type: 'bar', label: 'Despesa total', data: s.desp, yAxisID: 'y', backgroundColor: '#dc2626', borderRadius: 3,
-            categoryPercentage: 0.75, barPercentage: 0.9, order: 1 },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        animation: { duration: 300 },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: '#1e293b', titleColor: '#94a3b8', bodyColor: '#f8fafc',
-            borderColor: '#334155', borderWidth: 1, padding: 10,
-            callbacks: { label: c => c.raw == null ? '' : ` ${c.dataset.label}: ${fmtTip(c.raw)}` },
+    for (const key of ['rec', 'desp']) {
+      const wrap = document.getElementById('h20-' + key);
+      if (!wrap) continue;
+      const cfg = HIST20_CFG[key];
+      const rangeEl = document.getElementById('h20-range-' + key);
+      if (rangeEl) rangeEl.textContent = `(${years[0]}–${years[years.length - 1]})`;
+      wrap.innerHTML = `<canvas role="img" aria-label="${cfg.title} das Administrações Públicas, ${years[0]} a ${years[years.length - 1]}"></canvas>`;
+      new Chart(wrap.querySelector('canvas'), {
+        type: 'line',
+        data: {
+          labels: years,
+          datasets: [{
+            label: cfg.title, data: values[key],
+            borderColor: cfg.color, backgroundColor: cfg.fill, fill: true,
+            borderWidth: 2, pointRadius: 0, pointHoverRadius: 4, pointBackgroundColor: cfg.color, tension: 0.25,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          animation: { duration: 300 },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#1e293b', titleColor: '#94a3b8', bodyColor: '#f8fafc',
+              borderColor: '#334155', borderWidth: 1, padding: 8, displayColors: false,
+              callbacks: {
+                label: c => {
+                  const y = years[c.dataIndex];
+                  const share = pib[y] ? ` (${(c.raw / pib[y] * 100).toLocaleString('pt-PT', {maximumFractionDigits: 1})}% do PIB)` : '';
+                  return `${c.raw.toLocaleString('pt-PT')} M€${share}`;
+                },
+              },
+            },
+          },
+          scales: {
+            x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, autoSkipPadding: 10, font: { size: 10 } } },
+            y: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 }, maxTicksLimit: 5,
+                 callback: v => (v / 1000).toLocaleString('pt-PT', {maximumFractionDigits: 0}) + 'k' } },
           },
         },
-        scales: {
-          x:  { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, autoSkipPadding: 6 } },
-          y:  { grid: { color: c => c.tick.value === 0 ? '#94a3b8' : '#f1f5f9' }, ticks: { callback: fmtTick } },
-        },
-      },
-    });
-
-    document.querySelectorAll('#h20-card .h20-toggle button').forEach(btn => {
-      btn.addEventListener('click', () => {
-        unit = btn.dataset.unit;
-        document.querySelectorAll('#h20-card .h20-toggle button').forEach(b => b.classList.toggle('on', b === btn));
-        const n = series(unit);
-        _h20Chart.data.datasets[0].data = n.saldo;
-        _h20Chart.data.datasets[1].data = n.rec;
-        _h20Chart.data.datasets[2].data = n.desp;
-        _h20Chart.update();
       });
-    });
+    }
   } catch (e) {
     console.warn('Hist20 chart failed:', e.message);
-    wrap.innerHTML = '<div class="orc-chart-loading">Gráfico indisponível de momento.</div>';
+    ['rec', 'desp'].forEach(k => {
+      const w = document.getElementById('h20-' + k);
+      if (w) w.innerHTML = '<div class="orc-chart-loading" style="padding:20px 0">Gráfico indisponível de momento.</div>';
+    });
   }
 }
 
@@ -935,6 +910,7 @@ async function init() {
             <td class="col-hide">${isSaldo ? fmtDiff(vN1, vN2) : fmtVar(p2, row.tipo, row.greenIfUp)}</td>
             <td class="col-hide">${isSaldo ? fmtDiff(vN, vN2) : fmtVar(pN2, row.tipo, row.greenIfUp)}</td>
           </tr>`;
+      if (row.chart20) html += hist20RowHTML(row.chart20);
     }
 
     html += `
@@ -942,7 +918,6 @@ async function init() {
       </table>
     </div>`;
 
-    if (sec.chartAfter) html += HIST20_HTML;
   }
 
   if (!html) {

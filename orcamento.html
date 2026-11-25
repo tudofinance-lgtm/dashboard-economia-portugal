@@ -275,6 +275,9 @@
     .orc-chart-legend .legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
     .orc-chart-wrap{position:relative;flex:1;min-height:280px}
     .orc-chart-loading{text-align:center;padding:40px 0;color:var(--muted);font-size:.8rem}
+    .rd-hist-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:0 0 18px}
+    .rd-hist-row .orc-chart-wrap{min-height:260px}
+    @media(max-width:860px){.rd-hist-row{grid-template-columns:1fr}}
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
@@ -705,6 +708,99 @@ async function loadSaldoMensalChart() {
 }
 
 /* ══════════════════════════════════════════════════════════
+   RECEITA E DESPESA TOTAIS AP — anuais desde 2009
+   Contas Nacionais: Despesa = 12645530; Receita = Despesa + Saldo (12645509)
+══════════════════════════════════════════════════════════ */
+const RD_HIST_START = 2009;
+const RD_HIST_HTML = `
+    <div class="rd-hist-row">
+      <div class="orc-chart-card">
+        <div class="orc-chart-header">
+          <div>
+            <div class="orc-chart-title">Receita Total das AP</div>
+            <div class="orc-chart-sub">Anual · M€ · Contas Nacionais</div>
+          </div>
+          <div>
+            <div class="orc-chart-source">BPstat · Séries 12645530 + 12645509</div>
+            <div class="orc-chart-range" id="range-rec-hist">–</div>
+          </div>
+        </div>
+        <div class="orc-chart-wrap" id="wrap-rec-hist"><div class="orc-chart-loading">A carregar…</div></div>
+      </div>
+      <div class="orc-chart-card">
+        <div class="orc-chart-header">
+          <div>
+            <div class="orc-chart-title">Despesa Total das AP</div>
+            <div class="orc-chart-sub">Anual · M€ · Contas Nacionais</div>
+          </div>
+          <div>
+            <div class="orc-chart-source">BPstat · Série 12645530</div>
+            <div class="orc-chart-range" id="range-desp-hist">–</div>
+          </div>
+        </div>
+        <div class="orc-chart-wrap" id="wrap-desp-hist"><div class="orc-chart-loading">A carregar…</div></div>
+      </div>
+    </div>`;
+
+function drawRecDespBar(wrapId, rangeId, labels, values, color) {
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  wrap.innerHTML = '<canvas></canvas>';
+  const rangeEl = document.getElementById(rangeId);
+  if (rangeEl && labels.length) rangeEl.textContent = labels[0] + ' — ' + labels[labels.length - 1];
+  new Chart(wrap.querySelector('canvas'), {
+    type: 'bar',
+    data: { labels, datasets: [{ data: values, backgroundColor: color, borderRadius: 3, maxBarThickness: 28 }] },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 300 },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1e293b', titleColor: '#94a3b8', bodyColor: '#f8fafc',
+          borderColor: '#334155', borderWidth: 1, padding: 10,
+          callbacks: {
+            label: c => {
+              const v = c.raw, prev = c.dataIndex > 0 ? values[c.dataIndex - 1] : null;
+              let txt = ` ${Math.round(v).toLocaleString('pt-PT')} M€`;
+              if (prev) { const g = (v / prev - 1) * 100; txt += `  (${g >= 0 ? '+' : ''}${g.toFixed(1)}%)`; }
+              return txt;
+            },
+          },
+        },
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true } },
+        y: {
+          beginAtZero: true,
+          grid: { color: '#f1f5f9' },
+          ticks: { callback: v => (v / 1000).toFixed(0) + 'k' },
+        },
+      },
+    },
+  });
+}
+
+async function loadRecDespHistCharts() {
+  try {
+    const [despPts, saldoPts] = await Promise.all([getSeriesData(12645530), getSeriesData(12645509)]);
+    const toMap = pts => { const m = {}; (pts || []).forEach(p => { m[p.date.slice(0, 4)] = p.value; }); return m; };
+    const desp = toMap(despPts), sal = toMap(saldoPts);
+    const years = Object.keys(desp).filter(y => +y >= RD_HIST_START).sort();
+    const recYears = years.filter(y => sal[y] != null);
+    drawRecDespBar('wrap-rec-hist', 'range-rec-hist', recYears, recYears.map(y => desp[y] + sal[y]), '#16a34a');
+    drawRecDespBar('wrap-desp-hist', 'range-desp-hist', years, years.map(y => desp[y]), '#dc2626');
+  } catch (e) {
+    console.warn('Receita/Despesa hist charts failed:', e.message);
+    ['wrap-rec-hist', 'wrap-desp-hist'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = '<div class="orc-chart-loading">Dados indisponíveis</div>';
+    });
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
    RENDER
 ══════════════════════════════════════════════════════════ */
 async function init() {
@@ -781,6 +877,9 @@ async function init() {
         </tbody>
       </table>
     </div>`;
+
+    // Gráficos históricos de Receita e Despesa totais logo a seguir à tabela AP Consolidado
+    if (sec.anchor === 12560943) html += RD_HIST_HTML;
   }
 
   if (!html) {
@@ -791,6 +890,7 @@ async function init() {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('exec-orc-right').style.display = 'block';
   loadSaldoMensalChart();
+  loadRecDespHistCharts();
 }
 
 /* (deflator PIB e IPC carregados via getSeriesData — BPstat séries 12706759 e 12704650) */
